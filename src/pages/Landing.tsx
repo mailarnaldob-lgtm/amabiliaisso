@@ -31,9 +31,7 @@ export default function Landing() {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            Amabilia Network
-          </Link>
+          <Link to="/" className="text-2xl font-bold text-primary">AMABILIA NETWORK</Link>
           <div className="flex items-center gap-4">
             <Link to="/auth">
               <Button variant="ghost">Login</Button>
