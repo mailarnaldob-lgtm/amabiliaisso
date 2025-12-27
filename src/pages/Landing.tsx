@@ -2,71 +2,32 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Users, 
-  Wallet, 
-  TrendingUp, 
-  Shield, 
-  ArrowRight, 
-  CheckCircle,
-  Star,
-  Zap,
-  Crown
-} from 'lucide-react';
-
+import { Users, Wallet, TrendingUp, Shield, ArrowRight, CheckCircle, Star, Zap, Crown } from 'lucide-react';
 export default function Landing() {
-  const membershipTiers = [
-    {
-      name: 'Basic',
-      price: '₱1,000',
-      icon: Star,
-      color: 'bg-secondary',
-      features: [
-        '40% referral commission',
-        'Access to community',
-        'Basic support',
-      ],
-      notIncluded: [
-        'Daily task earnings',
-        'Online Army access',
-        'Lending marketplace',
-      ],
-    },
-    {
-      name: 'Pro',
-      price: '₱2,000',
-      icon: Zap,
-      color: 'bg-primary',
-      popular: true,
-      features: [
-        '40% referral commission',
-        'Daily task earnings',
-        'Online Army training',
-        'Priority support',
-      ],
-      notIncluded: [
-        'Lending marketplace',
-      ],
-    },
-    {
-      name: 'Elite',
-      price: '₱3,000',
-      icon: Crown,
-      color: 'bg-accent-foreground',
-      features: [
-        '40% referral commission',
-        'Daily task earnings',
-        'Online Army access',
-        'Lending marketplace',
-        'VIP support',
-        'Exclusive campaigns',
-      ],
-      notIncluded: [],
-    },
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
+  const membershipTiers = [{
+    name: 'Basic',
+    price: '₱1,000',
+    icon: Star,
+    color: 'bg-secondary',
+    features: ['40% referral commission', 'Access to community', 'Basic support'],
+    notIncluded: ['Daily task earnings', 'Online Army access', 'Lending marketplace']
+  }, {
+    name: 'Pro',
+    price: '₱2,000',
+    icon: Zap,
+    color: 'bg-primary',
+    popular: true,
+    features: ['40% referral commission', 'Daily task earnings', 'Online Army training', 'Priority support'],
+    notIncluded: ['Lending marketplace']
+  }, {
+    name: 'Elite',
+    price: '₱3,000',
+    icon: Crown,
+    color: 'bg-accent-foreground',
+    features: ['40% referral commission', 'Daily task earnings', 'Online Army access', 'Lending marketplace', 'VIP support', 'Exclusive campaigns'],
+    notIncluded: []
+  }];
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -302,16 +263,10 @@ export default function Landing() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {membershipTiers.map((tier) => (
-              <Card 
-                key={tier.name}
-                className={`border-border relative ${tier.popular ? 'border-primary border-2 scale-105' : ''}`}
-              >
-                {tier.popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
+            {membershipTiers.map(tier => <Card key={tier.name} className={`border-border relative ${tier.popular ? 'border-primary border-2 scale-105' : ''}`}>
+                {tier.popular && <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
                     Most Popular
-                  </Badge>
-                )}
+                  </Badge>}
                 <CardHeader className="text-center">
                   <div className={`w-16 h-16 rounded-full ${tier.color} flex items-center justify-center mx-auto mb-4`}>
                     <tier.icon className="h-8 w-8 text-primary-foreground" />
@@ -324,18 +279,14 @@ export default function Landing() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3 mb-6">
-                    {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2">
+                    {tier.features.map(feature => <li key={feature} className="flex items-center gap-2">
                         <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                         <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                    {tier.notIncluded.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 opacity-50">
+                      </li>)}
+                    {tier.notIncluded.map(feature => <li key={feature} className="flex items-center gap-2 opacity-50">
                         <CheckCircle className="h-5 w-5 flex-shrink-0" />
                         <span className="text-sm line-through">{feature}</span>
-                      </li>
-                    ))}
+                      </li>)}
                   </ul>
                   <Link to="/auth">
                     <Button className="w-full" variant={tier.popular ? 'default' : 'outline'}>
@@ -343,8 +294,7 @@ export default function Landing() {
                     </Button>
                   </Link>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -435,11 +385,8 @@ export default function Landing() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-            © 2024 Amabilia Network. All rights reserved.
-          </div>
+          <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">© 2025 Amabilia Network. All rights reserved.</div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
