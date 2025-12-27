@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   ArrowLeft,
@@ -16,11 +15,11 @@ import {
   Zap,
   Star,
   CheckCircle,
-  Upload,
   Copy
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { paymentSchema } from '@/lib/validations';
 
 const MEMBERSHIP_TIERS = [
   {
@@ -64,8 +63,8 @@ export default function UpgradeMembership() {
   const [selectedTier, setSelectedTier] = useState<string>('pro');
   const [paymentMethod, setPaymentMethod] = useState<string>('gcash');
   const [referenceNumber, setReferenceNumber] = useState('');
-  const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{ reference_number?: string }>({});
 
   const currentTierIndex = MEMBERSHIP_TIERS.findIndex(t => t.id === profile?.membership_tier);
   const availableTiers = MEMBERSHIP_TIERS.filter((_, index) => index > currentTierIndex);
@@ -117,12 +116,25 @@ export default function UpgradeMembership() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     
-    if (!referenceNumber.trim()) {
+    // Validate input using zod schema
+    const result = paymentSchema.safeParse({
+      tier: selectedTier,
+      payment_method: paymentMethod,
+      reference_number: referenceNumber,
+    });
+    
+    if (!result.success) {
+      const fieldErrors: { reference_number?: string } = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0] === 'reference_number') fieldErrors.reference_number = err.message;
+      });
+      setErrors(fieldErrors);
       toast({
         variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please enter the reference number',
+        title: 'Validation Error',
+        description: result.error.errors[0]?.message || 'Please fix the errors below.',
       });
       return;
     }
@@ -272,15 +284,18 @@ export default function UpgradeMembership() {
               <CardDescription>Enter your transaction reference number</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="reference">Reference Number *</Label>
                 <Input
                   id="reference"
                   placeholder="e.g., 1234567890123"
                   value={referenceNumber}
                   onChange={(e) => setReferenceNumber(e.target.value)}
+                  maxLength={50}
+                  className={errors.reference_number ? 'border-destructive' : ''}
                   required
                 />
+                {errors.reference_number && <p className="text-sm text-destructive">{errors.reference_number}</p>}
               </div>
             </CardContent>
           </Card>

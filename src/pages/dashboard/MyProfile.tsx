@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User, Mail, Phone, Shield, Crown, Zap, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { profileSchema } from '@/lib/validations';
 
 export default function MyProfile() {
   const { user } = useAuth();
@@ -21,22 +22,23 @@ export default function MyProfile() {
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{ full_name?: string; phone?: string }>({});
 
   // Update form when profile loads
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setFullName(profile.full_name);
       setPhone(profile.phone || '');
     }
-  });
+  }, [profile]);
 
   const updateProfile = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (data: { full_name: string; phone: string }) => {
       if (!user) throw new Error('Not authenticated');
 
       const { error } = await supabase
         .from('profiles')
-        .update({ full_name: fullName, phone: phone || null })
+        .update({ full_name: data.full_name, phone: data.phone || null })
         .eq('id', user.id);
 
       if (error) throw error;
@@ -52,8 +54,24 @@ export default function MyProfile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+    
+    // Validate input using zod schema
+    const result = profileSchema.safeParse({ full_name: fullName, phone: phone || '' });
+    
+    if (!result.success) {
+      const fieldErrors: { full_name?: string; phone?: string } = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0] === 'full_name') fieldErrors.full_name = err.message;
+        if (err.path[0] === 'phone') fieldErrors.phone = err.message;
+      });
+      setErrors(fieldErrors);
+      toast({ variant: 'destructive', title: 'Validation Error', description: 'Please fix the errors below.' });
+      return;
+    }
+
     setIsSubmitting(true);
-    await updateProfile.mutateAsync();
+    await updateProfile.mutateAsync({ full_name: result.data.full_name, phone: result.data.phone || '' });
     setIsSubmitting(false);
   };
 
@@ -153,8 +171,11 @@ export default function MyProfile() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Your full name"
+                    maxLength={200}
+                    className={errors.full_name ? 'border-destructive' : ''}
                   />
                 </div>
+                {errors.full_name && <p className="text-sm text-destructive">{errors.full_name}</p>}
               </div>
 
               <div className="space-y-2">
@@ -167,8 +188,11 @@ export default function MyProfile() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="09171234567"
+                    maxLength={15}
+                    className={errors.phone ? 'border-destructive' : ''}
                   />
                 </div>
+                {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
               </div>
 
               <div className="space-y-2">
