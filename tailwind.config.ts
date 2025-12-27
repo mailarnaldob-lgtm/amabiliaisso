@@ -106,7 +106,7 @@ export default {
   				'Noto Color Emoji'
   			],
   			serif: [
-  				'Libre Caslon Text',
+  				'EB Garamond',
   				'ui-serif',
   				'Georgia',
   				'Cambria',
@@ -115,7 +115,7 @@ export default {
   				'serif'
   			],
   			mono: [
-  				'Roboto Mono',
+  				'IBM Plex Mono',
   				'ui-monospace',
   				'SFMono-Regular',
   				'Menlo',
