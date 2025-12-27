@@ -84,13 +84,13 @@ All colors MUST be HSL.
 
     --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
 
-    --shadow-sm: 0px 6px 29px 2px hsla(25, 95%, 53%, 0.77);
+    --shadow-sm: 0px 8px 5.25px -1px hsla(25, 95%, 53%, 0.88);
 
-    --shadow: 0px 6px 58px 2px hsla(25, 95%, 53%, 0.77);
+    --shadow: 0px 8px 10.5px -1px hsla(25, 95%, 53%, 0.88);
 
-    --shadow-md: 0px 6px 87px 2px hsla(25, 95%, 53%, 0.77);
+    --shadow-md: 0px 8px 15.75px -1px hsla(25, 95%, 53%, 0.88);
 
-    --shadow-lg: 0px 6px 145px 2px hsla(25, 95%, 53%, 0.77);
+    --shadow-lg: 0px 8px 26.25px -1px hsla(25, 95%, 53%, 0.88);
 
     --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
 
@@ -145,10 +145,10 @@ All colors MUST be HSL.
     --sidebar: 0 0% 14%;
     --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
     --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0px 6px 29px 2px hsla(25, 95%, 53%, 0.77);
-    --shadow: 0px 6px 58px 2px hsla(25, 95%, 53%, 0.77);
-    --shadow-md: 0px 6px 87px 2px hsla(25, 95%, 53%, 0.77);
-    --shadow-lg: 0px 6px 145px 2px hsla(25, 95%, 53%, 0.77);
+    --shadow-sm: 0px 8px 5.25px -1px hsla(25, 95%, 53%, 0.88);
+    --shadow: 0px 8px 10.5px -1px hsla(25, 95%, 53%, 0.88);
+    --shadow-md: 0px 8px 15.75px -1px hsla(25, 95%, 53%, 0.88);
+    --shadow-lg: 0px 8px 26.25px -1px hsla(25, 95%, 53%, 0.88);
     --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
     --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
     --radius: 1.625rem;
