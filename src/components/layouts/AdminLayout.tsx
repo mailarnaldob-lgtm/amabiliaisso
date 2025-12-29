@@ -1,11 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
   Users, 
+  CreditCard,
+  Eye,
   Settings,
-  ArrowLeft
+  ArrowLeft,
+  DollarSign,
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,9 +17,10 @@ interface AdminLayoutProps {
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
-  { icon: Package, label: "Products", href: "/admin/products" },
-  { icon: ShoppingCart, label: "Orders", href: "/admin/orders" },
-  { icon: Users, label: "Customers", href: "/admin/customers" },
+  { icon: Users, label: "Members", href: "/admin/members" },
+  { icon: CreditCard, label: "Payments", href: "/admin/payments" },
+  { icon: DollarSign, label: "Commissions", href: "/admin/commissions" },
+  { icon: Eye, label: "God-Eye Panel", href: "/admin/god-eye" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
 
@@ -30,8 +33,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <aside className="w-64 border-r border-border bg-sidebar">
         <div className="flex h-16 items-center border-b border-sidebar-border px-6">
           <Link to="/admin" className="flex items-center gap-2">
-            <Package className="h-6 w-6 text-sidebar-primary" />
-            <span className="font-serif text-xl font-bold text-sidebar-foreground">Amabilia</span>
+            <Shield className="h-6 w-6 text-sidebar-primary" />
+            <span className="font-serif text-xl font-bold text-sidebar-foreground">Admin</span>
           </Link>
         </div>
         
@@ -58,11 +61,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
         <div className="mt-auto p-4 border-t border-sidebar-border">
           <Link
-            to="/"
+            to="/dashboard"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Store
+            Back to App
           </Link>
         </div>
       </aside>
@@ -70,7 +73,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content */}
       <div className="flex-1">
         <header className="h-16 border-b border-border bg-card px-6 flex items-center">
-          <h1 className="text-xl font-semibold text-foreground">Admin Portal</h1>
+          <h1 className="text-xl font-semibold text-foreground">AMABILIA Admin</h1>
         </header>
         <main className="p-6">{children}</main>
       </div>
