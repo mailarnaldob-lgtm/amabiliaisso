@@ -1,1 +1,10 @@
 project_id = "oquyabvzplwgdiqxctft"
+
+[functions.swap-cash-in]
+verify_jwt = true
+
+[functions.swap-cash-out]
+verify_jwt = true
+
+[functions.wallet-transfer]
+verify_jwt = true
