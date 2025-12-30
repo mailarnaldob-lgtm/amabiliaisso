@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, Shield, AlertTriangle, Plus, Wallet, Loader2 } from 'lucide-react';
+import { TrendingUp, Shield, AlertTriangle, Plus, Wallet, Loader2, Clock, CheckCircle } from 'lucide-react';
 import { cn, formatAlpha } from '@/lib/utils';
 import { useAppStore } from '@/stores/appStore';
 import { useWallets } from '@/hooks/useWallets';
@@ -18,15 +18,22 @@ import {
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQueryClient } from '@tanstack/react-query';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface Loan {
   id: string;
   lender_id: string;
+  borrower_id: string | null;
   principal_amount: number;
   interest_rate: number;
+  interest_amount: number | null;
+  total_repayment: number | null;
   term_days: number;
   status: string;
   created_at: string;
+  accepted_at: string | null;
+  due_at: string | null;
 }
 
 interface LoanOfferCardProps {
@@ -213,6 +220,313 @@ function CreateOfferModal({ isOpen, onClose, walletBalance, onSuccess }: CreateO
   );
 }
 
+// My Loans Section Component
+interface MyLoansSectionProps {
+  userId: string;
+  onRefresh: () => void;
+}
+
+function MyLoansSection({ userId, onRefresh }: MyLoansSectionProps) {
+  const [myLoans, setMyLoans] = useState<Loan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [repayingLoanId, setRepayingLoanId] = useState<string | null>(null);
+  const [repaymentModal, setRepaymentModal] = useState<{ isOpen: boolean; loan: Loan | null }>({ isOpen: false, loan: null });
+
+  const fetchMyLoans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('loans')
+        .select('*')
+        .or(`lender_id.eq.${userId},borrower_id.eq.${userId}`)
+        .in('status', ['active', 'pending'])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setMyLoans(data || []);
+    } catch (err) {
+      console.error('Failed to fetch my loans:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchMyLoans();
+    }
+  }, [userId]);
+
+  const borrowerLoans = myLoans.filter((l) => l.borrower_id === userId && l.status === 'active');
+  const lenderLoans = myLoans.filter((l) => l.lender_id === userId);
+
+  const getDaysRemaining = (dueAt: string | null) => {
+    if (!dueAt) return 0;
+    const due = new Date(dueAt);
+    const now = new Date();
+    const diff = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, diff);
+  };
+
+  const handleRepayment = (loan: Loan) => {
+    setRepaymentModal({ isOpen: true, loan });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* As Borrower */}
+      <div className="space-y-3">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
+          <span>🐻</span> As Borrower
+        </h3>
+        {borrowerLoans.length > 0 ? (
+          borrowerLoans.map((loan) => (
+            <div key={loan.id} className="glass-card rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="border-warning text-warning">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {getDaysRemaining(loan.due_at)} days left
+                </Badge>
+                <Badge className="bg-destructive/20 text-destructive">Active Loan</Badge>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 py-3 px-4 rounded-lg bg-secondary/50">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Borrowed</p>
+                  <p className="font-bold text-foreground">₳{formatAlpha(loan.principal_amount)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Total Due</p>
+                  <p className="font-bold text-destructive">₳{formatAlpha(loan.total_repayment || 0)}</p>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => handleRepayment(loan)}
+                disabled={repayingLoanId === loan.id}
+                className="w-full bg-success hover:bg-success/90 text-success-foreground"
+              >
+                {repayingLoanId === loan.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                )}
+                Repay Now
+              </Button>
+            </div>
+          ))
+        ) : (
+          <div className="p-4 rounded-xl border border-dashed border-border text-center">
+            <p className="text-sm text-muted-foreground">No active loans as borrower</p>
+          </div>
+        )}
+      </div>
+
+      {/* As Lender */}
+      <div className="space-y-3">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
+          <span>🐂</span> As Lender
+        </h3>
+        {lenderLoans.length > 0 ? (
+          lenderLoans.map((loan) => (
+            <div key={loan.id} className="glass-card rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className={cn(
+                  loan.status === 'pending' ? 'border-alpha text-alpha' : 'border-success text-success'
+                )}>
+                  {loan.status === 'pending' ? 'Awaiting Borrower' : 'Active'}
+                </Badge>
+                {loan.status === 'active' && loan.due_at && (
+                  <span className="text-xs text-muted-foreground">
+                    Due in {getDaysRemaining(loan.due_at)} days
+                  </span>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4 py-3 px-4 rounded-lg bg-secondary/50">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Principal</p>
+                  <p className="font-bold text-foreground">₳{formatAlpha(loan.principal_amount)}</p>
+                </div>
+                <div className="text-center border-x border-border">
+                  <p className="text-xs text-muted-foreground mb-1">Interest</p>
+                  <p className="font-bold text-alpha">{loan.interest_rate}%</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Return</p>
+                  <p className="font-bold text-success">
+                    ₳{formatAlpha((loan.total_repayment || loan.principal_amount * 1.03) - (loan.principal_amount * 0.008))}
+                  </p>
+                </div>
+              </div>
+
+              {loan.status === 'pending' && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Your ₳ is in escrow waiting for a borrower
+                </p>
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="p-4 rounded-xl border border-dashed border-border text-center">
+            <p className="text-sm text-muted-foreground">No lending offers posted</p>
+          </div>
+        )}
+      </div>
+
+      <RepaymentModal
+        isOpen={repaymentModal.isOpen}
+        onClose={() => setRepaymentModal({ isOpen: false, loan: null })}
+        loan={repaymentModal.loan}
+        onSuccess={() => {
+          fetchMyLoans();
+          onRefresh();
+          setRepaymentModal({ isOpen: false, loan: null });
+        }}
+      />
+    </div>
+  );
+}
+
+// Repayment Modal Component
+interface RepaymentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  loan: Loan | null;
+  onSuccess: () => void;
+}
+
+function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProps) {
+  const [useAutoDeduct, setUseAutoDeduct] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: wallets } = useWallets();
+
+  if (!loan) return null;
+
+  const mainWallet = wallets?.find((w) => w.wallet_type === 'main');
+  const taskWallet = wallets?.find((w) => w.wallet_type === 'task');
+  const royaltyWallet = wallets?.find((w) => w.wallet_type === 'royalty');
+  
+  const totalBalance = (mainWallet?.balance || 0) + (taskWallet?.balance || 0) + (royaltyWallet?.balance || 0);
+  const repaymentAmount = loan.total_repayment || 0;
+  const hasEnoughBalance = useAutoDeduct ? totalBalance >= repaymentAmount : (mainWallet?.balance || 0) >= repaymentAmount;
+
+  const handleRepay = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('lending-repayment', {
+        body: { loanId: loan.id, useAutoDeduct }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      toast.success(`Loan repaid successfully! ₳${formatAlpha(repaymentAmount)} has been settled.`);
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to process repayment');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-success" />
+            Repay Loan
+          </DialogTitle>
+          <DialogDescription>
+            Settle your loan and clear your debt.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Total Repayment</span>
+              <span className="text-xl font-bold text-destructive">₳{formatAlpha(repaymentAmount)}</span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-foreground">Your Wallets</p>
+            <div className="space-y-2 p-3 rounded-lg bg-secondary/50">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Task Wallet</span>
+                <span className="font-medium">₳{formatAlpha(taskWallet?.balance || 0)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Royalty Wallet</span>
+                <span className="font-medium">₳{formatAlpha(royaltyWallet?.balance || 0)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Main Wallet</span>
+                <span className="font-medium">₳{formatAlpha(mainWallet?.balance || 0)}</span>
+              </div>
+              <div className="border-t border-border pt-2 flex justify-between text-sm">
+                <span className="text-foreground font-medium">Total Available</span>
+                <span className="font-bold text-success">₳{formatAlpha(totalBalance)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-secondary">
+            <div className="space-y-0.5">
+              <Label htmlFor="auto-deduct" className="text-sm font-medium">Auto-Deduct</Label>
+              <p className="text-xs text-muted-foreground">
+                Deduct from Task → Royalty → Main
+              </p>
+            </div>
+            <Switch
+              id="auto-deduct"
+              checked={useAutoDeduct}
+              onCheckedChange={setUseAutoDeduct}
+            />
+          </div>
+
+          {!useAutoDeduct && (mainWallet?.balance || 0) < repaymentAmount && (
+            <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground">
+                Insufficient Main Wallet balance. Enable Auto-Deduct to use funds from all wallets.
+              </p>
+            </div>
+          )}
+
+          <Button
+            onClick={handleRepay}
+            disabled={isSubmitting || !hasEnoughBalance}
+            className="w-full bg-success hover:bg-success/90 text-success-foreground"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Confirm Repayment
+              </>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function LendingMarketplace() {
   const { isKycVerified, membershipTier } = useAppStore();
   const { data: wallets } = useWallets();
@@ -340,12 +654,15 @@ export function LendingMarketplace() {
 
       {/* Role Tabs */}
       <Tabs defaultValue="bear" className="w-full">
-        <TabsList className="w-full">
-          <TabsTrigger value="bear" className="flex-1 gap-2">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="bear" className="gap-2">
             <span>🐻</span> Borrow
           </TabsTrigger>
-          <TabsTrigger value="bull" className="flex-1 gap-2">
+          <TabsTrigger value="bull" className="gap-2">
             <span>🐂</span> Lend
+          </TabsTrigger>
+          <TabsTrigger value="myloans" className="gap-2">
+            <Clock className="w-4 h-4" /> My Loans
           </TabsTrigger>
         </TabsList>
 
@@ -394,6 +711,10 @@ export function LendingMarketplace() {
               Post your first offer to start earning!
             </p>
           </div>
+        </TabsContent>
+
+        <TabsContent value="myloans" className="space-y-4 mt-4">
+          <MyLoansSection userId={user?.id || ''} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['wallets'] })} />
         </TabsContent>
       </Tabs>
 
