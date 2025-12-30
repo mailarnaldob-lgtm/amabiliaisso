@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { Clock, TrendingUp, Shield, AlertTriangle, Plus, Wallet } from 'lucide-react';
-import { cn, formatAlpha, formatCountdown } from '@/lib/utils';
-import { useAppStore, LoanOffer, MOCK_LOAN_OFFERS } from '@/stores/appStore';
+import { useState, useEffect } from 'react';
+import { TrendingUp, Shield, AlertTriangle, Plus, Wallet, Loader2 } from 'lucide-react';
+import { cn, formatAlpha } from '@/lib/utils';
+import { useAppStore } from '@/stores/appStore';
+import { useWallets } from '@/hooks/useWallets';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -14,17 +17,27 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useQueryClient } from '@tanstack/react-query';
 
-interface LoanOfferCardProps {
-  offer: LoanOffer;
-  onTakeOffer: (offer: LoanOffer) => void;
+interface Loan {
+  id: string;
+  lender_id: string;
+  principal_amount: number;
+  interest_rate: number;
+  term_days: number;
+  status: string;
+  created_at: string;
 }
 
-function LoanOfferCard({ offer, onTakeOffer }: LoanOfferCardProps) {
-  const interest = offer.principal * (offer.interestRate / 100);
-  const totalRepayment = offer.principal + interest;
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + offer.termDays);
+interface LoanOfferCardProps {
+  offer: Loan;
+  onTakeOffer: (offer: Loan) => void;
+  isLoading: boolean;
+}
+
+function LoanOfferCard({ offer, onTakeOffer, isLoading }: LoanOfferCardProps) {
+  const interest = offer.principal_amount * (offer.interest_rate / 100);
+  const totalRepayment = offer.principal_amount + interest;
 
   return (
     <div className="glass-card rounded-xl p-4 space-y-4">
@@ -34,8 +47,8 @@ function LoanOfferCard({ offer, onTakeOffer }: LoanOfferCardProps) {
             <span className="text-lg">🐂</span>
           </div>
           <div>
-            <p className="font-medium text-foreground">{offer.lenderName}</p>
-            <p className="text-xs text-muted-foreground">Verified Lender</p>
+            <p className="font-medium text-foreground">Verified Lender</p>
+            <p className="text-xs text-muted-foreground">Elite Member</p>
           </div>
         </div>
         <Badge variant="outline" className="border-success text-success">
@@ -46,15 +59,15 @@ function LoanOfferCard({ offer, onTakeOffer }: LoanOfferCardProps) {
       <div className="grid grid-cols-3 gap-4 py-3 px-4 rounded-lg bg-secondary/50">
         <div className="text-center">
           <p className="text-xs text-muted-foreground mb-1">Principal</p>
-          <p className="font-bold text-foreground">₳{formatAlpha(offer.principal)}</p>
+          <p className="font-bold text-foreground">₳{formatAlpha(offer.principal_amount)}</p>
         </div>
         <div className="text-center border-x border-border">
           <p className="text-xs text-muted-foreground mb-1">Interest</p>
-          <p className="font-bold text-alpha">{offer.interestRate}%</p>
+          <p className="font-bold text-alpha">{offer.interest_rate}%</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-muted-foreground mb-1">Term</p>
-          <p className="font-bold text-foreground">{offer.termDays} Days</p>
+          <p className="font-bold text-foreground">{offer.term_days} Days</p>
         </div>
       </div>
 
@@ -65,8 +78,10 @@ function LoanOfferCard({ offer, onTakeOffer }: LoanOfferCardProps) {
 
       <Button
         onClick={() => onTakeOffer(offer)}
+        disabled={isLoading}
         className="w-full alpha-gradient text-alpha-foreground"
       >
+        {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
         🐻 Take This Offer
       </Button>
     </div>
@@ -77,9 +92,10 @@ interface CreateOfferModalProps {
   isOpen: boolean;
   onClose: () => void;
   walletBalance: number;
+  onSuccess: () => void;
 }
 
-function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalProps) {
+function CreateOfferModal({ isOpen, onClose, walletBalance, onSuccess }: CreateOfferModalProps) {
   const [amount, setAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -98,12 +114,24 @@ function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalPr
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
     
-    toast.success('Loan offer posted! Your ₳ is now in escrow.');
-    setAmount('');
-    setIsSubmitting(false);
-    onClose();
+    try {
+      const { data, error } = await supabase.functions.invoke('lending-post-offer', {
+        body: { principal_amount: numericAmount }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      
+      toast.success('Loan offer posted! Your ₳ is now in escrow.');
+      setAmount('');
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to post offer');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -170,7 +198,14 @@ function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalPr
             disabled={isSubmitting || numericAmount <= 0}
             className="w-full alpha-gradient text-alpha-foreground"
           >
-            {isSubmitting ? 'Processing...' : 'Post Offer & Lock ₳'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Processing...
+              </>
+            ) : (
+              'Post Offer & Lock ₳'
+            )}
           </Button>
         </div>
       </DialogContent>
@@ -179,26 +214,77 @@ function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalPr
 }
 
 export function LendingMarketplace() {
-  const { wallets, isKycVerified, membershipTier } = useAppStore();
-  const [offers, setOffers] = useState<LoanOffer[]>(MOCK_LOAN_OFFERS);
+  const { isKycVerified, membershipTier } = useAppStore();
+  const { data: wallets } = useWallets();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  
+  const [offers, setOffers] = useState<Loan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [takingOfferId, setTakingOfferId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedOffer, setSelectedOffer] = useState<LoanOffer | null>(null);
 
-  const mainWallet = wallets.find((w) => w.type === 'main');
+  const mainWallet = wallets?.find((w) => w.wallet_type === 'main');
   const canAccess = membershipTier === 'elite' && isKycVerified;
 
-  const handleTakeOffer = (offer: LoanOffer) => {
+  const fetchOffers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('loans')
+        .select('*')
+        .eq('status', 'pending')
+        .neq('lender_id', user?.id || '')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setOffers(data || []);
+    } catch (err) {
+      console.error('Failed to fetch offers:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (canAccess && user) {
+      fetchOffers();
+    }
+  }, [canAccess, user]);
+
+  const handleTakeOffer = async (offer: Loan) => {
     if (!canAccess) {
       toast.error('Elite membership and KYC verification required');
       return;
     }
-    
-    const interest = offer.principal * (offer.interestRate / 100);
-    const totalRepayment = offer.principal + interest;
-    
-    toast.success(`Loan of ₳${formatAlpha(offer.principal)} received! Repay ₳${formatAlpha(totalRepayment)} in 7 days.`);
-    
-    setOffers((prev) => prev.filter((o) => o.id !== offer.id));
+
+    setTakingOfferId(offer.id);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('lending-take-offer', {
+        body: { loan_id: offer.id }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      const interest = offer.principal_amount * (offer.interest_rate / 100);
+      const totalRepayment = offer.principal_amount + interest;
+      
+      toast.success(`Loan of ₳${formatAlpha(offer.principal_amount)} received! Repay ₳${formatAlpha(totalRepayment)} in ${offer.term_days} days.`);
+      
+      // Refresh offers and wallets
+      fetchOffers();
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to take offer');
+    } finally {
+      setTakingOfferId(null);
+    }
+  };
+
+  const handleOfferCreated = () => {
+    fetchOffers();
+    queryClient.invalidateQueries({ queryKey: ['wallets'] });
   };
 
   if (!canAccess) {
@@ -245,7 +331,7 @@ export function LendingMarketplace() {
           </div>
           <div className="p-3 rounded-lg bg-secondary/50 text-center">
             <p className="text-2xl font-bold alpha-text">
-              ₳{formatAlpha(offers.reduce((sum, o) => sum + o.principal, 0))}
+              ₳{formatAlpha(offers.reduce((sum, o) => sum + o.principal_amount, 0))}
             </p>
             <p className="text-xs text-muted-foreground">Total Liquidity</p>
           </div>
@@ -267,9 +353,25 @@ export function LendingMarketplace() {
           <p className="text-sm text-muted-foreground">
             Browse available loan offers and get instant ₳ liquidity.
           </p>
-          {offers.map((offer) => (
-            <LoanOfferCard key={offer.id} offer={offer} onTakeOffer={handleTakeOffer} />
-          ))}
+          
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : offers.length > 0 ? (
+            offers.map((offer) => (
+              <LoanOfferCard 
+                key={offer.id} 
+                offer={offer} 
+                onTakeOffer={handleTakeOffer}
+                isLoading={takingOfferId === offer.id}
+              />
+            ))
+          ) : (
+            <div className="p-6 rounded-xl border-2 border-dashed border-border text-center">
+              <p className="text-muted-foreground">No loan offers available at the moment.</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="bull" className="space-y-4 mt-4">
@@ -289,7 +391,7 @@ export function LendingMarketplace() {
           <div className="p-6 rounded-xl border-2 border-dashed border-border text-center">
             <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground">
-              No active lending offers yet. Post your first offer to start earning!
+              Post your first offer to start earning!
             </p>
           </div>
         </TabsContent>
@@ -299,6 +401,7 @@ export function LendingMarketplace() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         walletBalance={mainWallet?.balance || 0}
+        onSuccess={handleOfferCreated}
       />
     </div>
   );
