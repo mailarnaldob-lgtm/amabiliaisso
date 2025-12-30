@@ -196,10 +196,9 @@ export default function Landing() {
                 <CardDescription>Daily Earnings</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Complete daily tasks and earn rewards. Join the Online Army 
-                  for higher-paying client campaigns.
-                </p>
+                <p className="text-muted-foreground mb-4">Complete daily tasks and earn rewards. Join the Online Army for higher-paying client campaigns.
+
+              </p>
                 <ul className="space-y-2">
                   <li className="flex items-center gap-2 text-sm">
                     <CheckCircle className="h-4 w-4 text-primary" />
@@ -224,10 +223,9 @@ export default function Landing() {
                 <CardDescription>Elite Members Only</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Borrow or lend money within the community. Set your own rates 
-                  with auto-deduction protection.
-                </p>
+                <p className="text-muted-foreground mb-4">Borrow or lend money within the community. Set your own rates with auto-deduction protection.
+
+              </p>
                 <ul className="space-y-2">
                   <li className="flex items-center gap-2 text-sm">
                     <CheckCircle className="h-4 w-4 text-primary" />
