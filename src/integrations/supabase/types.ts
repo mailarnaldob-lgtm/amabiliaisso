@@ -14,6 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
+      loan_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          from_wallet_id: string | null
+          id: string
+          loan_id: string
+          to_wallet_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          from_wallet_id?: string | null
+          id?: string
+          loan_id: string
+          to_wallet_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          from_wallet_id?: string | null
+          id?: string
+          loan_id?: string
+          to_wallet_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_transactions_from_wallet_id_fkey"
+            columns: ["from_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_transactions_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_transactions_to_wallet_id_fkey"
+            columns: ["to_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          accepted_at: string | null
+          borrower_id: string | null
+          created_at: string | null
+          due_at: string | null
+          escrow_wallet_id: string | null
+          id: string
+          interest_amount: number | null
+          interest_rate: number
+          lender_id: string
+          principal_amount: number
+          processing_fee: number | null
+          repaid_at: string | null
+          status: Database["public"]["Enums"]["loan_status"]
+          term_days: number
+          total_repayment: number | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          borrower_id?: string | null
+          created_at?: string | null
+          due_at?: string | null
+          escrow_wallet_id?: string | null
+          id?: string
+          interest_amount?: number | null
+          interest_rate?: number
+          lender_id: string
+          principal_amount: number
+          processing_fee?: number | null
+          repaid_at?: string | null
+          status?: Database["public"]["Enums"]["loan_status"]
+          term_days?: number
+          total_repayment?: number | null
+        }
+        Update: {
+          accepted_at?: string | null
+          borrower_id?: string | null
+          created_at?: string | null
+          due_at?: string | null
+          escrow_wallet_id?: string | null
+          id?: string
+          interest_amount?: number | null
+          interest_rate?: number
+          lender_id?: string
+          principal_amount?: number
+          processing_fee?: number | null
+          repaid_at?: string | null
+          status?: Database["public"]["Enums"]["loan_status"]
+          term_days?: number
+          total_repayment?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_escrow_wallet_id_fkey"
+            columns: ["escrow_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membership_payments: {
         Row: {
           amount: number
@@ -257,6 +377,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "member"
+      loan_status: "pending" | "active" | "repaid" | "defaulted" | "cancelled"
       membership_tier: "basic" | "pro" | "elite"
       payment_status: "pending" | "approved" | "rejected"
       wallet_type: "task" | "royalty" | "main"
@@ -388,6 +509,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "member"],
+      loan_status: ["pending", "active", "repaid", "defaulted", "cancelled"],
       membership_tier: ["basic", "pro", "elite"],
       payment_status: ["pending", "approved", "rejected"],
       wallet_type: ["task", "royalty", "main"],
