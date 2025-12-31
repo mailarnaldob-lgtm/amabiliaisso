@@ -22,5 +22,6 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/  # If you see a 'build' folder in your project, change this to ./build/
+          local-dir: ./dist/
           server-dir: ./public_html/
+          secure: true
