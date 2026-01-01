@@ -1,37 +1,54 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, CreditCard, TrendingUp, LogOut, LayoutDashboard, Clock, CheckCircle } from 'lucide-react';
+import { Users, CreditCard, TrendingUp, LogOut, LayoutDashboard, Clock, CheckCircle, FileCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function AdminDashboard() {
-  const { signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [admin, setAdmin] = useState<{ username: string; role: string } | null>(null);
+
+  useEffect(() => {
+    // Check for MySQL admin session
+    const storedAdmin = localStorage.getItem('mysql_admin');
+    if (storedAdmin) {
+      setAdmin(JSON.parse(storedAdmin));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('mysql_admin');
+    navigate('/admin/login');
+  };
 
   const { data: stats } = useQuery({
-    queryKey: ['admin-stats'],
+    queryKey: ['admin-stats-mysql'],
     queryFn: async () => {
-      const [profilesRes, paymentsRes, pendingRes] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact' }),
-        supabase.from('membership_payments').select('amount').eq('status', 'approved'),
-        supabase.from('membership_payments').select('id', { count: 'exact' }).eq('status', 'pending'),
-      ]);
+      // Fetch stats via edge function
+      const { data, error } = await supabase.functions.invoke('mysql-task-proofs', {
+        body: { action: 'stats' }
+      });
 
-      const totalRevenue = paymentsRes.data?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+      if (error) {
+        console.error('Failed to fetch stats:', error);
+        return { totalMembers: 0, totalRevenue: 0, pendingPayments: 0 };
+      }
 
       return {
-        totalMembers: profilesRes.count || 0,
-        totalRevenue,
-        pendingPayments: pendingRes.count || 0,
+        totalMembers: data?.stats?.totalUsers || 0,
+        totalRevenue: data?.stats?.totalRevenue || 0,
+        pendingPayments: data?.stats?.pendingProofs || 0,
       };
     },
   });
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/task-proofs', label: 'Task Proofs', icon: FileCheck },
     { href: '/admin/members', label: 'Members', icon: Users },
     { href: '/admin/payments', label: 'Payments', icon: CreditCard },
   ];
@@ -42,6 +59,9 @@ export default function AdminDashboard() {
       <aside className="w-64 border-r border-border bg-card p-6">
         <div className="mb-8">
           <h1 className="text-xl font-bold text-primary">Admin Panel</h1>
+          {admin && (
+            <p className="text-sm text-muted-foreground mt-1">{admin.username}</p>
+          )}
         </div>
         <nav className="space-y-2">
           {navItems.map((item) => (
@@ -57,10 +77,7 @@ export default function AdminDashboard() {
           ))}
         </nav>
         <div className="mt-8 pt-8 border-t border-border">
-          <Link to="/dashboard">
-            <Button variant="outline" className="w-full mb-2">Back to App</Button>
-          </Link>
-          <Button variant="ghost" className="w-full gap-2" onClick={() => signOut()}>
+          <Button variant="ghost" className="w-full gap-2" onClick={handleLogout}>
             <LogOut className="h-4 w-4" /> Logout
           </Button>
         </div>
@@ -96,13 +113,13 @@ export default function AdminDashboard() {
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" /> Pending Payments
+                <Clock className="h-4 w-4 text-primary" /> Pending Task Proofs
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">{stats?.pendingPayments || 0}</p>
               {(stats?.pendingPayments || 0) > 0 && (
-                <Link to="/admin/payments">
+                <Link to="/admin/task-proofs">
                   <Badge variant="destructive" className="mt-2">Needs Review</Badge>
                 </Link>
               )}

@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export type AppRole = 'admin' | 'moderator' | 'member';
@@ -12,14 +11,9 @@ export function useUserRole() {
     queryFn: async () => {
       if (!user) return null;
       
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data?.role as AppRole | null;
+      // TODO: Replace with MySQL edge function when mysql-user-role is implemented
+      // For now, return default member role
+      return 'member' as AppRole;
     },
     enabled: !!user,
   });

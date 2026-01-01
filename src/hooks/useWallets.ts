@@ -19,13 +19,36 @@ export function useWallets() {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', user.id);
+      // TODO: Replace with MySQL edge function when mysql-user-wallets is implemented
+      // For now, return mock wallet data
+      const mockWallets: Wallet[] = [
+        {
+          id: `task-${user.id}`,
+          user_id: user.id,
+          wallet_type: 'task',
+          balance: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: `royalty-${user.id}`,
+          user_id: user.id,
+          wallet_type: 'royalty',
+          balance: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: `main-${user.id}`,
+          user_id: user.id,
+          wallet_type: 'main',
+          balance: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ];
 
-      if (error) throw error;
-      return data as Wallet[];
+      return mockWallets;
     },
     enabled: !!user,
   });

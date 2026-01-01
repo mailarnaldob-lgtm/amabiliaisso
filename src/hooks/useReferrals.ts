@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface ReferralCommission {
@@ -23,14 +22,9 @@ export function useReferralCommissions() {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
-        .from('referral_commissions')
-        .select('*')
-        .eq('referrer_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as ReferralCommission[];
+      // TODO: Replace with MySQL edge function when mysql-user-referrals is implemented
+      // For now, return empty array
+      return [] as ReferralCommission[];
     },
     enabled: !!user,
   });
