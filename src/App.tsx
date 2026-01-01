@@ -32,6 +32,8 @@ import AdminMembers from "./pages/admin/AdminMembers";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminCommissions from "./pages/admin/AdminCommissions";
 import GodEyePanel from "./pages/admin/GodEyePanel";
+import MySQLAdminLogin from "./pages/admin/MySQLAdminLogin";
+import TaskProofsDashboard from "./pages/admin/TaskProofsDashboard";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +73,10 @@ const App = () => (
             <Route path="/admin/payments" element={<ProtectedRoute requireAdmin><AdminPayments /></ProtectedRoute>} />
             <Route path="/admin/commissions" element={<ProtectedRoute requireAdmin><AdminCommissions /></ProtectedRoute>} />
             <Route path="/admin/god-eye" element={<ProtectedRoute requireAdmin><GodEyePanel /></ProtectedRoute>} />
+            
+            {/* MySQL Admin Routes (separate auth) */}
+            <Route path="/admin/login" element={<MySQLAdminLogin />} />
+            <Route path="/admin/task-proofs" element={<TaskProofsDashboard />} />
             
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
