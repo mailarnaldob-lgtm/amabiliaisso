@@ -24,14 +24,23 @@ export function useProfile() {
     queryFn: async () => {
       if (!user) return null;
       
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
+      // TODO: Replace with MySQL edge function when mysql-user-profile is implemented
+      // For now, return mock data based on auth user
+      const mockProfile: Profile = {
+        id: user.id,
+        full_name: user.user_metadata?.full_name || 'User',
+        phone: user.user_metadata?.phone || null,
+        referral_code: 'TEMP0000',
+        referred_by: null,
+        membership_tier: null,
+        membership_amount: null,
+        is_kyc_verified: false,
+        avatar_url: null,
+        created_at: user.created_at || null,
+        updated_at: null,
+      };
 
-      if (error) throw error;
-      return data as Profile | null;
+      return mockProfile;
     },
     enabled: !!user,
   });

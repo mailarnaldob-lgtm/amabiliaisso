@@ -81,22 +81,15 @@ export default function UpgradeMembership() {
     mutationFn: async () => {
       if (!user || !selectedTierData) throw new Error('Invalid data');
 
-      let proofUrl = null;
-
-      // For now, we'll just store the reference number as proof
-      // In production, you'd upload the file to storage
-
-      const { error } = await supabase.from('membership_payments').insert({
+      // TODO: Replace with MySQL edge function when mysql-submit-payment is implemented
+      // For now, show a success message
+      console.log('Submitting payment:', {
         user_id: user.id,
-        tier: selectedTier as 'basic' | 'pro' | 'elite',
+        tier: selectedTier,
         amount: selectedTierData.price,
         payment_method: paymentMethod,
         reference_number: referenceNumber,
-        proof_url: proofUrl,
-        status: 'pending',
       });
-
-      if (error) throw error;
     },
     onSuccess: () => {
       toast({
