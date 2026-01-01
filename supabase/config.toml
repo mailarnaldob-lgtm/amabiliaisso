@@ -17,3 +17,12 @@ verify_jwt = true
 
 [functions.lending-repayment]
 verify_jwt = true
+
+[functions.mysql-admin-login]
+verify_jwt = false
+
+[functions.mysql-task-proofs]
+verify_jwt = false
+
+[functions.mysql-approve-proof]
+verify_jwt = false
