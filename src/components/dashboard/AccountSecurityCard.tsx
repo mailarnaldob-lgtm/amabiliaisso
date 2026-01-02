@@ -5,6 +5,7 @@ import { Shield, Key, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function AccountSecurityCard() {
+  // This ID is used for smooth-scroll from header gear icon
   const { toast } = useToast();
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 

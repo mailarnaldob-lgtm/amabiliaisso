@@ -52,34 +52,8 @@ export function useWallets() {
         return [];
 
       } catch (error) {
-        console.error('Failed to fetch wallets, using fallback:', error);
-        // Fallback to mock wallet data if MySQL call fails
-        return [
-          {
-            id: `task-${user.id}`,
-            user_id: user.id,
-            wallet_type: 'task' as const,
-            balance: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: `royalty-${user.id}`,
-            user_id: user.id,
-            wallet_type: 'royalty' as const,
-            balance: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: `main-${user.id}`,
-            user_id: user.id,
-            wallet_type: 'main' as const,
-            balance: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ];
+        console.error('Failed to fetch wallets from MySQL:', error);
+        throw new Error('Unable to fetch wallet data. Please try again.');
       }
     },
     enabled: !!user,
