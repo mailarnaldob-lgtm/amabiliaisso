@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.mysql-approve-proof]
 verify_jwt = false
+
+[functions.mysql-user-data]
+verify_jwt = false

@@ -3,7 +3,7 @@ import { Home, ListTodo, Store, ArrowLeftRight, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { icon: Home, label: 'Home', path: '/app' },
+  { icon: Home, label: 'Home', path: '/dashboard' },
   { icon: ListTodo, label: 'Tasks', path: '/app/tasks' },
   { icon: Store, label: 'Market', path: '/app/marketplace' },
   { icon: ArrowLeftRight, label: 'Swap', path: '/app/swap' },

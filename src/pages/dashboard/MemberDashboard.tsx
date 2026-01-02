@@ -7,6 +7,8 @@ import { useReferralStats } from '@/hooks/useReferrals';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { AccountSecurityCard } from '@/components/dashboard/AccountSecurityCard';
+import { NotificationsCard } from '@/components/dashboard/NotificationsCard';
 import { 
   Wallet, 
   Users, 
@@ -14,12 +16,10 @@ import {
   Copy, 
   LogOut,
   User,
-  Settings,
   CreditCard,
   Crown,
   Zap,
   Star,
-  CheckCircle,
   ArrowUpRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -82,11 +82,19 @@ export default function MemberDashboard() {
             Amabilia Network
           </Link>
           <div className="flex items-center gap-4">
-            <Link to="/dashboard/settings">
-              <Button variant="ghost" size="icon">
-                <Settings className="h-5 w-5" />
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => {
+                const securitySection = document.getElementById('account-security');
+                if (securitySection) {
+                  securitySection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              title="Account Security"
+            >
+              <User className="h-5 w-5" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => signOut()}>
               <LogOut className="h-5 w-5" />
             </Button>
@@ -237,9 +245,15 @@ export default function MemberDashboard() {
           </CardContent>
         </Card>
 
+        {/* Account Security & Notifications */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <AccountSecurityCard />
+          <NotificationsCard />
+        </div>
+
         {/* Upgrade CTA (if not Elite) */}
         {profile?.membership_tier !== 'elite' && (
-          <Card className="border-primary border-2 bg-primary/5">
+          <Card className="mb-8 border-primary border-2 bg-primary/5">
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
