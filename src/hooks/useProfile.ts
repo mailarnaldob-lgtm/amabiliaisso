@@ -90,21 +90,8 @@ export function useProfile() {
         } as Profile;
 
       } catch (error) {
-        console.error('Failed to fetch profile, using fallback:', error);
-        // Fallback to auth user data if MySQL call fails
-        return {
-          id: user.id,
-          full_name: user.user_metadata?.full_name || 'User',
-          phone: user.user_metadata?.phone || null,
-          referral_code: 'TEMP0000',
-          referred_by: null,
-          membership_tier: null,
-          membership_amount: null,
-          is_kyc_verified: false,
-          avatar_url: null,
-          created_at: user.created_at || null,
-          updated_at: null,
-        } as Profile;
+        console.error('Failed to fetch profile from MySQL:', error);
+        throw new Error('Unable to fetch profile data. Please try again.');
       }
     },
     enabled: !!user,
