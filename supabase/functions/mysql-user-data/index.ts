@@ -29,7 +29,7 @@ serve(async (req) => {
     }
 
     // PHP proxy endpoint on Hostinger
-    const proxyUrl = 'https://amabilianetwork.com/api/user-data.php';
+    const proxyUrl = 'https://amabilianetwork.com/api/get-user-data.php';
 
     console.log(`Processing action: ${action} for user: ${user_id || email}`);
 
