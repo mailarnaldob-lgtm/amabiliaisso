@@ -3,7 +3,7 @@ import { LendingMarketplace } from '@/components/lending/LendingMarketplace';
 
 export default function Marketplace() {
   return (
-    <MemberLayout title="P2P Lending">
+    <MemberLayout title="Credit Marketplace">
       <LendingMarketplace />
     </MemberLayout>
   );
