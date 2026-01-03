@@ -26,8 +26,8 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function MemberDashboard() {
   const { user, signOut } = useAuth();
-  const { data: profile, isLoading: profileLoading } = useProfile();
-  const { data: wallets, isLoading: walletsLoading } = useWallets();
+  const { data: profile, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useProfile();
+  const { data: wallets, isLoading: walletsLoading, error: walletsError, refetch: refetchWallets } = useWallets();
   const { totalReferrals, totalEarnings, pendingEarnings } = useReferralStats();
   const { toast } = useToast();
 
@@ -38,6 +38,11 @@ export default function MemberDashboard() {
   const totalBalance = (taskWallet?.balance || 0) + (royaltyWallet?.balance || 0) + (mainWallet?.balance || 0);
 
   const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code || ''}`;
+
+  const handleRetry = () => {
+    refetchProfile();
+    refetchWallets();
+  };
 
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralLink);
@@ -65,10 +70,49 @@ export default function MemberDashboard() {
 
   const TierIcon = getTierIcon(profile?.membership_tier || null);
 
+  // Loading state
   if (profileLoading || walletsLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        <p className="text-muted-foreground">Loading your dashboard...</p>
+      </div>
+    );
+  }
+
+  // Error state with retry option
+  if (profileError || walletsError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border-destructive/50">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+              <Wallet className="h-6 w-6 text-destructive" />
+            </div>
+            <CardTitle className="text-destructive">Connection Error</CardTitle>
+            <CardDescription>
+              We couldn't load your account data. This might be a temporary issue with our servers.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+              <p className="font-medium mb-1">Error details:</p>
+              <p className="text-xs">
+                {profileError?.message || walletsError?.message || 'Unable to connect to backend services'}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button onClick={handleRetry} className="w-full gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Try Again
+              </Button>
+              <Button variant="outline" onClick={() => signOut()} className="w-full gap-2">
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
