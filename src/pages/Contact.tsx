@@ -21,7 +21,7 @@ const Contact = () => {
     
     toast({
       title: "Message sent!",
-      description: "We'll get back to you as soon as possible.",
+      description: "Our team will review your inquiry and respond shortly.",
     });
     
     setIsSubmitting(false);
@@ -33,11 +33,11 @@ const Contact = () => {
       <div className="container py-16">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Get in Touch
+            Contact Us
           </h1>
           <p className="text-lg text-muted-foreground">
-            Have questions? We'd love to hear from you. Send us a message and 
-            we'll respond as soon as possible.
+            Have questions about the Amabilia Network? Our support team is here to help. 
+            Send us a message and we'll respond as soon as possible.
           </p>
         </div>
 
@@ -52,8 +52,7 @@ const Contact = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">info@amabilia.com</p>
-                <p className="text-muted-foreground">sales@amabilia.com</p>
+                <p className="text-muted-foreground">support@amabilianetwork.com</p>
               </CardContent>
             </Card>
 
@@ -65,8 +64,7 @@ const Contact = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                <p className="text-muted-foreground">+1 (555) 987-6543</p>
+                <p className="text-muted-foreground">+63 917 123 4567</p>
               </CardContent>
             </Card>
 
@@ -74,14 +72,13 @@ const Contact = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                   <MapPin className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-base">Address</CardTitle>
+                  <CardTitle className="text-base">Location</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  123 Business Street<br />
-                  Suite 100<br />
-                  City, State 12345
+                  Metro Manila<br />
+                  Philippines
                 </p>
               </CardContent>
             </Card>
@@ -90,12 +87,12 @@ const Contact = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                   <Clock className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-base">Business Hours</CardTitle>
+                  <CardTitle className="text-base">Support Hours</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Mon - Fri: 9AM - 6PM</p>
-                <p className="text-muted-foreground">Sat: 10AM - 4PM</p>
+                <p className="text-muted-foreground">Mon - Fri: 9AM - 6PM PHT</p>
+                <p className="text-muted-foreground">Sat: 10AM - 2PM PHT</p>
                 <p className="text-muted-foreground">Sun: Closed</p>
               </CardContent>
             </Card>
@@ -111,36 +108,36 @@ const Contact = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" placeholder="John" required />
+                    <Input id="firstName" placeholder="Juan" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" placeholder="Doe" required />
+                    <Input id="lastName" placeholder="Dela Cruz" required />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="john@example.com" required />
+                  <Input id="email" type="email" placeholder="juan@example.com" required />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="company">Company (Optional)</Label>
-                  <Input id="company" placeholder="Your company name" />
+                  <Label htmlFor="subject">Subject</Label>
+                  <Input id="subject" placeholder="What is your inquiry about?" required />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="message">Message</Label>
                   <Textarea 
                     id="message" 
-                    placeholder="How can we help you?" 
+                    placeholder="Please describe your question or concern..." 
                     className="min-h-[150px]"
                     required 
                   />
                 </div>
                 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Sending..." : "Send Message"}
+                  {isSubmitting ? "Sending..." : "Submit Inquiry"}
                 </Button>
               </form>
             </CardContent>

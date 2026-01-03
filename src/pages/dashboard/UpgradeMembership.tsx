@@ -2,20 +2,21 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   ArrowLeft,
   Crown,
   Zap,
   Star,
   CheckCircle,
-  Copy
+  Copy,
+  Info
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -28,7 +29,7 @@ const MEMBERSHIP_TIERS = [
     price: 1000,
     icon: Star,
     color: 'bg-secondary',
-    features: ['40% referral commission', 'Access to community'],
+    features: ['Referral access program', 'Access to community platform'],
   },
   {
     id: 'pro',
@@ -36,7 +37,7 @@ const MEMBERSHIP_TIERS = [
     price: 2000,
     icon: Zap,
     color: 'bg-primary',
-    features: ['40% referral commission', 'Daily task earnings', 'Online Army training'],
+    features: ['Referral access program', 'Activity-based credits', 'Training access'],
   },
   {
     id: 'elite',
@@ -44,7 +45,7 @@ const MEMBERSHIP_TIERS = [
     price: 3000,
     icon: Crown,
     color: 'bg-accent-foreground',
-    features: ['40% referral commission', 'Daily task earnings', 'Lending marketplace', 'VIP support'],
+    features: ['Referral access program', 'Activity-based credits', 'Credit marketplace', 'VIP support'],
   },
 ];
 
@@ -82,7 +83,6 @@ export default function UpgradeMembership() {
       if (!user || !selectedTierData) throw new Error('Invalid data');
 
       // TODO: Replace with MySQL edge function when mysql-submit-payment is implemented
-      // For now, show a success message
       console.log('Submitting payment:', {
         user_id: user.id,
         tier: selectedTier,
@@ -93,8 +93,8 @@ export default function UpgradeMembership() {
     },
     onSuccess: () => {
       toast({
-        title: 'Payment Submitted!',
-        description: 'Your payment is being reviewed. You will be notified once approved.',
+        title: 'Submission Received!',
+        description: 'Your registration is pending admin review. You will be notified once verified.',
       });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
@@ -152,7 +152,7 @@ export default function UpgradeMembership() {
           <Crown className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">You're at the Top!</h1>
           <p className="text-muted-foreground">
-            You already have Elite membership - the highest tier available.
+            You already have Elite access - the highest tier available.
           </p>
           <Link to="/dashboard">
             <Button className="mt-6">Return to Dashboard</Button>
@@ -175,18 +175,26 @@ export default function UpgradeMembership() {
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Upgrade Your Membership</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Upgrade Your Access Level</h1>
           <p className="text-muted-foreground">
-            Unlock more earning opportunities with a higher tier
+            Unlock more participation opportunities with a higher tier
           </p>
         </div>
+
+        {/* Info Notice */}
+        <Alert className="mb-6 border-muted bg-muted/30">
+          <Info className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            Membership fees are one-time registration payments for platform access. All registrations require admin verification before activation.
+          </AlertDescription>
+        </Alert>
 
         <form onSubmit={handleSubmit}>
           {/* Tier Selection */}
           <Card className="mb-8 border-border">
             <CardHeader>
-              <CardTitle>1. Select Your New Tier</CardTitle>
-              <CardDescription>Choose the membership tier you want to upgrade to</CardDescription>
+              <CardTitle>1. Select Your Access Level</CardTitle>
+              <CardDescription>Choose the access level you want to upgrade to</CardDescription>
             </CardHeader>
             <CardContent>
               <RadioGroup value={selectedTier} onValueChange={setSelectedTier} className="grid md:grid-cols-3 gap-4">
@@ -223,7 +231,7 @@ export default function UpgradeMembership() {
           <Card className="mb-8 border-border">
             <CardHeader>
               <CardTitle>2. Choose Payment Method</CardTitle>
-              <CardDescription>Send your payment to one of these accounts</CardDescription>
+              <CardDescription>Send your registration fee to one of these accounts</CardDescription>
             </CardHeader>
             <CardContent>
               <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
@@ -273,8 +281,8 @@ export default function UpgradeMembership() {
           {/* Payment Proof */}
           <Card className="mb-8 border-border">
             <CardHeader>
-              <CardTitle>3. Submit Payment Proof</CardTitle>
-              <CardDescription>Enter your transaction reference number</CardDescription>
+              <CardTitle>3. Submit Verification</CardTitle>
+              <CardDescription>Enter your transaction reference number for verification</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -296,10 +304,10 @@ export default function UpgradeMembership() {
           {/* Submit */}
           <div className="text-center">
             <Button type="submit" size="lg" disabled={isSubmitting} className="px-12">
-              {isSubmitting ? 'Submitting...' : 'Submit Payment for Review'}
+              {isSubmitting ? 'Submitting...' : 'Submit for Admin Review'}
             </Button>
             <p className="text-sm text-muted-foreground mt-4">
-              Your payment will be verified within 24 hours. You'll receive a notification once approved.
+              Your registration will be verified within 24 hours. You'll receive a notification once approved.
             </p>
           </div>
         </form>

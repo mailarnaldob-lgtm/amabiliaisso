@@ -7,6 +7,7 @@ import { useReferralStats } from '@/hooks/useReferrals';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AccountSecurityCard } from '@/components/dashboard/AccountSecurityCard';
 import { NotificationsCard } from '@/components/dashboard/NotificationsCard';
 import { 
@@ -20,7 +21,7 @@ import {
   Crown,
   Zap,
   Star,
-  ArrowUpRight
+  Info
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -35,7 +36,7 @@ export default function MemberDashboard() {
   const royaltyWallet = wallets?.find(w => w.wallet_type === 'royalty');
   const mainWallet = wallets?.find(w => w.wallet_type === 'main');
 
-  const totalBalance = (taskWallet?.balance || 0) + (royaltyWallet?.balance || 0) + (mainWallet?.balance || 0);
+  const totalCredits = (taskWallet?.balance || 0) + (royaltyWallet?.balance || 0) + (mainWallet?.balance || 0);
 
   const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code || ''}`;
 
@@ -171,62 +172,71 @@ export default function MemberDashboard() {
           </div>
         </div>
 
-        {/* Total Balance Card */}
-        <Card className="mb-8 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-0">
+        {/* Total Credits Card */}
+        <Card className="mb-6 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-0">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-primary-foreground/80 text-sm mb-1">Total Balance</p>
-                <p className="text-4xl font-bold">₱{totalBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                <p className="text-primary-foreground/80 text-sm mb-1">Total System Credits</p>
+                <p className="text-4xl font-bold">₳{totalCredits.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
               </div>
-              <Button variant="secondary" className="gap-2">
-                Withdraw <ArrowUpRight className="h-4 w-4" />
-              </Button>
+              <div className="text-right">
+                <p className="text-primary-foreground/60 text-xs">Internal Credits</p>
+                <p className="text-primary-foreground/80 text-sm">Non-redeemable</p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Wallet Cards */}
+        {/* Credit Notice */}
+        <Alert className="mb-6 border-muted bg-muted/30">
+          <Info className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            ₳ Credits are internal system units for tracking participation. They are not redeemable for cash or monetary value. All allocations are admin-reviewed.
+          </AlertDescription>
+        </Alert>
+
+        {/* Credit Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
-                <Wallet className="h-4 w-4" /> Task Wallet
+                <Wallet className="h-4 w-4" /> Activity Credits
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">
-                ₱{(taskWallet?.balance || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                ₳{(taskWallet?.balance || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">From completed tasks</p>
+              <p className="text-xs text-muted-foreground mt-1">From approved activities</p>
             </CardContent>
           </Card>
 
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" /> Royalty Wallet
+                <TrendingUp className="h-4 w-4" /> Referral Credits
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">
-                ₱{(royaltyWallet?.balance || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                ₳{(royaltyWallet?.balance || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">8% from downline tasks</p>
+              <p className="text-xs text-muted-foreground mt-1">Network participation credits</p>
             </CardContent>
           </Card>
 
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4" /> Main Wallet
+                <CreditCard className="h-4 w-4" /> Main Credits
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">
-                ₱{(mainWallet?.balance || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                ₳{(mainWallet?.balance || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">Available for withdrawal</p>
+              <p className="text-xs text-muted-foreground mt-1">Primary allocation</p>
             </CardContent>
           </Card>
         </div>
@@ -236,29 +246,29 @@ export default function MemberDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              Your Referral Program
+              Your Referral Network
             </CardTitle>
             <CardDescription>
-              Earn 40% commission on every membership purchase from your referrals
+              Build your network by inviting new members to the platform
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6 mb-6">
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <p className="text-3xl font-bold text-primary">{totalReferrals}</p>
-                <p className="text-sm text-muted-foreground">Total Referrals</p>
+                <p className="text-sm text-muted-foreground">Network Members</p>
               </div>
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <p className="text-3xl font-bold text-primary">
-                  ₱{totalEarnings.toLocaleString('en-PH')}
+                  ₳{totalEarnings.toLocaleString('en-PH')}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Earnings</p>
+                <p className="text-sm text-muted-foreground">Credits Received</p>
               </div>
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <p className="text-3xl font-bold text-primary">
-                  ₱{pendingEarnings.toLocaleString('en-PH')}
+                  ₳{pendingEarnings.toLocaleString('en-PH')}
                 </p>
-                <p className="text-sm text-muted-foreground">Pending Payout</p>
+                <p className="text-sm text-muted-foreground">Pending Review</p>
               </div>
             </div>
 
@@ -302,10 +312,10 @@ export default function MemberDashboard() {
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-bold text-foreground mb-2">
-                    Upgrade Your Membership
+                    Upgrade Your Access Level
                   </h3>
                   <p className="text-muted-foreground">
-                    Unlock more earning opportunities with Pro or Elite membership
+                    Unlock more participation opportunities with Pro or Elite membership
                   </p>
                 </div>
                 <Link to="/dashboard/upgrade">
@@ -325,7 +335,7 @@ export default function MemberDashboard() {
             <Card className="border-border hover:border-primary transition-colors cursor-pointer h-full">
               <CardContent className="pt-6 text-center">
                 <Users className="h-8 w-8 text-primary mx-auto mb-2" />
-                <p className="font-medium">My Referrals</p>
+                <p className="font-medium">My Network</p>
               </CardContent>
             </Card>
           </Link>
@@ -333,7 +343,7 @@ export default function MemberDashboard() {
             <Card className="border-border hover:border-primary transition-colors cursor-pointer h-full">
               <CardContent className="pt-6 text-center">
                 <TrendingUp className="h-8 w-8 text-primary mx-auto mb-2" />
-                <p className="font-medium">Transactions</p>
+                <p className="font-medium">Activity History</p>
               </CardContent>
             </Card>
           </Link>

@@ -1,6 +1,6 @@
 import { PublicLayout } from "@/components/layouts/PublicLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Award, Users, Globe, Heart } from "lucide-react";
+import { Award, Users, Globe, Heart, Shield, CheckCircle } from "lucide-react";
 
 const About = () => {
   return (
@@ -9,12 +9,12 @@ const About = () => {
         {/* Hero */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-6">
-            About Amabilia
+            About Amabilia Network
           </h1>
           <p className="text-lg text-muted-foreground">
-            We're passionate about delivering quality products and exceptional service 
-            to businesses of all sizes. Our mission is to be your trusted partner in 
-            sourcing the finest ingredients and supplies.
+            A community-powered platform designed for structured participation and collaboration. 
+            Our mission is to create an organized ecosystem where contributions are recognized 
+            through transparent, admin-controlled processes.
           </p>
         </div>
 
@@ -23,11 +23,11 @@ const About = () => {
           <Card>
             <CardContent className="pt-6 text-center">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Award className="h-6 w-6 text-primary" />
+                <Shield className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-foreground mb-2">Quality First</h3>
+              <h3 className="font-semibold text-foreground mb-2">Admin Oversight</h3>
               <p className="text-sm text-muted-foreground">
-                We source only the finest products from trusted suppliers worldwide.
+                All activities and credit allocations are reviewed and approved by administrators.
               </p>
             </CardContent>
           </Card>
@@ -37,9 +37,9 @@ const About = () => {
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-foreground mb-2">Customer Focus</h3>
+              <h3 className="font-semibold text-foreground mb-2">Community Focus</h3>
               <p className="text-sm text-muted-foreground">
-                Your success is our priority. We go above and beyond to serve you.
+                Built around community collaboration and structured participation models.
               </p>
             </CardContent>
           </Card>
@@ -47,11 +47,11 @@ const About = () => {
           <Card>
             <CardContent className="pt-6 text-center">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Globe className="h-6 w-6 text-primary" />
+                <CheckCircle className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-foreground mb-2">Global Reach</h3>
+              <h3 className="font-semibold text-foreground mb-2">Transparent System</h3>
               <p className="text-sm text-muted-foreground">
-                Serving businesses across the country with reliable delivery.
+                Clear tracking of all participation activities and credit allocations.
               </p>
             </CardContent>
           </Card>
@@ -61,35 +61,48 @@ const About = () => {
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Heart className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-foreground mb-2">Sustainability</h3>
+              <h3 className="font-semibold text-foreground mb-2">Member Support</h3>
               <p className="text-sm text-muted-foreground">
-                Committed to eco-friendly practices and sustainable sourcing.
+                Dedicated support for all members throughout their participation journey.
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Story */}
-        <div className="bg-card rounded-lg p-8 md:p-12">
+        {/* Platform Description */}
+        <div className="bg-card rounded-lg p-8 md:p-12 mb-12">
           <div className="max-w-3xl mx-auto">
-            <h2 className="font-serif text-3xl font-bold text-foreground mb-6">Our Story</h2>
+            <h2 className="font-serif text-3xl font-bold text-foreground mb-6">Our Platform</h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                Founded with a passion for quality, Amabilia began as a small family business 
-                dedicated to sourcing the finest products for local businesses. Over the years, 
-                we've grown into a trusted supplier serving customers nationwide.
+                Amabilia Network operates as a closed-loop ecosystem where participation is tracked 
+                using internal system credits (₳). This is not a financial platform—credits represent 
+                recognition for contributions within our community structure.
               </p>
               <p>
-                Our commitment to excellence has never wavered. We personally vet every supplier 
-                and product in our catalog to ensure it meets our rigorous standards. When you 
-                shop with Amabilia, you can trust that you're getting the best.
+                All credit allocations are manually reviewed and approved by our administrative team. 
+                Members can participate through verified activities, referral programs, and community 
+                engagement initiatives.
               </p>
               <p>
-                Today, we continue to expand our offerings while maintaining the personalized 
-                service that sets us apart. Whether you're a small bakery or a large restaurant 
-                chain, we're here to support your success.
+                Our tiered membership system allows members to choose their level of access and 
+                participation. Each tier unlocks different features and opportunities within the 
+                platform ecosystem.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Important Notice */}
+        <div className="bg-muted/50 border border-border rounded-lg p-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <h3 className="font-semibold text-foreground mb-4">Important Notice</h3>
+            <p className="text-sm text-muted-foreground">
+              ₳ Credits are internal system units used exclusively for tracking participation within 
+              the Amabilia Network. They do not represent money, stored value, or any form of 
+              investment. Credits cannot be redeemed, converted, or exchanged for cash or monetary 
+              equivalents. All platform activities are subject to administrative review and approval.
+            </p>
           </div>
         </div>
       </div>

@@ -58,14 +58,14 @@ interface AppState {
   // Wallets
   wallets: Wallet[];
   
-  // Swap state
+  // View state
   swapMode: 'cashin' | 'cashout';
   
   // Actions
   setSwapMode: (mode: 'cashin' | 'cashout') => void;
   updateWalletBalance: (type: WalletType, amount: number) => void;
-  swapToAlpha: (phpAmount: number) => void;
-  swapToPHP: (alphaAmount: number) => void;
+  swapToAlpha: (amount: number) => void;
+  swapToPHP: (amount: number) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -77,11 +77,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   isKycVerified: true,
   referralCode: 'JNTHN888',
 
-  // Initial wallet balances
+  // Initial wallet balances (credits)
   wallets: [
-    { type: 'main', balance: 5420.50, label: 'Main Wallet', description: 'Deposits, Withdrawals & Commissions' },
-    { type: 'task', balance: 1250.00, label: 'Task Wallet', description: 'Daily Earnings' },
-    { type: 'royalty', balance: 890.25, label: 'Royalty Wallet', description: 'Passive Team Overrides' },
+    { type: 'main', balance: 5420.50, label: 'Main Credits', description: 'Primary credit allocation' },
+    { type: 'task', balance: 1250.00, label: 'Activity Credits', description: 'Activity-based allocations' },
+    { type: 'royalty', balance: 890.25, label: 'Referral Credits', description: 'Network participation credits' },
   ],
 
   swapMode: 'cashin',
@@ -94,16 +94,15 @@ export const useAppStore = create<AppState>((set, get) => ({
     ),
   })),
 
-  swapToAlpha: (phpAmount) => {
-    const alphaAmount = phpAmount; // 1:1 peg
-    get().updateWalletBalance('main', alphaAmount);
+  // These functions are disabled - credits cannot be converted
+  swapToAlpha: (amount) => {
+    // Disabled - credits are admin-controlled
+    console.log('Credit allocations are admin-controlled');
   },
 
-  swapToPHP: (alphaAmount) => {
-    const fee = alphaAmount * 0.02; // 2% fee
-    const netAmount = alphaAmount - fee;
-    get().updateWalletBalance('main', -alphaAmount);
-    // In real app, trigger PHP disbursement
+  swapToPHP: (amount) => {
+    // Disabled - credits cannot be redeemed
+    console.log('Credits cannot be redeemed for cash');
   },
 }));
 
@@ -219,16 +218,16 @@ export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: numb
   basic: {
     name: 'Basic',
     cost: 1000,
-    features: ['Referral Link', '40% Commissions'],
+    features: ['Referral Access', 'Community Platform'],
   },
   pro: {
     name: 'Pro',
     cost: 2000,
-    features: ['Referral Link', '40% Commissions', 'Daily Tasks', 'Army Training Access'],
+    features: ['Referral Access', 'Community Platform', 'Activity Center', 'Training Access'],
   },
   elite: {
     name: 'Elite',
     cost: 3000,
-    features: ['All Features', 'P2P Lending', 'KYC Approval', 'Priority Support'],
+    features: ['All Features', 'Credit Marketplace', 'KYC Verification', 'Priority Support'],
   },
 };

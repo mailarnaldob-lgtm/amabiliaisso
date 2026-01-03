@@ -4,6 +4,8 @@ import { TaskCard, ProofSubmissionModal } from './TaskCard';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 const categories = ['All', 'Social Media', 'Video Engagement', 'Content Creation', 'Content Writing', 'Networking', 'Business Development'];
 
@@ -49,18 +51,26 @@ export function TaskCenter() {
 
   return (
     <div className="space-y-6">
-      {/* Army Level Card */}
+      {/* Info Banner */}
+      <Alert className="border-muted bg-muted/30">
+        <Info className="h-4 w-4" />
+        <AlertDescription className="text-xs">
+          Complete activities and submit proof for admin review. Credits are allocated after approval.
+        </AlertDescription>
+      </Alert>
+
+      {/* Level Card */}
       <div className="glass-card rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{levelInfo.icon}</span>
             <div>
               <h3 className="font-bold text-foreground">{levelInfo.name}</h3>
-              <p className="text-xs text-muted-foreground">Online Army Level</p>
+              <p className="text-xs text-muted-foreground">Activity Level</p>
             </div>
           </div>
           <Badge variant="outline" className="text-alpha border-alpha">
-            {completedTasks} Tasks
+            {completedTasks} Completed
           </Badge>
         </div>
 
@@ -96,17 +106,17 @@ export function TaskCenter() {
         ))}
       </div>
 
-      {/* Task Tabs */}
+      {/* Activity Tabs */}
       <Tabs defaultValue="available" className="w-full">
         <TabsList className="w-full">
           <TabsTrigger value="available" className="flex-1">
             Available ({tasks.filter((t) => t.status === 'available').length})
           </TabsTrigger>
           <TabsTrigger value="active" className="flex-1">
-            Active ({tasks.filter((t) => ['in_progress', 'submitted'].includes(t.status)).length})
+            Pending ({tasks.filter((t) => ['in_progress', 'submitted'].includes(t.status)).length})
           </TabsTrigger>
           <TabsTrigger value="completed" className="flex-1">
-            Done ({tasks.filter((t) => t.status === 'completed').length})
+            Approved ({tasks.filter((t) => t.status === 'completed').length})
           </TabsTrigger>
         </TabsList>
 
@@ -134,6 +144,11 @@ export function TaskCenter() {
                 onSubmitProof={handleOpenProofModal}
               />
             ))}
+          {filteredTasks.filter((t) => ['in_progress', 'submitted'].includes(t.status)).length === 0 && (
+            <div className="p-6 text-center text-muted-foreground">
+              <p>No pending submissions</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="completed" className="space-y-3 mt-4">
@@ -147,6 +162,11 @@ export function TaskCenter() {
                 onSubmitProof={handleOpenProofModal}
               />
             ))}
+          {filteredTasks.filter((t) => t.status === 'completed').length === 0 && (
+            <div className="p-6 text-center text-muted-foreground">
+              <p>No approved activities yet</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 

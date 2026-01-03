@@ -3,7 +3,7 @@ import { SwapWidget } from '@/components/swap/SwapWidget';
 
 export default function Swap() {
   return (
-    <MemberLayout title="Swap">
+    <MemberLayout title="My Credits">
       <SwapWidget />
     </MemberLayout>
   );

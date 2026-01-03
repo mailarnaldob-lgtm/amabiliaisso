@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, ListTodo, Store, ArrowLeftRight, User } from 'lucide-react';
+import { Home, ListTodo, Store, Wallet, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { icon: Home, label: 'Home', path: '/dashboard' },
-  { icon: ListTodo, label: 'Tasks', path: '/app/tasks' },
-  { icon: Store, label: 'Market', path: '/app/marketplace' },
-  { icon: ArrowLeftRight, label: 'Swap', path: '/app/swap' },
+  { icon: ListTodo, label: 'Activities', path: '/app/tasks' },
+  { icon: Store, label: 'Marketplace', path: '/app/marketplace' },
+  { icon: Wallet, label: 'Credits', path: '/app/swap' },
   { icon: User, label: 'Profile', path: '/app/profile' },
 ];
 

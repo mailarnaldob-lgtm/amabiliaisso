@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, CreditCard, TrendingUp, LogOut, LayoutDashboard, Clock, CheckCircle, FileCheck } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Users, CreditCard, TrendingUp, LogOut, LayoutDashboard, Clock, FileCheck, Info, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function AdminDashboard() {
@@ -35,22 +36,22 @@ export default function AdminDashboard() {
 
       if (error) {
         console.error('Failed to fetch stats:', error);
-        return { totalMembers: 0, totalRevenue: 0, pendingPayments: 0 };
+        return { totalMembers: 0, totalCredits: 0, pendingReviews: 0 };
       }
 
       return {
         totalMembers: data?.stats?.totalUsers || 0,
-        totalRevenue: data?.stats?.totalRevenue || 0,
-        pendingPayments: data?.stats?.pendingProofs || 0,
+        totalCredits: data?.stats?.totalRevenue || 0,
+        pendingReviews: data?.stats?.pendingProofs || 0,
       };
     },
   });
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/task-proofs', label: 'Task Proofs', icon: FileCheck },
+    { href: '/admin/task-proofs', label: 'Activity Proofs', icon: FileCheck },
     { href: '/admin/members', label: 'Members', icon: Users },
-    { href: '/admin/payments', label: 'Payments', icon: CreditCard },
+    { href: '/admin/payments', label: 'Verifications', icon: CreditCard },
   ];
 
   return (
@@ -85,7 +86,16 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 p-8">
-        <h2 className="text-2xl font-bold mb-6">Dashboard Overview</h2>
+        <h2 className="text-2xl font-bold mb-2">Admin Dashboard</h2>
+        <p className="text-muted-foreground mb-6">Manage members, review submissions, and allocate credits</p>
+
+        {/* Admin Notice */}
+        <Alert className="mb-6 border-primary/50 bg-primary/5">
+          <Shield className="h-4 w-4 text-primary" />
+          <AlertDescription>
+            All credit allocations require manual review and approval. This panel provides full administrative control over the platform.
+          </AlertDescription>
+        </Alert>
         
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="border-border">
@@ -96,29 +106,31 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">{stats?.totalMembers || 0}</p>
+              <p className="text-xs text-muted-foreground mt-1">Registered accounts</p>
             </CardContent>
           </Card>
 
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" /> Total Revenue
+                <TrendingUp className="h-4 w-4 text-primary" /> Credits Allocated
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">₱{(stats?.totalRevenue || 0).toLocaleString()}</p>
+              <p className="text-3xl font-bold">₳{(stats?.totalCredits || 0).toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">System credits distributed</p>
             </CardContent>
           </Card>
 
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" /> Pending Task Proofs
+                <Clock className="h-4 w-4 text-primary" /> Pending Reviews
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{stats?.pendingPayments || 0}</p>
-              {(stats?.pendingPayments || 0) > 0 && (
+              <p className="text-3xl font-bold">{stats?.pendingReviews || 0}</p>
+              {(stats?.pendingReviews || 0) > 0 && (
                 <Link to="/admin/task-proofs">
                   <Badge variant="destructive" className="mt-2">Needs Review</Badge>
                 </Link>
@@ -126,6 +138,38 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Quick Actions */}
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common administrative tasks</CardDescription>
+          </CardHeader>
+          <CardContent className="grid md:grid-cols-2 gap-4">
+            <Link to="/admin/task-proofs">
+              <Button variant="outline" className="w-full justify-start gap-2">
+                <FileCheck className="h-4 w-4" />
+                Review Activity Submissions
+              </Button>
+            </Link>
+            <Link to="/admin/members">
+              <Button variant="outline" className="w-full justify-start gap-2">
+                <Users className="h-4 w-4" />
+                Manage Members
+              </Button>
+            </Link>
+            <Link to="/admin/payments">
+              <Button variant="outline" className="w-full justify-start gap-2">
+                <CreditCard className="h-4 w-4" />
+                Verify Registrations
+              </Button>
+            </Link>
+            <Button variant="outline" className="w-full justify-start gap-2" disabled>
+              <TrendingUp className="h-4 w-4" />
+              Allocate Credits (Manual)
+            </Button>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
