@@ -34,13 +34,16 @@ export default function Landing() {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">AMABILIA NETWORK</Link>
+          <Link to="/" className="text-2xl font-bold">
+            <span className="text-primary">₳LPHA</span>
+            <span className="text-foreground ml-1">SMART FINANCE</span>
+          </Link>
           <div className="flex items-center gap-4">
             <Link to="/auth">
               <Button variant="ghost">Login</Button>
             </Link>
-            <Link to="/auth">
-              <Button>Get Started</Button>
+            <Link to="/alpha/bank">
+              <Button>Launch App</Button>
             </Link>
           </div>
         </div>
@@ -50,20 +53,22 @@ export default function Landing() {
       <section className="py-20 px-4 bg-gradient-to-br from-primary/10 via-background to-accent/20">
         <div className="container mx-auto text-center max-w-4xl">
           <Badge className="mb-6 px-4 py-2 text-sm" variant="secondary">
-            🇵🇭 Empowering Filipino Communities
+            🇵🇭 Filipino-First Closed-Loop Ecosystem
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-            Build Your Network Through{' '}
-            <span className="text-primary">Structured Participation</span>
+            <span className="text-primary">₳LPHA</span> Smart Finance
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join a community-powered ecosystem where participation is tracked and recognized 
-            through our internal credit system. Collaborate, contribute, and grow together.
+          <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
+            A unified ecosystem for community participation, activity tracking, 
+            and internal credit management.
+          </p>
+          <p className="text-lg text-muted-foreground/80 mb-8 max-w-xl mx-auto">
+            Four integrated apps: <span className="text-primary font-medium">Bank</span> • <span className="text-emerald-500 font-medium">Market</span> • <span className="text-blue-500 font-medium">Finance</span> • <span className="text-purple-500 font-medium">Growth</span>
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/auth">
-              <Button size="lg" className="gap-2 text-lg px-8">
-                Join the Network <ArrowRight className="h-5 w-5" />
+            <Link to="/alpha/bank">
+              <Button size="lg" className="gap-2 text-lg px-8 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700">
+                Launch ₳LPHA App <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
             <a href="#how-it-works">
@@ -73,23 +78,35 @@ export default function Landing() {
             </a>
           </div>
           
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
-            <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-primary">10K+</p>
-              <p className="text-muted-foreground">Active Members</p>
+          {/* 4 App Preview */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-600/10 border border-amber-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mx-auto mb-3">
+                <Wallet className="h-6 w-6 text-white" />
+              </div>
+              <p className="font-bold text-foreground">Bank</p>
+              <p className="text-xs text-muted-foreground">Wallet & Credits</p>
             </div>
-            <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-primary">₳5M+</p>
-              <p className="text-muted-foreground">Credits Distributed</p>
+            <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-600/10 border border-emerald-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-3">
+                <Zap className="h-6 w-6 text-white" />
+              </div>
+              <p className="font-bold text-foreground">Market</p>
+              <p className="text-xs text-muted-foreground">VPA Missions</p>
             </div>
-            <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-primary">100%</p>
-              <p className="text-muted-foreground">Admin Reviewed</p>
+            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-indigo-600/10 border border-blue-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-3">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <p className="font-bold text-foreground">Finance</p>
+              <p className="text-xs text-muted-foreground">P2P Lending</p>
             </div>
-            <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-primary">24/7</p>
-              <p className="text-muted-foreground">Support</p>
+            <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-600/10 border border-purple-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mx-auto mb-3">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <p className="font-bold text-foreground">Growth</p>
+              <p className="text-xs text-muted-foreground">Royalties & Network</p>
             </div>
           </div>
         </div>
@@ -362,20 +379,27 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-primary">
+      <section className="py-20 px-4 bg-gradient-to-r from-amber-500 to-orange-600">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-            Ready to Join?
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Ready to Experience ₳LPHA?
           </h2>
-          <p className="text-primary-foreground/80 text-lg mb-8 max-w-2xl mx-auto">
-            Become part of the Amabilia Network community. 
-            Start your participation journey today.
+          <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
+            Launch the unified ₳LPHA Smart Finance ecosystem. 
+            Four apps, one seamless experience.
           </p>
-          <Link to="/auth">
-            <Button size="lg" variant="secondary" className="gap-2 text-lg px-8">
-              Create Account <ArrowRight className="h-5 w-5" />
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/alpha/bank">
+              <Button size="lg" variant="secondary" className="gap-2 text-lg px-8">
+                Launch ₳LPHA App <ArrowRight className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/auth">
+              <Button size="lg" variant="outline" className="gap-2 text-lg px-8 text-white border-white hover:bg-white/10">
+                Create Account
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -384,24 +408,27 @@ export default function Landing() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4 text-primary">Amabilia Network</h3>
+              <h3 className="font-bold text-lg mb-4">
+                <span className="text-primary">₳LPHA</span> Smart Finance
+              </h3>
               <p className="text-sm text-muted-foreground">
-                A community-powered platform for structured participation and collaboration.
+                A unified ecosystem for community participation and internal credit management.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Platform</h4>
+              <h4 className="font-semibold mb-4">Apps</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/auth" className="hover:text-primary">Get Started</Link></li>
-                <li><a href="#pricing" className="hover:text-primary">Access Levels</a></li>
-                <li><Link to="/about" className="hover:text-primary">About Us</Link></li>
+                <li><Link to="/alpha/bank" className="hover:text-primary">₳ Bank</Link></li>
+                <li><Link to="/alpha/market" className="hover:text-primary">₳ Market</Link></li>
+                <li><Link to="/alpha/finance" className="hover:text-primary">₳ Finance</Link></li>
+                <li><Link to="/alpha/growth" className="hover:text-primary">₳ Growth</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/contact" className="hover:text-primary">Contact</Link></li>
-                <li><a href="#" className="hover:text-primary">FAQ</a></li>
+                <li><Link to="/about" className="hover:text-primary">About Us</Link></li>
                 <li><a href="#" className="hover:text-primary">Help Center</a></li>
               </ul>
             </div>
@@ -414,7 +441,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-            © 2025 Amabilia Network. All rights reserved.
+            © 2025 ₳LPHA Smart Finance. All rights reserved. Part of the Amabilia Network.
           </div>
         </div>
       </footer>

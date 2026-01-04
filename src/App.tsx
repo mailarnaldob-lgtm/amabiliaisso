@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -13,7 +13,14 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
-// Member dashboard pages
+// Alpha App Pages (New 4-App Architecture)
+import BankApp from "./pages/alpha/BankApp";
+import MarketApp from "./pages/alpha/MarketApp";
+import FinanceApp from "./pages/alpha/FinanceApp";
+import GrowthApp from "./pages/alpha/GrowthApp";
+import SettingsApp from "./pages/alpha/SettingsApp";
+
+// Legacy Member dashboard pages (keeping for backwards compatibility)
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Marketplace from "./pages/Marketplace";
@@ -51,7 +58,33 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             
-            {/* Main App Routes (Member) */}
+            {/* ═══════════════════════════════════════════════════════════════
+                ₳LPHA SMART FINANCE - 4 APP ARCHITECTURE
+                ═══════════════════════════════════════════════════════════════ */}
+            
+            {/* App #1: BANK - Wallet & Credits */}
+            <Route path="/alpha/bank" element={<ProtectedRoute><BankApp /></ProtectedRoute>} />
+            
+            {/* App #2: MARKET - VPA Missions */}
+            <Route path="/alpha/market" element={<ProtectedRoute><MarketApp /></ProtectedRoute>} />
+            
+            {/* App #3: FINANCE - P2P Lending */}
+            <Route path="/alpha/finance" element={<ProtectedRoute><FinanceApp /></ProtectedRoute>} />
+            
+            {/* App #4: GROWTH - Royalties & Network */}
+            <Route path="/alpha/growth" element={<ProtectedRoute><GrowthApp /></ProtectedRoute>} />
+            
+            {/* Settings */}
+            <Route path="/alpha/settings" element={<ProtectedRoute><SettingsApp /></ProtectedRoute>} />
+            
+            {/* Alpha redirect - Default to Bank */}
+            <Route path="/alpha" element={<Navigate to="/alpha/bank" replace />} />
+            
+            {/* ═══════════════════════════════════════════════════════════════
+                LEGACY ROUTES (Backwards Compatibility)
+                ═══════════════════════════════════════════════════════════════ */}
+            
+            {/* Main App Routes (Legacy Member) */}
             <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/app/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
             <Route path="/app/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
@@ -67,7 +100,10 @@ const App = () => (
             <Route path="/dashboard/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
             <Route path="/dashboard/settings" element={<ProtectedRoute><MemberSettings /></ProtectedRoute>} />
             
-            {/* Admin Routes */}
+            {/* ═══════════════════════════════════════════════════════════════
+                ADMIN ROUTES
+                ═══════════════════════════════════════════════════════════════ */}
+            
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/members" element={<ProtectedRoute requireAdmin><AdminMembers /></ProtectedRoute>} />
             <Route path="/admin/payments" element={<ProtectedRoute requireAdmin><AdminPayments /></ProtectedRoute>} />
