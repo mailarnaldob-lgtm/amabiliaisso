@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { AlphaLayout } from '@/components/layouts/AlphaLayout';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Target, 
   Clock, 
@@ -10,11 +12,17 @@ import {
   Star,
   Trophy,
   Zap,
-  AlertTriangle
+  AlertTriangle,
+  Upload,
+  Camera,
+  Link as LinkIcon,
+  FileCheck,
+  Timer
 } from 'lucide-react';
+import { formatAlpha } from '@/lib/utils';
 
 // Demo mission data
-const demoMissions = [
+const standardMissions = [
   {
     id: 1,
     title: 'Social Media Engagement',
@@ -24,6 +32,8 @@ const demoMissions = [
     timeLimit: '2 hours',
     status: 'available',
     progress: 0,
+    proofType: 'screenshot',
+    escrowAmount: 50,
   },
   {
     id: 2,
@@ -34,6 +44,8 @@ const demoMissions = [
     timeLimit: '24 hours',
     status: 'in_progress',
     progress: 45,
+    proofType: 'link',
+    escrowAmount: 100,
   },
   {
     id: 3,
@@ -44,7 +56,18 @@ const demoMissions = [
     timeLimit: '7 days',
     status: 'available',
     progress: 0,
+    proofType: 'verification',
+    escrowAmount: 200,
   },
+];
+
+const completedMissions = [
+  { id: 4, title: 'Welcome Survey', reward: 25, completedAt: '2 days ago', status: 'approved' },
+  { id: 5, title: 'Profile Setup', reward: 50, completedAt: '3 days ago', status: 'approved' },
+];
+
+const pendingApproval = [
+  { id: 6, title: 'Content Creation', reward: 150, submittedAt: '2 hours ago', status: 'pending' },
 ];
 
 const dailyStats = {
@@ -54,7 +77,16 @@ const dailyStats = {
   streak: 7,
 };
 
+type MissionCategory = 'all' | 'Easy' | 'Medium' | 'Hard' | 'Special';
+
 export default function MarketApp() {
+  const [activeCategory, setActiveCategory] = useState<MissionCategory>('all');
+  const [activeTab, setActiveTab] = useState('available');
+
+  const filteredMissions = activeCategory === 'all' 
+    ? standardMissions 
+    : standardMissions.filter(m => m.difficulty === activeCategory);
+
   return (
     <AlphaLayout 
       title="₳LPHA MARKET" 
@@ -97,40 +129,137 @@ export default function MarketApp() {
         </CardContent>
       </Card>
 
-      {/* Mission Categories */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
-        <CategoryPill label="All" active />
-        <CategoryPill label="Easy" />
-        <CategoryPill label="Medium" />
-        <CategoryPill label="Hard" />
-        <CategoryPill label="Special" />
-      </div>
+      {/* Mission Status Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="available" className="gap-1 text-xs">
+            <Target className="h-3 w-3" />
+            Available
+          </TabsTrigger>
+          <TabsTrigger value="pending" className="gap-1 text-xs">
+            <Clock className="h-3 w-3" />
+            Pending
+            {pendingApproval.length > 0 && (
+              <Badge className="ml-1 h-4 w-4 p-0 text-[10px] bg-amber-500">
+                {pendingApproval.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="gap-1 text-xs">
+            <CheckCircle2 className="h-3 w-3" />
+            Completed
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Available Missions */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-          Available Missions
-        </h3>
-        
-        {demoMissions.map((mission) => (
-          <MissionCard key={mission.id} mission={mission} />
-        ))}
-      </div>
+        <TabsContent value="available">
+          {/* Mission Categories */}
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
+            {(['all', 'Easy', 'Medium', 'Hard', 'Special'] as MissionCategory[]).map((cat) => (
+              <CategoryPill 
+                key={cat}
+                label={cat === 'all' ? 'All' : cat} 
+                active={activeCategory === cat}
+                onClick={() => setActiveCategory(cat)}
+              />
+            ))}
+          </div>
 
-      {/* Rescue Task Notice (Hidden by default) */}
-      <Card className="mt-6 border-destructive/50 bg-destructive/5 hidden">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-destructive/10">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-            </div>
-            <div>
-              <p className="font-medium text-destructive">Rescue Missions Required</p>
-              <p className="text-xs text-muted-foreground">
-                Complete special missions to restore account status
+          {/* Available Missions */}
+          <div className="space-y-3">
+            {filteredMissions.map((mission) => (
+              <MissionCard key={mission.id} mission={mission} />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="pending">
+          <div className="space-y-3">
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
+              <p className="text-xs text-amber-600 flex items-center gap-2">
+                <Timer className="h-4 w-4" />
+                Proofs are reviewed within 48 hours. Creator can dispute during this period.
               </p>
             </div>
+            
+            {pendingApproval.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Clock className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>No pending submissions</p>
+              </div>
+            ) : (
+              pendingApproval.map((mission) => (
+                <Card key={mission.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-amber-500/10">
+                          <FileCheck className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{mission.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Submitted {mission.submittedAt}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">₳{mission.reward}</p>
+                        <Badge variant="outline" className="text-amber-600 border-amber-500/30">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Pending
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="completed">
+          <div className="space-y-3">
+            {completedMissions.map((mission) => (
+              <Card key={mission.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-emerald-500/10">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{mission.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Completed {mission.completedAt}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-emerald-500">+₳{mission.reward}</p>
+                      <Badge className="bg-emerald-500 text-[10px]">Approved</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Escrow Info */}
+      <Card className="mt-4 bg-muted/30">
+        <CardContent className="p-4">
+          <h4 className="font-medium mb-2 flex items-center gap-2">
+            <Zap className="h-4 w-4 text-primary" />
+            VPA Mission Flow
+          </h4>
+          <ul className="text-xs text-muted-foreground space-y-1">
+            <li>1. Creator escrows ₳ when posting mission</li>
+            <li>2. First accept locks mission (2h execution window)</li>
+            <li>3. Submit Proof-of-Work with idempotent hash</li>
+            <li>4. Creator has 48h to dispute</li>
+            <li>5. No dispute → Auto-approve & settlement</li>
+          </ul>
         </CardContent>
       </Card>
 
@@ -139,15 +268,17 @@ export default function MarketApp() {
         <p className="text-xs text-muted-foreground text-center">
           VPA missions are voluntary participation activities. 
           Credits are for platform use only and cannot be converted to money.
+          All proofs are logged immutably for audit.
         </p>
       </div>
     </AlphaLayout>
   );
 }
 
-function CategoryPill({ label, active }: { label: string; active?: boolean }) {
+function CategoryPill({ label, active, onClick }: { label: string; active?: boolean; onClick: () => void }) {
   return (
     <button 
+      onClick={onClick}
       className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
         active 
           ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white' 
@@ -159,7 +290,7 @@ function CategoryPill({ label, active }: { label: string; active?: boolean }) {
   );
 }
 
-function MissionCard({ mission }: { mission: typeof demoMissions[0] }) {
+function MissionCard({ mission }: { mission: typeof standardMissions[0] }) {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Easy': return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
@@ -168,6 +299,17 @@ function MissionCard({ mission }: { mission: typeof demoMissions[0] }) {
       default: return 'bg-muted text-muted-foreground';
     }
   };
+
+  const getProofIcon = (type: string) => {
+    switch (type) {
+      case 'screenshot': return Camera;
+      case 'link': return LinkIcon;
+      case 'verification': return FileCheck;
+      default: return Upload;
+    }
+  };
+
+  const ProofIcon = getProofIcon(mission.proofType);
 
   return (
     <Card className="overflow-hidden hover:shadow-md transition-all">
@@ -207,6 +349,10 @@ function MissionCard({ mission }: { mission: typeof demoMissions[0] }) {
               <Star className="h-3 w-3 text-amber-500" />
               ₳{mission.reward}
             </span>
+            <span className="flex items-center gap-1">
+              <ProofIcon className="h-3 w-3" />
+              {mission.proofType}
+            </span>
           </div>
           <Button 
             size="sm" 
@@ -216,8 +362,8 @@ function MissionCard({ mission }: { mission: typeof demoMissions[0] }) {
           >
             {mission.status === 'in_progress' ? (
               <>
-                <CheckCircle2 className="h-3 w-3 mr-1" />
-                Continue
+                <Upload className="h-3 w-3 mr-1" />
+                Submit
               </>
             ) : (
               'Start'

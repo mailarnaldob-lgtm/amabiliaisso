@@ -1,8 +1,9 @@
 import { AlphaLayout } from '@/components/layouts/AlphaLayout';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
   Share2,
@@ -12,10 +13,17 @@ import {
   Trophy,
   Gift,
   AlertTriangle,
-  TrendingUp
+  TrendingUp,
+  Shield,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Activity
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAppStore, ARMY_LEVELS } from '@/stores/appStore';
+import { formatAlpha } from '@/lib/utils';
+import { useState } from 'react';
 
 // Demo network data
 const networkStats = {
@@ -23,25 +31,29 @@ const networkStats = {
   activeReferrals: 3,
   totalNetwork: 12,
   royaltiesEarned: 450,
-  tier: 'Private First Class',
+  pendingRoyalties: 50,
+  redirectedToDebt: 0,
 };
 
 const recentRoyalties = [
-  { id: 1, source: 'User_Alpha', action: 'Mission Completed', amount: 10, time: '2 hours ago' },
-  { id: 2, source: 'User_Beta', action: 'Membership Upgrade', amount: 200, time: '5 hours ago' },
-  { id: 3, source: 'User_Gamma', action: 'Mission Completed', amount: 10, time: '1 day ago' },
+  { id: 1, source: 'User_Alpha', action: 'Mission Completed', amount: 10, time: '2 hours ago', type: 'network' },
+  { id: 2, source: 'User_Beta', action: 'Membership Upgrade', amount: 200, time: '5 hours ago', type: 'direct' },
+  { id: 3, source: 'User_Gamma', action: 'Mission Completed', amount: 10, time: '1 day ago', type: 'network' },
+  { id: 4, source: 'User_Delta', action: 'Referral Signup', amount: 0, time: '2 days ago', type: 'pending' },
 ];
 
 const directReferrals = [
-  { id: 1, name: 'User_Alpha', tier: 'Pro', status: 'active', missions: 15 },
-  { id: 2, name: 'User_Beta', tier: 'Elite', status: 'active', missions: 28 },
-  { id: 3, name: 'User_Gamma', tier: 'Basic', status: 'inactive', missions: 3 },
+  { id: 1, name: 'User_Alpha', tier: 'Pro', status: 'active', missions: 15, earned: 120 },
+  { id: 2, name: 'User_Beta', tier: 'Elite', status: 'active', missions: 28, earned: 350 },
+  { id: 3, name: 'User_Gamma', tier: 'Basic', status: 'inactive', missions: 3, earned: 30 },
+  { id: 4, name: 'User_Delta', tier: 'Basic', status: 'pending', missions: 0, earned: 0 },
 ];
 
 export default function GrowthApp() {
   const { referralCode, armyLevel } = useAppStore();
   const levelInfo = ARMY_LEVELS[armyLevel];
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('overview');
 
   const copyReferralCode = () => {
     navigator.clipboard.writeText(referralCode);
@@ -50,6 +62,14 @@ export default function GrowthApp() {
       description: "Share this code with friends to grow your network",
     });
   };
+
+  const armyLevelKeys = Object.keys(ARMY_LEVELS) as (keyof typeof ARMY_LEVELS)[];
+  const currentLevelIndex = armyLevelKeys.indexOf(armyLevel);
+  const nextLevelKey = armyLevelKeys[Math.min(currentLevelIndex + 1, armyLevelKeys.length - 1)];
+  const nextLevel = ARMY_LEVELS[nextLevelKey];
+  const progressToNextLevel = currentLevelIndex < armyLevelKeys.length - 1 
+    ? ((networkStats.activeReferrals - levelInfo.minTasks) / (nextLevel.minTasks - levelInfo.minTasks)) * 100
+    : 100;
 
   return (
     <AlphaLayout 
@@ -116,107 +136,191 @@ export default function GrowthApp() {
         />
       </div>
 
-      {/* Royalties Earned */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Gift className="h-5 w-5 text-purple-500" />
-              <span className="font-medium">Total Royalties</span>
-            </div>
-            <span className="text-2xl font-bold">₳{networkStats.royaltiesEarned}</span>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            <p>• 50% credit from direct referral upgrades</p>
-            <p>• 10% credit from network activity</p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
+          <TabsTrigger value="army" className="text-xs">My Army</TabsTrigger>
+          <TabsTrigger value="ledger" className="text-xs">Ledger</TabsTrigger>
+        </TabsList>
 
-      {/* Recent Royalties */}
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-        Recent Royalties
-      </h3>
-      
-      <div className="space-y-2 mb-6">
-        {recentRoyalties.map((royalty) => (
-          <Card key={royalty.id}>
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-lg bg-purple-500/10">
-                    <Gift className="h-4 w-4 text-purple-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{royalty.source}</p>
-                    <p className="text-xs text-muted-foreground">{royalty.action}</p>
-                  </div>
+        <TabsContent value="overview">
+          {/* Royalties Earned */}
+          <Card className="mb-4">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Gift className="h-5 w-5 text-purple-500" />
+                  <span className="font-medium">Total Royalties</span>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-emerald-500">+₳{royalty.amount}</p>
-                  <p className="text-xs text-muted-foreground">{royalty.time}</p>
+                <span className="text-2xl font-bold">₳{formatAlpha(networkStats.royaltiesEarned)}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-border">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Pending</p>
+                  <p className="font-bold text-amber-500">₳{networkStats.pendingRoyalties}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">To Debt</p>
+                  <p className="font-bold text-muted-foreground">₳{networkStats.redirectedToDebt}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {/* My Army (Direct Referrals) */}
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-        My Army
-      </h3>
-      
-      <div className="space-y-2 mb-6">
-        {directReferrals.map((referral) => (
-          <Card key={referral.id} className="hover:shadow-md transition-shadow">
+          {/* Royalty Structure */}
+          <Card className="mb-4 bg-muted/30">
+            <CardContent className="p-4">
+              <h4 className="font-medium mb-3 flex items-center gap-2">
+                <Activity className="h-4 w-4 text-primary" />
+                Multi-Tier Royalty Structure
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Direct Referral Upgrade</span>
+                  <Badge className="bg-purple-500">50%</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Network VPA Mission</span>
+                  <Badge variant="outline">10%</Badge>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                If debt {">"} 0: Royalties redirected to debt repayment
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Rank Progress */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-amber-500" />
+                  <span className="font-medium">Rank Progress</span>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {levelInfo.name} → {nextLevel.name}
+                </span>
+              </div>
+              <Progress value={progressToNextLevel} className="h-2" />
+              <p className="text-xs text-muted-foreground mt-2">
+                {nextLevel.minTasks - networkStats.activeReferrals} more active referrals to rank up
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="army">
+          {/* Referral Validation Info */}
+          <Card className="mb-4 bg-muted/30">
             <CardContent className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold">
-                    {referral.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-medium">{referral.name}</p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Shield className="h-4 w-4" />
+                <span>Referrals validated: No self-referral • No circular chains • Device/IP correlation</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* My Army (Direct Referrals) */}
+          <div className="space-y-2">
+            {directReferrals.map((referral) => (
+              <Card key={referral.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold">
+                        {referral.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-medium">{referral.name}</p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[10px]">{referral.tier}</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {referral.missions} missions
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px]">{referral.tier}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {referral.missions} missions
-                      </span>
+                      <div className="text-right mr-2">
+                        <p className="text-xs text-muted-foreground">Earned</p>
+                        <p className="font-bold text-sm">₳{referral.earned}</p>
+                      </div>
+                      <StatusBadge status={referral.status} />
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge 
-                    variant={referral.status === 'active' ? 'default' : 'secondary'}
-                    className={referral.status === 'active' ? 'bg-emerald-500' : ''}
-                  >
-                    {referral.status}
-                  </Badge>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Rank Progress */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-amber-500" />
-              <span className="font-medium">Rank Progress</span>
-            </div>
-            <span className="text-sm text-muted-foreground">
-              {levelInfo.name} → Next Rank
-            </span>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-          <Progress value={60} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-2">
-            2 more active referrals to rank up
-          </p>
+        </TabsContent>
+
+        <TabsContent value="ledger">
+          {/* Recent Royalties Ledger */}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground mb-2">
+              Every credit shows the Source (User_ID + Action)
+            </p>
+            {recentRoyalties.map((royalty) => (
+              <Card key={royalty.id}>
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-1.5 rounded-lg ${
+                        royalty.type === 'direct' ? 'bg-purple-500/10' :
+                        royalty.type === 'network' ? 'bg-blue-500/10' :
+                        'bg-muted'
+                      }`}>
+                        <Gift className={`h-4 w-4 ${
+                          royalty.type === 'direct' ? 'text-purple-500' :
+                          royalty.type === 'network' ? 'text-blue-500' :
+                          'text-muted-foreground'
+                        }`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">
+                          {royalty.source}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{royalty.action}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {royalty.type === 'pending' ? (
+                        <Badge variant="outline" className="text-amber-600 border-amber-500/30">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Pending
+                        </Badge>
+                      ) : (
+                        <>
+                          <p className="font-bold text-emerald-500">+₳{royalty.amount}</p>
+                          <p className="text-xs text-muted-foreground">{royalty.time}</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Loop Prevention Notice */}
+      <Card className="bg-muted/30">
+        <CardContent className="p-4">
+          <h4 className="font-medium mb-2 flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            Anti-Fraud Protection
+          </h4>
+          <ul className="text-xs text-muted-foreground space-y-1">
+            <li>• Real-time fraud scoring (0-100)</li>
+            <li>• No self-referrals allowed</li>
+            <li>• Circular chain detection</li>
+            <li>• Device/IP fingerprint correlation</li>
+            <li>• Score decay: -5 per clean 30-day cycle</li>
+          </ul>
         </CardContent>
       </Card>
 
@@ -224,11 +328,40 @@ export default function GrowthApp() {
       <div className="mt-8 p-4 rounded-xl bg-muted/30 border border-border">
         <p className="text-xs text-muted-foreground text-center">
           Royalties are internal credit allocations based on network participation. 
-          They are non-monetary and cannot be converted to cash.
+          They are non-monetary and subject to fraud gate validation.
+          All royalty distributions are logged immutably.
         </p>
       </div>
     </AlphaLayout>
   );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  switch (status) {
+    case 'active':
+      return (
+        <Badge className="bg-emerald-500">
+          <CheckCircle2 className="h-3 w-3 mr-1" />
+          Active
+        </Badge>
+      );
+    case 'inactive':
+      return (
+        <Badge variant="secondary">
+          <XCircle className="h-3 w-3 mr-1" />
+          Inactive
+        </Badge>
+      );
+    case 'pending':
+      return (
+        <Badge variant="outline" className="text-amber-600 border-amber-500/30">
+          <Clock className="h-3 w-3 mr-1" />
+          Pending
+        </Badge>
+      );
+    default:
+      return null;
+  }
 }
 
 function StatCard({ 
