@@ -11,28 +11,23 @@ serve(async (req) => {
   }
 
   try {
-    const { proof_id, admin_id } = await req.json();
+    const { proof_id, session_token } = await req.json();
 
-    if (!proof_id || !admin_id) {
+    if (!proof_id) {
       return new Response(
-        JSON.stringify({ error: 'proof_id and admin_id are required' }),
+        JSON.stringify({ error: 'proof_id is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const mysqlHost = Deno.env.get('MYSQL_HOST') || '';
-    const mysqlUser = Deno.env.get('MYSQL_USER') || '';
-    const mysqlDatabase = Deno.env.get('MYSQL_DATABASE') || '';
-    const mysqlPassword = Deno.env.get('MYSQL_PASSWORD') || '';
-
-    if (!mysqlHost || !mysqlUser || !mysqlDatabase || !mysqlPassword) {
+    if (!session_token) {
       return new Response(
-        JSON.stringify({ error: 'Database configuration error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Session token required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Call the approve_task_proof stored procedure via PHP proxy
+    // PHP proxy handles DB credentials internally and validates session
     const proxyUrl = `https://amabilianetwork.com/api/approve-proof.php`;
     
     const response = await fetch(proxyUrl, {
@@ -40,11 +35,9 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         proof_id,
-        admin_id,
-        db_host: mysqlHost,
-        db_user: mysqlUser,
-        db_name: mysqlDatabase,
-        db_pass: mysqlPassword
+        session_token
+        // DB credentials are NOT sent - PHP proxy reads from its own env
+        // admin_id is resolved server-side from session_token
       })
     });
 
@@ -59,8 +52,15 @@ serve(async (req) => {
 
     const result = await response.json();
     
+    if (result.error === 'Invalid session') {
+      return new Response(
+        JSON.stringify({ error: 'Session expired', session_invalid: true }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     if (result.success) {
-      console.log(`Task proof ${proof_id} approved by admin ${admin_id}`);
+      console.log(`Task proof ${proof_id} approved via session`);
       return new Response(
         JSON.stringify({ success: true, message: 'Task proof approved and paid' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

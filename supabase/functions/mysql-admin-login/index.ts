@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,23 +20,7 @@ serve(async (req) => {
       );
     }
 
-    // Connect to MySQL via REST API proxy (using external service)
-    // For Deno edge functions, we'll use a PHP proxy endpoint on Hostinger
-    const mysqlHost = Deno.env.get('MYSQL_HOST') || '';
-    const mysqlUser = Deno.env.get('MYSQL_USER') || '';
-    const mysqlDatabase = Deno.env.get('MYSQL_DATABASE') || '';
-    const mysqlPassword = Deno.env.get('MYSQL_PASSWORD') || '';
-
-    if (!mysqlHost || !mysqlUser || !mysqlDatabase || !mysqlPassword) {
-      console.error('MySQL environment variables not configured');
-      return new Response(
-        JSON.stringify({ error: 'Database configuration error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Since Deno Edge Functions can't directly connect to MySQL,
-    // we use a PHP API proxy on Hostinger
+    // PHP proxy handles DB credentials internally via its own environment
     const proxyUrl = `https://amabilianetwork.com/api/admin-auth.php`;
     
     const authResponse = await fetch(proxyUrl, {
@@ -45,11 +28,8 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username,
-        password,
-        db_host: mysqlHost,
-        db_user: mysqlUser,
-        db_name: mysqlDatabase,
-        db_pass: mysqlPassword
+        password
+        // DB credentials are NOT sent - PHP proxy reads from its own env
       })
     });
 
@@ -63,15 +43,13 @@ serve(async (req) => {
 
     const authResult = await authResponse.json();
 
-    if (authResult.success) {
+    if (authResult.success && authResult.session_token) {
+      // Return only the opaque session token - no admin details stored client-side
       return new Response(
         JSON.stringify({ 
-          success: true, 
-          admin: {
-            id: authResult.admin.id,
-            username: authResult.admin.username,
-            role: authResult.admin.role
-          }
+          success: true,
+          session_token: authResult.session_token,
+          expires_at: authResult.expires_at
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

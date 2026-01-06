@@ -8,6 +8,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Shield, Loader2 } from 'lucide-react';
 
+// Session token stored in memory only (not localStorage)
+let adminSessionToken: string | null = null;
+let adminSessionExpiry: number | null = null;
+
+export function getAdminSessionToken(): string | null {
+  // Check if session expired
+  if (adminSessionExpiry && Date.now() > adminSessionExpiry) {
+    adminSessionToken = null;
+    adminSessionExpiry = null;
+    return null;
+  }
+  return adminSessionToken;
+}
+
+export function clearAdminSession(): void {
+  adminSessionToken = null;
+  adminSessionExpiry = null;
+}
+
+export function setAdminSession(token: string, expiresAt: string): void {
+  adminSessionToken = token;
+  adminSessionExpiry = new Date(expiresAt).getTime();
+}
+
 export default function MySQLAdminLogin() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
@@ -35,10 +59,10 @@ export default function MySQLAdminLogin() {
         return;
       }
 
-      if (data?.success && data?.admin) {
-        // Store admin session in localStorage (for demo - in production use secure tokens)
-        localStorage.setItem('mysql_admin', JSON.stringify(data.admin));
-        toast.success(`Welcome, ${data.admin.username}!`);
+      if (data?.success && data?.session_token) {
+        // Store session token in memory only (not localStorage)
+        setAdminSession(data.session_token, data.expires_at);
+        toast.success('Login successful!');
         navigate('/admin/task-proofs');
       } else {
         toast.error(data?.error || 'Invalid credentials');
@@ -74,6 +98,7 @@ export default function MySQLAdminLogin() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={loading}
+                autoComplete="username"
               />
             </div>
             <div className="space-y-2">
@@ -85,6 +110,7 @@ export default function MySQLAdminLogin() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
+                autoComplete="current-password"
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
