@@ -21,6 +21,9 @@ verify_jwt = true
 [functions.mysql-admin-login]
 verify_jwt = false
 
+[functions.mysql-admin-session]
+verify_jwt = false
+
 [functions.mysql-task-proofs]
 verify_jwt = false
 

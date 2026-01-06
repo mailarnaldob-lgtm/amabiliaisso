@@ -13,19 +13,16 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const status = url.searchParams.get('status') || 'pending';
-    
-    const mysqlHost = Deno.env.get('MYSQL_HOST') || '';
-    const mysqlUser = Deno.env.get('MYSQL_USER') || '';
-    const mysqlDatabase = Deno.env.get('MYSQL_DATABASE') || '';
-    const mysqlPassword = Deno.env.get('MYSQL_PASSWORD') || '';
+    const sessionToken = url.searchParams.get('session_token') || '';
 
-    if (!mysqlHost || !mysqlUser || !mysqlDatabase || !mysqlPassword) {
+    if (!sessionToken) {
       return new Response(
-        JSON.stringify({ error: 'Database configuration error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Session token required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // PHP proxy handles DB credentials internally via its own environment
     const proxyUrl = `https://amabilianetwork.com/api/task-proofs.php`;
     
     const response = await fetch(proxyUrl, {
@@ -34,10 +31,8 @@ serve(async (req) => {
       body: JSON.stringify({
         action: 'list',
         status,
-        db_host: mysqlHost,
-        db_user: mysqlUser,
-        db_name: mysqlDatabase,
-        db_pass: mysqlPassword
+        session_token: sessionToken
+        // DB credentials are NOT sent - PHP proxy reads from its own env
       })
     });
 
@@ -50,6 +45,13 @@ serve(async (req) => {
     }
 
     const result = await response.json();
+    
+    if (result.error === 'Invalid session') {
+      return new Response(
+        JSON.stringify({ error: 'Session expired', session_invalid: true }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     return new Response(
       JSON.stringify(result),

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +17,7 @@ import {
   ExternalLink,
   FileText
 } from 'lucide-react';
+import { getAdminSessionToken, clearAdminSession } from './MySQLAdminLogin';
 
 interface TaskProof {
   id: number;
@@ -31,7 +32,7 @@ interface TaskProof {
   created_at: string;
 }
 
-interface Admin {
+interface AdminInfo {
   id: number;
   username: string;
   role: string;
@@ -39,27 +40,51 @@ interface Admin {
 
 export default function TaskProofsDashboard() {
   const navigate = useNavigate();
-  const [admin, setAdmin] = useState<Admin | null>(null);
+  const [admin, setAdmin] = useState<AdminInfo | null>(null);
   const [proofs, setProofs] = useState<TaskProof[]>([]);
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('pending');
 
-  useEffect(() => {
-    // Check admin session
-    const storedAdmin = localStorage.getItem('mysql_admin');
-    if (!storedAdmin) {
-      navigate('/admin/login');
-      return;
-    }
-    
-    try {
-      setAdmin(JSON.parse(storedAdmin));
-    } catch {
-      navigate('/admin/login');
-      return;
-    }
+  const handleSessionInvalid = useCallback(() => {
+    clearAdminSession();
+    toast.error('Session expired. Please login again.');
+    navigate('/admin/login');
   }, [navigate]);
+
+  const validateSession = useCallback(async () => {
+    const sessionToken = getAdminSessionToken();
+    if (!sessionToken) {
+      navigate('/admin/login');
+      return null;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('mysql-admin-session', {
+        body: { session_token: sessionToken, action: 'validate' }
+      });
+
+      if (error || !data?.valid) {
+        handleSessionInvalid();
+        return null;
+      }
+
+      return data.admin as AdminInfo;
+    } catch {
+      handleSessionInvalid();
+      return null;
+    }
+  }, [navigate, handleSessionInvalid]);
+
+  useEffect(() => {
+    const initSession = async () => {
+      const adminInfo = await validateSession();
+      if (adminInfo) {
+        setAdmin(adminInfo);
+      }
+    };
+    initSession();
+  }, [validateSession]);
 
   useEffect(() => {
     if (admin) {
@@ -68,16 +93,16 @@ export default function TaskProofsDashboard() {
   }, [admin, activeTab]);
 
   const fetchProofs = async (status: string) => {
+    const sessionToken = getAdminSessionToken();
+    if (!sessionToken) {
+      handleSessionInvalid();
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('mysql-task-proofs', {
-        body: null,
-        headers: {}
-      });
-
-      // Use query params approach
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mysql-task-proofs?status=${status}`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mysql-task-proofs?status=${status}&session_token=${encodeURIComponent(sessionToken)}`,
         {
           method: 'GET',
           headers: {
@@ -87,11 +112,16 @@ export default function TaskProofsDashboard() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch proofs');
+      const result = await response.json();
+
+      if (result.session_invalid) {
+        handleSessionInvalid();
+        return;
       }
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch proofs');
+      }
       
       if (result.proofs) {
         setProofs(result.proofs);
@@ -107,13 +137,22 @@ export default function TaskProofsDashboard() {
   };
 
   const handleApprove = async (proofId: number) => {
-    if (!admin) return;
+    const sessionToken = getAdminSessionToken();
+    if (!sessionToken) {
+      handleSessionInvalid();
+      return;
+    }
     
     setApproving(proofId);
     try {
       const { data, error } = await supabase.functions.invoke('mysql-approve-proof', {
-        body: { proof_id: proofId, admin_id: admin.id }
+        body: { proof_id: proofId, session_token: sessionToken }
       });
+
+      if (data?.session_invalid) {
+        handleSessionInvalid();
+        return;
+      }
 
       if (error) {
         throw error;
@@ -121,7 +160,6 @@ export default function TaskProofsDashboard() {
 
       if (data?.success) {
         toast.success('Task proof approved and paid!');
-        // Remove from list or refresh
         setProofs(prev => prev.filter(p => p.id !== proofId));
       } else {
         toast.error(data?.error || 'Failed to approve');
@@ -134,8 +172,18 @@ export default function TaskProofsDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('mysql_admin');
+  const handleLogout = async () => {
+    const sessionToken = getAdminSessionToken();
+    if (sessionToken) {
+      try {
+        await supabase.functions.invoke('mysql-admin-session', {
+          body: { session_token: sessionToken, action: 'logout' }
+        });
+      } catch {
+        // Ignore logout errors
+      }
+    }
+    clearAdminSession();
     navigate('/admin/login');
   };
 
@@ -154,6 +202,14 @@ export default function TaskProofsDashboard() {
 
   const pendingCount = proofs.filter(p => p.status === 'pending').length;
 
+  if (!admin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -162,7 +218,7 @@ export default function TaskProofsDashboard() {
           <div>
             <h1 className="text-xl font-bold">Task Proofs Dashboard</h1>
             <p className="text-sm text-muted-foreground">
-              Logged in as <span className="font-medium">{admin?.username}</span> ({admin?.role})
+              Logged in as <span className="font-medium">{admin.username}</span> ({admin.role})
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={handleLogout}>
