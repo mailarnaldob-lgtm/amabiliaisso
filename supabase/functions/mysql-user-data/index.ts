@@ -27,12 +27,42 @@ serve(async (req) => {
         action,
         user_id,
         email
-        // DB credentials are NOT sent - PHP proxy reads from its own env
       }),
     });
 
-    const data = await response.json();
-    console.log('PHP proxy response received');
+    // Get raw response text first to check for HTML errors
+    const responseText = await response.text();
+    console.log(`PHP proxy status: ${response.status}, response length: ${responseText.length}`);
+    
+    // Check if response is HTML (error page) instead of JSON
+    if (responseText.startsWith('<!DOCTYPE') || responseText.startsWith('<html')) {
+      console.error('PHP proxy returned HTML instead of JSON. The endpoint may not exist or has an error.');
+      console.error('Response preview:', responseText.substring(0, 500));
+      return new Response(
+        JSON.stringify({ 
+          error: 'Backend service unavailable. Please contact support.',
+          details: 'PHP proxy returned HTML instead of JSON'
+        }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Try to parse JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse PHP response as JSON:', responseText.substring(0, 500));
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid response from backend',
+          details: 'Response was not valid JSON'
+        }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('PHP proxy response received successfully');
 
     return new Response(
       JSON.stringify(data),
