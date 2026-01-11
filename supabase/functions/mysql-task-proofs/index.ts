@@ -5,6 +5,47 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Safe fetch with strict JSON validation
+ */
+async function safeFetchJson(
+  url: string, 
+  options: RequestInit
+): Promise<{ ok: boolean; data?: unknown; error?: string; httpStatus: number }> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
+    
+    const responseText = await response.text();
+    const trimmedResponse = responseText.trim();
+    
+    if (trimmedResponse.startsWith('<!DOCTYPE') || trimmedResponse.startsWith('<html') || trimmedResponse.startsWith('<')) {
+      console.error('[TASK_PROOFS] PHP returned HTML:', trimmedResponse.substring(0, 300));
+      return { ok: false, error: 'Task proofs service returned error page', httpStatus: 503 };
+    }
+    
+    if (!trimmedResponse) {
+      return { ok: false, error: 'Empty response from task proofs service', httpStatus: 502 };
+    }
+    
+    try {
+      const data = JSON.parse(trimmedResponse);
+      return { ok: response.ok, data, httpStatus: response.status };
+    } catch {
+      console.error('[TASK_PROOFS] Invalid JSON:', trimmedResponse.substring(0, 300));
+      return { ok: false, error: 'Invalid response from task proofs service', httpStatus: 502 };
+    }
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      return { ok: false, error: 'Request timeout', httpStatus: 504 };
+    }
+    return { ok: false, error: 'Network error', httpStatus: 503 };
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -17,51 +58,44 @@ serve(async (req) => {
 
     if (!sessionToken) {
       return new Response(
-        JSON.stringify({ error: 'Session token required' }),
+        JSON.stringify({ success: false, error: 'Session token required', code: 'MISSING_TOKEN' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // PHP proxy handles DB credentials internally via its own environment
-    const proxyUrl = `https://amabilianetwork.com/api/task-proofs.php`;
-    
-    const response = await fetch(proxyUrl, {
+    console.log(`[TASK_PROOFS] Fetching proofs with status: ${status}`);
+
+    const result = await safeFetchJson('https://amabilianetwork.com/api/task-proofs.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'list',
-        status,
-        session_token: sessionToken
-        // DB credentials are NOT sent - PHP proxy reads from its own env
-      })
+      body: JSON.stringify({ action: 'list', status, session_token: sessionToken }),
     });
 
-    if (!response.ok) {
-      console.error('Task proofs fetch error:', await response.text());
+    if (!result.ok) {
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch task proofs' }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: result.error, code: 'SERVICE_ERROR' }),
+        { status: result.httpStatus, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const result = await response.json();
+    const proofResult = result.data as { error?: string; proofs?: unknown[] };
     
-    if (result.error === 'Invalid session') {
+    if (proofResult.error === 'Invalid session') {
       return new Response(
-        JSON.stringify({ error: 'Session expired', session_invalid: true }),
+        JSON.stringify({ success: false, error: 'Session expired', code: 'SESSION_EXPIRED', session_invalid: true }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
+
     return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: true, data: proofResult }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Task proofs error:', error);
+    console.error('[TASK_PROOFS] Error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ success: false, error: 'Internal server error', code: 'INTERNAL_ERROR' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

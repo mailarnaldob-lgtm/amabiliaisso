@@ -1,5 +1,8 @@
 project_id = "oquyabvzplwgdiqxctft"
 
+[functions.health]
+verify_jwt = false
+
 [functions.swap-cash-in]
 verify_jwt = true
 
