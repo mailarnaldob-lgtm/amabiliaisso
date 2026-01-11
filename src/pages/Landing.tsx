@@ -10,26 +10,26 @@ import {
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold">
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link to="/" className="text-xl sm:text-2xl font-bold">
             <span className="text-primary">₳LPHA</span>
-            <span className="text-foreground ml-1">ECOSYSTEM</span>
+            <span className="text-foreground ml-1 hidden xs:inline">ECOSYSTEM</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors hidden md:block">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors hidden lg:block text-sm">
               How It Works
             </a>
-            <a href="#income-systems" className="text-muted-foreground hover:text-foreground transition-colors hidden md:block">
+            <a href="#income-systems" className="text-muted-foreground hover:text-foreground transition-colors hidden lg:block text-sm">
               Earn
             </a>
             <Link to="/auth">
-              <Button variant="ghost">Login</Button>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex">Login</Button>
             </Link>
             <Link to="/auth">
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button className="bg-primary hover:bg-primary/90 text-sm px-3 sm:px-4">
                 Get Started
               </Button>
             </Link>
@@ -38,52 +38,51 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 md:py-24 px-4 bg-gradient-to-br from-card via-background to-primary/5 relative overflow-hidden">
+      <section className="py-12 sm:py-16 md:py-24 px-4 bg-gradient-to-br from-card via-background to-primary/5 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.1),transparent_50%)]" />
         <div className="container mx-auto text-center max-w-5xl relative z-10">
-          <Badge className="mb-6 px-4 py-2 text-sm bg-primary/10 text-primary border-primary/20" variant="outline">
+          <Badge className="mb-4 sm:mb-6 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary/10 text-primary border-primary/20" variant="outline">
             The All-In-One Income Engine
           </Badge>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-4 sm:mb-6 leading-tight">
             Turn Your Time & Capital Into{' '}
             <span className="text-primary">Automated ₳ Income</span>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
             A hyper-modern fintech ecosystem where anyone can earn daily from missions 
-            and compound weekly through smart P2P finance—secured by a centralized ledger 
-            and distributed execution.
+            and compound weekly through smart P2P finance.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 px-4">
             <Link to="/auth">
-              <Button size="lg" className="gap-2 text-lg px-8 py-6 bg-primary hover:bg-primary/90 shadow-lg">
-                <Play className="h-5 w-5" />
+              <Button size="lg" className="gap-2 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-primary hover:bg-primary/90 shadow-lg w-full sm:w-auto">
+                <Play className="h-4 sm:h-5 w-4 sm:w-5" />
                 Activate Your ₳ Account
               </Button>
             </Link>
             <a href="#video-section">
-              <Button size="lg" variant="outline" className="gap-2 text-lg px-8 py-6 border-border hover:bg-card">
-                <Eye className="h-5 w-5" />
+              <Button size="lg" variant="outline" className="gap-2 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-border hover:bg-card w-full sm:w-auto">
+                <Eye className="h-4 sm:h-5 w-4 sm:w-5" />
                 View How It Works
               </Button>
             </a>
           </div>
 
           {/* Tagline */}
-          <p className="text-xl md:text-2xl font-semibold text-foreground mb-4">
+          <p className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground mb-4">
             Earn Daily. Grow Weekly. Scale as a Network.
           </p>
         </div>
       </section>
 
       {/* Video Section */}
-      <section className="py-16 px-4 bg-card" id="video-section">
+      <section className="py-12 sm:py-16 px-4 bg-card" id="video-section">
         <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
               60-Second Overview
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               See how the ecosystem works
             </p>
           </div>
@@ -91,24 +90,24 @@ export default function Landing() {
           {/* Video Placeholder */}
           <div className="aspect-video bg-background rounded-xl border border-border flex items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
-            <div className="text-center z-10">
-              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4 hover:bg-primary/30 transition-colors cursor-pointer">
-                <Play className="h-10 w-10 text-primary ml-1" />
+            <div className="text-center z-10 px-4">
+              <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4 hover:bg-primary/30 transition-colors cursor-pointer">
+                <Play className="h-8 sm:h-10 w-8 sm:w-10 text-primary ml-1" />
               </div>
-              <p className="text-muted-foreground">Video Coming Soon</p>
-              <p className="text-sm text-muted-foreground/60 mt-2">Admin-editable video placeholder</p>
+              <p className="text-muted-foreground text-sm sm:text-base">Video Coming Soon</p>
+              <p className="text-xs sm:text-sm text-muted-foreground/60 mt-2">Admin-editable video placeholder</p>
             </div>
             
             {/* Video Talking Points */}
-            <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2 justify-center">
-              <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
+            <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4 flex flex-wrap gap-1 sm:gap-2 justify-center">
+              <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs">
                 <Coins className="h-3 w-3 mr-1" /> Earn ₳ daily
               </Badge>
-              <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
-                <TrendingUp className="h-3 w-3 mr-1" /> 3% weekly interest
+              <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs">
+                <TrendingUp className="h-3 w-3 mr-1" /> 3% weekly
               </Badge>
-              <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
-                <Wallet className="h-3 w-3 mr-1" /> One wallet, four engines
+              <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs hidden sm:inline-flex">
+                <Wallet className="h-3 w-3 mr-1" /> One wallet
               </Badge>
             </div>
           </div>
