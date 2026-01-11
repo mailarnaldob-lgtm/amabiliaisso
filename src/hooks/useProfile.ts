@@ -14,6 +14,7 @@ export interface Profile {
   avatar_url: string | null;
   created_at: string | null;
   updated_at: string | null;
+  isFallback?: boolean;
 }
 
 // Generate a simple referral code from user id
@@ -24,12 +25,14 @@ function generateReferralCode(userId: string): string {
 export function useProfile() {
   const { user } = useAuth();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['profile', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Profile | null> => {
       if (!user) return null;
       
       try {
+        console.log('[useProfile] Fetching profile from MySQL backend');
+        
         // Fetch profile from MySQL via edge function
         const { data, error } = await supabase.functions.invoke('mysql-user-data', {
           body: { 
@@ -40,57 +43,65 @@ export function useProfile() {
         });
 
         if (error) {
-          console.warn('MySQL backend unavailable, using fallback profile from auth data');
-          // Return fallback profile from Supabase Auth metadata
-          return createFallbackProfile(user);
+          console.warn('[useProfile] Edge function error, using fallback:', error.message);
+          return createFallbackProfile(user, true);
         }
 
-        // Check for service unavailable response
-        if (data?.error) {
-          console.warn('MySQL service error:', data.error);
-          return createFallbackProfile(user);
+        // Handle standardized API response format
+        if (data?.success === false) {
+          console.warn('[useProfile] Backend error:', data.error, data.code);
+          return createFallbackProfile(user, true);
         }
 
-        // If no user found in MySQL, use fallback
-        if (!data?.user) {
-          console.log('User not found in MySQL, using fallback profile');
-          return createFallbackProfile(user);
+        // Extract profile from various response formats
+        const profileData = data?.data?.profile || data?.data?.user || data?.user || data?.profile;
+        
+        if (!profileData) {
+          console.log('[useProfile] No profile in response, using fallback');
+          return createFallbackProfile(user, true);
         }
 
         // Map MySQL user data to Profile interface
-        const mysqlUser = data.user;
         return {
-          id: mysqlUser.id?.toString() || user.id,
-          full_name: mysqlUser.fullname || user.user_metadata?.full_name || 'User',
-          phone: mysqlUser.phone || null,
-          referral_code: mysqlUser.referral_code || generateReferralCode(user.id),
-          referred_by: mysqlUser.referrer_id?.toString() || null,
-          membership_tier: mysqlUser.membership_tier || 'basic',
-          membership_amount: null,
-          is_kyc_verified: false,
-          avatar_url: null,
-          created_at: mysqlUser.created_at || null,
-          updated_at: null,
-        } as Profile;
+          id: profileData.id?.toString() || user.id,
+          full_name: profileData.fullname || profileData.full_name || user.user_metadata?.full_name || 'User',
+          phone: profileData.phone || null,
+          referral_code: profileData.referral_code || generateReferralCode(user.id),
+          referred_by: profileData.referrer_id?.toString() || profileData.referred_by || null,
+          membership_tier: profileData.membership_tier || 'basic',
+          membership_amount: profileData.membership_amount ? parseFloat(profileData.membership_amount) : null,
+          is_kyc_verified: Boolean(profileData.is_kyc_verified),
+          avatar_url: profileData.avatar_url || null,
+          created_at: profileData.created_at || null,
+          updated_at: profileData.updated_at || null,
+          isFallback: false,
+        };
 
       } catch (error) {
-        console.warn('Failed to fetch profile from MySQL, using fallback:', error);
-        // Return fallback profile instead of throwing
-        return createFallbackProfile(user);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('[useProfile] Failed to fetch profile:', errorMessage);
+        return createFallbackProfile(user, true);
       }
     },
     enabled: !!user,
-    retry: 1, // Only retry once
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    staleTime: 30000,
+    gcTime: 60000,
   });
+
+  return {
+    ...query,
+    isFallback: query.data?.isFallback || false,
+  };
 }
 
 // Helper function to create a fallback profile from Supabase Auth user
-function createFallbackProfile(user: any): Profile {
+function createFallbackProfile(user: { id: string; email?: string; user_metadata?: Record<string, unknown>; created_at?: string }, isFallback: boolean): Profile {
   return {
     id: user.id,
-    full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-    phone: user.user_metadata?.phone || null,
+    full_name: (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'User',
+    phone: (user.user_metadata?.phone as string) || null,
     referral_code: generateReferralCode(user.id),
     referred_by: null,
     membership_tier: 'basic',
@@ -99,5 +110,6 @@ function createFallbackProfile(user: any): Profile {
     avatar_url: null,
     created_at: user.created_at || null,
     updated_at: null,
+    isFallback,
   };
 }
