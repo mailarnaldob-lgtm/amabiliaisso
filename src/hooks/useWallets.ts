@@ -11,6 +11,15 @@ export interface Wallet {
   updated_at: string | null;
 }
 
+// Create default wallets with zero balances
+function createDefaultWallets(userId: string): Wallet[] {
+  return [
+    { id: `task-${userId}`, user_id: userId, wallet_type: 'task', balance: 0, created_at: null, updated_at: null },
+    { id: `royalty-${userId}`, user_id: userId, wallet_type: 'royalty', balance: 0, created_at: null, updated_at: null },
+    { id: `main-${userId}`, user_id: userId, wallet_type: 'main', balance: 0, created_at: null, updated_at: null },
+  ];
+}
+
 export function useWallets() {
   const { user } = useAuth();
 
@@ -30,8 +39,14 @@ export function useWallets() {
         });
 
         if (error) {
-          console.error('Error fetching wallets from MySQL:', error);
-          throw error;
+          console.warn('MySQL backend unavailable, using default wallets');
+          return createDefaultWallets(user.id);
+        }
+
+        // Check for service unavailable response
+        if (data?.error) {
+          console.warn('MySQL service error:', data.error);
+          return createDefaultWallets(user.id);
         }
 
         // If wallets exist in response, map them
@@ -46,16 +61,17 @@ export function useWallets() {
           })) as Wallet[];
         }
 
-        // If no wallets found, the user sync should have created them
-        // Return empty array - the sync will be triggered by useProfile
-        console.log('No wallets found in MySQL response');
-        return [];
+        // No wallets found, return defaults
+        console.log('No wallets found in MySQL response, using defaults');
+        return createDefaultWallets(user.id);
 
       } catch (error) {
-        console.error('Failed to fetch wallets from MySQL:', error);
-        throw new Error('Unable to fetch wallet data. Please try again.');
+        console.warn('Failed to fetch wallets from MySQL, using defaults:', error);
+        return createDefaultWallets(user.id);
       }
     },
     enabled: !!user,
+    retry: 1, // Only retry once
+    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 }
