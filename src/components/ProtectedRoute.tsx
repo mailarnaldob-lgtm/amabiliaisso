@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdminSessionValid } from '@/lib/adminSession';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -23,12 +24,9 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     return <Navigate to="/auth" replace />;
   }
 
-  // For admin routes, check localStorage for MySQL admin session
-  if (requireAdmin) {
-    const mysqlAdmin = localStorage.getItem('mysql_admin');
-    if (!mysqlAdmin) {
-      return <Navigate to="/admin/login" replace />;
-    }
+  // For admin routes, check memory-based session (not localStorage)
+  if (requireAdmin && !isAdminSessionValid()) {
+    return <Navigate to="/admin/login" replace />;
   }
 
   return <>{children}</>;

@@ -366,6 +366,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cash_out_with_lock: {
+        Args: {
+          p_account_name: string
+          p_account_number: string
+          p_amount: number
+          p_fee_percent: number
+          p_payment_method: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -373,6 +384,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      transfer_with_lock: {
+        Args: {
+          p_amount: number
+          p_from_type: Database["public"]["Enums"]["wallet_type"]
+          p_to_type: Database["public"]["Enums"]["wallet_type"]
+          p_user_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {

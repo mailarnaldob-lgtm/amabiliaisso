@@ -55,73 +55,23 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get user's wallets
-    const { data: wallets, error: walletsError } = await supabaseAdmin
-      .from('wallets')
-      .select('id, wallet_type, balance')
-      .eq('user_id', user.id);
+    // Use atomic database function with row-level locking to prevent race conditions
+    const { data: result, error: rpcError } = await supabaseAdmin.rpc('transfer_with_lock', {
+      p_user_id: user.id,
+      p_from_type: from_wallet_type,
+      p_to_type: to_wallet_type,
+      p_amount: amount
+    });
 
-    if (walletsError || !wallets) {
-      throw new Error('Failed to fetch wallets');
+    if (rpcError) {
+      console.error('RPC error:', rpcError);
+      throw new Error('Transfer failed: database error');
     }
 
-    const fromWallet = wallets.find(w => w.wallet_type === from_wallet_type);
-    const toWallet = wallets.find(w => w.wallet_type === to_wallet_type);
-
-    if (!fromWallet || !toWallet) {
-      throw new Error('Wallet not found');
+    // Check if the database function returned an error
+    if (!result?.success) {
+      throw new Error(result?.error || 'Transfer failed');
     }
-
-    if ((fromWallet.balance || 0) < amount) {
-      throw new Error('Insufficient balance');
-    }
-
-    // Perform transfer
-    const fromNewBalance = (fromWallet.balance || 0) - amount;
-    const toNewBalance = (toWallet.balance || 0) + amount;
-
-    // Update source wallet
-    const { error: fromUpdateError } = await supabaseAdmin
-      .from('wallets')
-      .update({ balance: fromNewBalance, updated_at: new Date().toISOString() })
-      .eq('id', fromWallet.id);
-
-    if (fromUpdateError) {
-      throw new Error('Failed to update source wallet');
-    }
-
-    // Update destination wallet
-    const { error: toUpdateError } = await supabaseAdmin
-      .from('wallets')
-      .update({ balance: toNewBalance, updated_at: new Date().toISOString() })
-      .eq('id', toWallet.id);
-
-    if (toUpdateError) {
-      // Rollback source wallet
-      await supabaseAdmin
-        .from('wallets')
-        .update({ balance: fromWallet.balance, updated_at: new Date().toISOString() })
-        .eq('id', fromWallet.id);
-      throw new Error('Failed to update destination wallet');
-    }
-
-    // Log transactions
-    await supabaseAdmin.from('wallet_transactions').insert([
-      {
-        wallet_id: fromWallet.id,
-        user_id: user.id,
-        amount: -amount,
-        transaction_type: 'transfer_out',
-        description: `Transfer to ${to_wallet_type} wallet`
-      },
-      {
-        wallet_id: toWallet.id,
-        user_id: user.id,
-        amount: amount,
-        transaction_type: 'transfer_in',
-        description: `Transfer from ${from_wallet_type} wallet`
-      }
-    ]);
 
     console.log(`Transfer successful: User ${user.id} moved ₳${amount} from ${from_wallet_type} to ${to_wallet_type}`);
 
@@ -130,8 +80,8 @@ serve(async (req) => {
         success: true,
         data: {
           amount,
-          from_wallet: { type: from_wallet_type, new_balance: fromNewBalance },
-          to_wallet: { type: to_wallet_type, new_balance: toNewBalance }
+          from_wallet: { type: from_wallet_type, new_balance: result.from_balance },
+          to_wallet: { type: to_wallet_type, new_balance: result.to_balance }
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }

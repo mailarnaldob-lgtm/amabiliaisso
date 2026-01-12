@@ -5,24 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Users, CreditCard, TrendingUp, LogOut, LayoutDashboard, Clock, FileCheck, Info, Shield } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Users, CreditCard, TrendingUp, LogOut, LayoutDashboard, Clock, FileCheck, Shield } from 'lucide-react';
+import { getAdminInfo, clearAdminSession, isAdminSessionValid } from '@/lib/adminSession';
+import { useEffect } from 'react';
 
 export default function AdminDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [admin, setAdmin] = useState<{ username: string; role: string } | null>(null);
+  const adminInfo = getAdminInfo();
 
   useEffect(() => {
-    // Check for MySQL admin session
-    const storedAdmin = localStorage.getItem('mysql_admin');
-    if (storedAdmin) {
-      setAdmin(JSON.parse(storedAdmin));
+    // Redirect if no valid admin session
+    if (!isAdminSessionValid()) {
+      navigate('/admin/login');
     }
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('mysql_admin');
+    clearAdminSession();
     navigate('/admin/login');
   };
 
@@ -45,6 +45,7 @@ export default function AdminDashboard() {
         pendingReviews: data?.stats?.pendingProofs || 0,
       };
     },
+    enabled: isAdminSessionValid(),
   });
 
   const navItems = [
@@ -60,8 +61,8 @@ export default function AdminDashboard() {
       <aside className="w-64 border-r border-border bg-card p-6">
         <div className="mb-8">
           <h1 className="text-xl font-bold text-primary">Admin Panel</h1>
-          {admin && (
-            <p className="text-sm text-muted-foreground mt-1">{admin.username}</p>
+          {adminInfo && (
+            <p className="text-sm text-muted-foreground mt-1">{adminInfo.username}</p>
           )}
         </div>
         <nav className="space-y-2">
