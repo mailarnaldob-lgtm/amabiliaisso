@@ -42,10 +42,10 @@ export default function Landing() {
             Turn Your Time & Capital Into{' '}
             <span className="text-primary">Automated ₳ Income</span>
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">Vision:
- We established a self-sustaining ecosystem of wealth generation that merged incentivized mission economies with strategic P2P compounding, empowering the global individual through a transformative financial utility.
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2 bg-secondary-foreground font-extrabold">VISSION
+We established a self-sustaining ecosystem of wealth generation that merged incentivized mission economies with strategic P2P compounding, empowering the global individual through a transformative financial utility.
 
-Mission:
+MISSION
 We provided the sophisticated tools required for daily liquidity and the robust infrastructure for long-term exponential growth, effectively democratizing high-yield finance for a global audience.</p>
           
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 px-4">
