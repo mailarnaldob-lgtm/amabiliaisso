@@ -7,30 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Shield, Loader2 } from 'lucide-react';
+import { setAdminSession, clearAdminSession, getAdminSessionToken } from '@/lib/adminSession';
 
-// Session token stored in memory only (not localStorage)
-let adminSessionToken: string | null = null;
-let adminSessionExpiry: number | null = null;
-
-export function getAdminSessionToken(): string | null {
-  // Check if session expired
-  if (adminSessionExpiry && Date.now() > adminSessionExpiry) {
-    adminSessionToken = null;
-    adminSessionExpiry = null;
-    return null;
-  }
-  return adminSessionToken;
-}
-
-export function clearAdminSession(): void {
-  adminSessionToken = null;
-  adminSessionExpiry = null;
-}
-
-export function setAdminSession(token: string, expiresAt: string): void {
-  adminSessionToken = token;
-  adminSessionExpiry = new Date(expiresAt).getTime();
-}
+// Re-export for backwards compatibility
+export { getAdminSessionToken, clearAdminSession, setAdminSession } from '@/lib/adminSession';
 
 export default function MySQLAdminLogin() {
   const navigate = useNavigate();
@@ -61,7 +41,10 @@ export default function MySQLAdminLogin() {
 
       if (data?.success && data?.session_token) {
         // Store session token in memory only (not localStorage)
-        setAdminSession(data.session_token, data.expires_at);
+        setAdminSession(data.session_token, data.expires_at, {
+          username: username.trim(),
+          role: data.role || 'admin'
+        });
         toast.success('Login successful!');
         navigate('/admin/task-proofs');
       } else {
