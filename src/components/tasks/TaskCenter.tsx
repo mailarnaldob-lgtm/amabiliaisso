@@ -55,18 +55,18 @@ export function TaskCenter() {
       <Alert className="border-muted bg-muted/30">
         <Info className="h-4 w-4" />
         <AlertDescription className="text-xs">
-          Complete activities and submit proof for admin review. Credits are allocated after approval.
+          Complete VPA missions and submit proof for admin review. Credits are allocated after approval.
         </AlertDescription>
       </Alert>
 
-      {/* Level Card */}
+      {/* VPA Level Card */}
       <div className="glass-card rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{levelInfo.icon}</span>
             <div>
               <h3 className="font-bold text-foreground">{levelInfo.name}</h3>
-              <p className="text-xs text-muted-foreground">Activity Level</p>
+              <p className="text-xs text-muted-foreground">VPA Level</p>
             </div>
           </div>
           <Badge variant="outline" className="text-alpha border-alpha">
@@ -106,11 +106,11 @@ export function TaskCenter() {
         ))}
       </div>
 
-      {/* Activity Tabs */}
+      {/* VPA Mission Tabs */}
       <Tabs defaultValue="available" className="w-full">
         <TabsList className="w-full">
           <TabsTrigger value="available" className="flex-1">
-            Available ({tasks.filter((t) => t.status === 'available').length})
+            Missions ({tasks.filter((t) => t.status === 'available').length})
           </TabsTrigger>
           <TabsTrigger value="active" className="flex-1">
             Pending ({tasks.filter((t) => ['in_progress', 'submitted'].includes(t.status)).length})
@@ -146,7 +146,7 @@ export function TaskCenter() {
             ))}
           {filteredTasks.filter((t) => ['in_progress', 'submitted'].includes(t.status)).length === 0 && (
             <div className="p-6 text-center text-muted-foreground">
-              <p>No pending submissions</p>
+              <p>No pending VPA missions</p>
             </div>
           )}
         </TabsContent>
@@ -164,7 +164,7 @@ export function TaskCenter() {
             ))}
           {filteredTasks.filter((t) => t.status === 'completed').length === 0 && (
             <div className="p-6 text-center text-muted-foreground">
-              <p>No approved activities yet</p>
+              <p>No approved VPA missions yet</p>
             </div>
           )}
         </TabsContent>

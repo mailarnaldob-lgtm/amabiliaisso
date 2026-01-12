@@ -1,11 +1,19 @@
 import { useAppStore } from '@/stores/appStore';
 import { WalletCard } from './WalletCard';
+import { RoyaltyWallet } from './RoyaltyWallet';
 import { formatAlpha } from '@/lib/utils';
 import { Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useTierAccess } from '@/components/tier';
 
 export function TriWalletDashboard() {
   const wallets = useAppStore((state) => state.wallets);
+  const { canAccessElite } = useTierAccess();
+  
+  // Filter wallets based on tier - show main + task for all, royalty only for elite
+  const visibleWallets = wallets.filter((w) => 
+    w.type === 'main' || w.type === 'task'
+  );
   
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
 
@@ -33,11 +41,16 @@ export function TriWalletDashboard() {
         </AlertDescription>
       </Alert>
 
-      {/* Wallet Grid */}
+      {/* Wallet Grid - Main + Task visible to all */}
       <div className="grid gap-4">
-        {wallets.map((wallet) => (
+        {visibleWallets.map((wallet) => (
           <WalletCard key={wallet.type} wallet={wallet} />
         ))}
+      </div>
+      
+      {/* Royalty Wallet - Elite only with lock overlay for others */}
+      <div className="mt-4">
+        <RoyaltyWallet />
       </div>
     </div>
   );
