@@ -2,20 +2,14 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Users, Wallet, TrendingUp, Shield, ArrowRight, CheckCircle, 
-  Zap, Play, Clock, Lock, Globe, Database, Bell, 
-  Target, Repeat, Coins, Network, Eye, Fingerprint
-} from 'lucide-react';
-
+import { Users, Wallet, TrendingUp, Shield, ArrowRight, CheckCircle, Zap, Play, Clock, Lock, Globe, Database, Bell, Target, Repeat, Coins, Network, Eye, Fingerprint } from 'lucide-react';
 export default function Landing() {
-  return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+  return <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <Link to="/" className="text-xl sm:text-2xl font-bold">
-            <span className="text-primary">₳LPHA</span>
+            <span className="text-primary">₳MABILIA NETWORK    </span>
             <span className="text-foreground ml-1 hidden xs:inline">ECOSYSTEM</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -48,10 +42,11 @@ export default function Landing() {
             Turn Your Time & Capital Into{' '}
             <span className="text-primary">Automated ₳ Income</span>
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
-            A hyper-modern fintech ecosystem where anyone can earn daily from missions 
-            and compound weekly through smart P2P finance.
-          </p>
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">Vision:
+ We established a self-sustaining ecosystem of wealth generation that merged incentivized mission economies with strategic P2P compounding, empowering the global individual through a transformative financial utility.
+
+Mission:
+We provided the sophisticated tools required for daily liquidity and the robust infrastructure for long-term exponential growth, effectively democratizing high-yield finance for a global audience.</p>
           
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 px-4">
             <Link to="/auth">
@@ -645,6 +640,5 @@ export default function Landing() {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
