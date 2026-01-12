@@ -400,13 +400,13 @@ interface RepaymentModalProps {
 function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProps) {
   const [useAutoDeduct, setUseAutoDeduct] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: wallets } = useWallets();
+  const { wallets, getBalance, totalBalance: walletTotalBalance } = useWallets();
 
   if (!loan) return null;
 
-  const mainWallet = wallets?.find((w) => w.wallet_type === 'main');
-  const taskWallet = wallets?.find((w) => w.wallet_type === 'task');
-  const royaltyWallet = wallets?.find((w) => w.wallet_type === 'royalty');
+  const mainWallet = wallets.find((w) => w.wallet_type === 'main');
+  const taskWallet = wallets.find((w) => w.wallet_type === 'task');
+  const royaltyWallet = wallets.find((w) => w.wallet_type === 'royalty');
   
   const totalBalance = (mainWallet?.balance || 0) + (taskWallet?.balance || 0) + (royaltyWallet?.balance || 0);
   const repaymentAmount = loan.total_repayment || 0;
@@ -522,7 +522,7 @@ function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProp
 
 export function LendingMarketplace() {
   const { user } = useAuth();
-  const { data: wallets } = useWallets();
+  const { wallets, getBalance } = useWallets();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState<Loan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -530,7 +530,7 @@ export function LendingMarketplace() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('marketplace');
 
-  const mainWallet = wallets?.find((w) => w.wallet_type === 'main');
+  const mainWallet = wallets.find((w) => w.wallet_type === 'main');
 
   const fetchOffers = async () => {
     setIsLoading(true);
