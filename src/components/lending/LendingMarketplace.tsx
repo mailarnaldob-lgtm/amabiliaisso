@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, Shield, AlertTriangle, Plus, Wallet, Loader2, Clock, CheckCircle } from 'lucide-react';
+import { TrendingUp, Shield, AlertTriangle, Plus, Loader2, Clock, CheckCircle } from 'lucide-react';
 import { cn, formatAlpha } from '@/lib/utils';
-import { useAppStore } from '@/stores/appStore';
 import { useWallets } from '@/hooks/useWallets';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +19,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQueryClient } from '@tanstack/react-query';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { TierGate, useTierAccess } from '@/components/tier';
+import { LockedFeature } from '@/components/tier/LockedFeature';
 
 interface Loan {
   id: string;
@@ -89,7 +90,7 @@ function LoanOfferCard({ offer, onTakeOffer, isLoading }: LoanOfferCardProps) {
         className="w-full alpha-gradient text-alpha-foreground"
       >
         {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-        🐻 Take This Offer
+        🐻 Accept Credit Offer
       </Button>
     </div>
   );
@@ -130,7 +131,7 @@ function CreateOfferModal({ isOpen, onClose, walletBalance, onSuccess }: CreateO
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       
-      toast.success('Loan offer posted! Your ₳ is now in escrow.');
+      toast.success('Credit offer posted! Your ₳ is now in escrow.');
       setAmount('');
       onSuccess();
       onClose();
@@ -146,7 +147,7 @@ function CreateOfferModal({ isOpen, onClose, walletBalance, onSuccess }: CreateO
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span>🐂</span> Post a Lending Offer
+            <span>🐂</span> Post ALPHA P2P Credit Offer
           </DialogTitle>
           <DialogDescription>
             Your ₳ will be locked in Smart Escrow until taken or cancelled.
@@ -160,7 +161,7 @@ function CreateOfferModal({ isOpen, onClose, walletBalance, onSuccess }: CreateO
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Lending Amount</label>
+            <label className="text-sm font-medium">Credit Amount</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg alpha-text">₳</span>
               <Input
@@ -220,7 +221,7 @@ function CreateOfferModal({ isOpen, onClose, walletBalance, onSuccess }: CreateO
   );
 }
 
-// My Loans Section Component - uses edge functions, not direct queries
+// My Loans Section Component
 interface MyLoansSectionProps {
   userId: string;
   onRefresh: () => void;
@@ -234,8 +235,6 @@ function MyLoansSection({ userId, onRefresh }: MyLoansSectionProps) {
 
   const fetchMyLoans = async () => {
     try {
-      // TODO: Replace with MySQL edge function when mysql-user-loans is implemented
-      // For now, return empty array
       setMyLoans([]);
     } catch (err) {
       console.error('Failed to fetch my loans:', err);
@@ -278,7 +277,7 @@ function MyLoansSection({ userId, onRefresh }: MyLoansSectionProps) {
       {/* As Borrower */}
       <div className="space-y-3">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <span>🐻</span> As Borrower
+          <span>🐻</span> My Borrowed Credits
         </h3>
         {borrowerLoans.length > 0 ? (
           borrowerLoans.map((loan) => (
@@ -288,7 +287,7 @@ function MyLoansSection({ userId, onRefresh }: MyLoansSectionProps) {
                   <Clock className="w-3 h-3 mr-1" />
                   {getDaysRemaining(loan.due_at)} days left
                 </Badge>
-                <Badge className="bg-destructive/20 text-destructive">Active Loan</Badge>
+                <Badge className="bg-destructive/20 text-destructive">Active</Badge>
               </div>
               
               <div className="grid grid-cols-2 gap-4 py-3 px-4 rounded-lg bg-secondary/50">
@@ -318,7 +317,7 @@ function MyLoansSection({ userId, onRefresh }: MyLoansSectionProps) {
           ))
         ) : (
           <div className="p-4 rounded-xl border border-dashed border-border text-center">
-            <p className="text-sm text-muted-foreground">No active loans as borrower</p>
+            <p className="text-sm text-muted-foreground">No active credits as borrower</p>
           </div>
         )}
       </div>
@@ -326,7 +325,7 @@ function MyLoansSection({ userId, onRefresh }: MyLoansSectionProps) {
       {/* As Lender */}
       <div className="space-y-3">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <span>🐂</span> As Lender
+          <span>🐂</span> My Credit Offers
         </h3>
         {lenderLoans.length > 0 ? (
           lenderLoans.map((loan) => (
@@ -335,7 +334,7 @@ function MyLoansSection({ userId, onRefresh }: MyLoansSectionProps) {
                 <Badge variant="outline" className={cn(
                   loan.status === 'pending' ? 'border-alpha text-alpha' : 'border-success text-success'
                 )}>
-                  {loan.status === 'pending' ? 'Awaiting Borrower' : 'Active'}
+                  {loan.status === 'pending' ? 'Awaiting Taker' : 'Active'}
                 </Badge>
                 {loan.status === 'active' && loan.due_at && (
                   <span className="text-xs text-muted-foreground">
@@ -363,14 +362,14 @@ function MyLoansSection({ userId, onRefresh }: MyLoansSectionProps) {
 
               {loan.status === 'pending' && (
                 <p className="text-xs text-muted-foreground text-center">
-                  Your ₳ is in escrow waiting for a borrower
+                  Your ₳ is in escrow waiting for a taker
                 </p>
               )}
             </div>
           ))
         ) : (
           <div className="p-4 rounded-xl border border-dashed border-border text-center">
-            <p className="text-sm text-muted-foreground">No lending offers posted</p>
+            <p className="text-sm text-muted-foreground">No credit offers posted</p>
           </div>
         )}
       </div>
@@ -400,7 +399,7 @@ interface RepaymentModalProps {
 function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProps) {
   const [useAutoDeduct, setUseAutoDeduct] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { wallets, getBalance, totalBalance: walletTotalBalance } = useWallets();
+  const { wallets } = useWallets();
 
   if (!loan) return null;
 
@@ -423,7 +422,7 @@ function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProp
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      toast.success(`Loan repaid successfully! ₳${formatAlpha(repaymentAmount)} has been settled.`);
+      toast.success(`Repayment successful! ₳${formatAlpha(repaymentAmount)} has been settled.`);
       onSuccess();
     } catch (err: any) {
       toast.error(err.message || 'Failed to process repayment');
@@ -438,10 +437,10 @@ function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-success" />
-            Repay Loan
+            Repay Credit
           </DialogTitle>
           <DialogDescription>
-            Settle your loan and clear your debt.
+            Settle your credit and clear your balance.
           </DialogDescription>
         </DialogHeader>
 
@@ -457,19 +456,19 @@ function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProp
             <p className="text-sm font-medium text-foreground">Your Wallets</p>
             <div className="space-y-2 p-3 rounded-lg bg-secondary/50">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Task Wallet</span>
+                <span className="text-muted-foreground">Activity Wallet</span>
                 <span className="font-medium">₳{formatAlpha(taskWallet?.balance || 0)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Royalty Wallet</span>
+                <span className="text-muted-foreground">Referral Wallet</span>
                 <span className="font-medium">₳{formatAlpha(royaltyWallet?.balance || 0)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Main Wallet</span>
                 <span className="font-medium">₳{formatAlpha(mainWallet?.balance || 0)}</span>
               </div>
-              <div className="border-t border-border mt-2 pt-2">
-                <div className="flex justify-between text-sm font-bold">
+              <div className="border-t border-border pt-2">
+                <div className="flex justify-between text-sm font-medium">
                   <span className="text-foreground">Total Available</span>
                   <span className="text-foreground">₳{formatAlpha(totalBalance)}</span>
                 </div>
@@ -477,23 +476,23 @@ function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProp
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 p-3 rounded-lg bg-alpha/10 border border-alpha/20">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-secondary">
+            <div className="space-y-0.5">
+              <Label htmlFor="auto-deduct" className="text-sm font-medium">Auto-Deduct</Label>
+              <p className="text-xs text-muted-foreground">
+                Use all wallets (Activity → Referral → Main)
+              </p>
+            </div>
             <Switch
               id="auto-deduct"
               checked={useAutoDeduct}
               onCheckedChange={setUseAutoDeduct}
             />
-            <Label htmlFor="auto-deduct" className="text-sm cursor-pointer">
-              Auto-Deduct from all wallets (Task → Royalty → Main)
-            </Label>
           </div>
 
           {!hasEnoughBalance && (
-            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
-              <p className="text-xs text-muted-foreground">
-                Insufficient balance. Complete more tasks or transfer funds to repay this loan.
-              </p>
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-sm text-destructive">Insufficient balance for repayment</p>
             </div>
           )}
 
@@ -503,16 +502,11 @@ function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProp
             className="w-full bg-success hover:bg-success/90 text-success-foreground"
           >
             {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Processing...
-              </>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
             ) : (
-              <>
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Confirm Repayment
-              </>
+              <CheckCircle className="w-4 h-4 mr-2" />
             )}
+            Confirm Repayment
           </Button>
         </div>
       </DialogContent>
@@ -520,23 +514,22 @@ function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProp
   );
 }
 
-export function LendingMarketplace() {
+// ALPHA P2P Credits Marketplace (formerly LendingMarketplace)
+export function AlphaP2PCreditsMarketplace() {
   const { user } = useAuth();
   const { wallets, getBalance } = useWallets();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { canAccessPro } = useTierAccess();
+  const queryClient = useQueryClient();
+  
   const [availableOffers, setAvailableOffers] = useState<Loan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [takingOfferId, setTakingOfferId] = useState<string | null>(null);
-  const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('marketplace');
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  const mainWallet = wallets.find((w) => w.wallet_type === 'main');
+  const mainBalance = getBalance('main');
 
   const fetchOffers = async () => {
-    setIsLoading(true);
     try {
-      // TODO: Replace with MySQL edge function when mysql-lending-offers is implemented
-      // For now, return empty array
       setAvailableOffers([]);
     } catch (err) {
       console.error('Failed to fetch offers:', err);
@@ -547,11 +540,11 @@ export function LendingMarketplace() {
 
   useEffect(() => {
     fetchOffers();
-  }, [user]);
+  }, [user?.id]);
 
   const handleTakeOffer = async (offer: Loan) => {
     if (!user) {
-      toast.error('Please log in to take an offer');
+      toast.error('Please login to continue');
       return;
     }
 
@@ -559,117 +552,125 @@ export function LendingMarketplace() {
 
     try {
       const { data, error } = await supabase.functions.invoke('lending-take-offer', {
-        body: { offerId: offer.id }
+        body: { loanId: offer.id }
       });
 
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      toast.success('Offer taken! The loan is now active.');
-      fetchOffers();
+      toast.success(`Credit received! ₳${formatAlpha(offer.principal_amount)} has been added to your wallet.`);
+      
       queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      fetchOffers();
     } catch (err: any) {
-      toast.error(err.message || 'Failed to take offer');
+      toast.error(err.message || 'Failed to accept credit');
     } finally {
       setTakingOfferId(null);
     }
   };
 
+  const refreshData = () => {
+    fetchOffers();
+    queryClient.invalidateQueries({ queryKey: ['wallets'] });
+  };
+
+  // Show locked feature if not PRO+
+  if (!canAccessPro) {
+    return (
+      <LockedFeature 
+        tierRequired="pro" 
+        featureName="ALPHA P2P Credits" 
+        className="min-h-[400px]"
+      />
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full alpha-gradient flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-alpha-foreground" />
+    <div className="space-y-6">
+      {/* Header Stats */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="glass-card rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="h-4 w-4 text-alpha" />
+            <span className="text-xs text-muted-foreground">Available Credits</span>
           </div>
-          <div>
-            <h2 className="font-bold text-lg text-foreground">P2P Lending</h2>
-            <p className="text-xs text-muted-foreground">Secured by Smart Escrow</p>
-          </div>
+          <p className="text-2xl font-bold text-foreground">{availableOffers.length}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="border-success text-success gap-1">
-            <Shield className="w-3 h-3" />
-            Secure
-          </Badge>
+        <div className="glass-card rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Shield className="h-4 w-4 text-success" />
+            <span className="text-xs text-muted-foreground">Fixed Rate</span>
+          </div>
+          <p className="text-2xl font-bold text-alpha">3%</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
-          <TabsTrigger value="my-loans">My Loans</TabsTrigger>
+      <Tabs defaultValue="marketplace" className="w-full">
+        <TabsList className="w-full">
+          <TabsTrigger value="marketplace" className="flex-1">
+            ALPHA P2P Credits
+          </TabsTrigger>
+          <TabsTrigger value="my-credits" className="flex-1">
+            My Credits
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="marketplace" className="mt-4 space-y-4">
-          {/* Stats Bar */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-lg bg-secondary/50">
-              <p className="text-xs text-muted-foreground mb-1">Available Offers</p>
-              <p className="font-bold text-lg text-foreground">{availableOffers.length}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-alpha/10">
-              <p className="text-xs text-muted-foreground mb-1">Your Balance</p>
-              <p className="font-bold text-lg text-alpha">₳{formatAlpha(mainWallet?.balance || 0)}</p>
-            </div>
-          </div>
-
-          {/* Create Offer Button */}
+        <TabsContent value="marketplace" className="space-y-4 mt-4">
+          {/* Post Offer Button */}
           <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="w-full alpha-gradient text-alpha-foreground gap-2"
+            onClick={() => setCreateModalOpen(true)}
+            className="w-full alpha-gradient text-alpha-foreground"
           >
-            <Plus className="w-4 h-4" />
-            🐂 Post a Lending Offer
+            <Plus className="h-4 w-4 mr-2" />
+            🐂 Post Credit Offer
           </Button>
 
-          {/* Available Offers */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-foreground">Available Offers</h3>
-            
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            ) : availableOffers.length > 0 ? (
-              availableOffers.map((offer) => (
+          {/* Offer List */}
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : availableOffers.length > 0 ? (
+            <div className="space-y-4">
+              {availableOffers.map((offer) => (
                 <LoanOfferCard
                   key={offer.id}
                   offer={offer}
                   onTakeOffer={handleTakeOffer}
                   isLoading={takingOfferId === offer.id}
                 />
-              ))
-            ) : (
-              <div className="p-8 rounded-xl border border-dashed border-border text-center">
-                <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No offers available right now</p>
-                <p className="text-xs text-muted-foreground mt-1">Be the first to post a lending offer!</p>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 rounded-xl border border-dashed border-border text-center">
+              <TrendingUp className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="text-muted-foreground mb-2">No credit offers available</p>
+              <p className="text-xs text-muted-foreground">Be the first to post a credit offer!</p>
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="my-loans" className="mt-4">
+        <TabsContent value="my-credits" className="mt-4">
           {user ? (
-            <MyLoansSection userId={user.id} onRefresh={fetchOffers} />
+            <MyLoansSection userId={user.id} onRefresh={refreshData} />
           ) : (
-            <div className="p-8 text-center">
-              <p className="text-muted-foreground">Please log in to view your loans</p>
+            <div className="p-8 text-center text-muted-foreground">
+              Please login to view your credits
             </div>
           )}
         </TabsContent>
       </Tabs>
 
-      {/* Create Offer Modal */}
       <CreateOfferModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        walletBalance={mainWallet?.balance || 0}
-        onSuccess={fetchOffers}
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        walletBalance={mainBalance}
+        onSuccess={refreshData}
       />
     </div>
   );
 }
+
+// Keep backward compatibility export
+export { AlphaP2PCreditsMarketplace as LendingMarketplace };

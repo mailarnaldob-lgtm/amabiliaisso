@@ -80,8 +80,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Initial wallet balances (credits)
   wallets: [
     { type: 'main', balance: 5420.50, label: 'Main Credits', description: 'Primary credit allocation' },
-    { type: 'task', balance: 1250.00, label: 'Activity Credits', description: 'Activity-based allocations' },
-    { type: 'royalty', balance: 890.25, label: 'Referral Credits', description: 'Network participation credits' },
+    { type: 'task', balance: 1250.00, label: 'VPA Credits', description: 'Virtual Private Army earnings' },
+    { type: 'royalty', balance: 890.25, label: 'Referral Credits', description: 'Network participation credits (Elite only)' },
   ],
 
   swapMode: 'cashin',
@@ -204,13 +204,13 @@ export const MOCK_LOAN_OFFERS: LoanOffer[] = [
   },
 ];
 
-// Army level configuration
+// VPA (Virtual Private Army) level configuration
 export const ARMY_LEVELS: Record<ArmyLevel, { name: string; minTasks: number; icon: string }> = {
-  cadet: { name: 'Cadet', minTasks: 0, icon: '🎖️' },
-  specialist: { name: 'Specialist', minTasks: 10, icon: '⭐' },
-  operative: { name: 'Operative', minTasks: 50, icon: '🌟' },
-  vanguard: { name: 'Vanguard', minTasks: 150, icon: '💫' },
-  elite_operator: { name: 'Elite Operator', minTasks: 500, icon: '👑' },
+  cadet: { name: 'VPA Cadet', minTasks: 0, icon: '🎖️' },
+  specialist: { name: 'VPA Specialist', minTasks: 10, icon: '⭐' },
+  operative: { name: 'VPA Operative', minTasks: 50, icon: '🌟' },
+  vanguard: { name: 'VPA Vanguard', minTasks: 150, icon: '💫' },
+  elite_operator: { name: 'VPA Elite Operator', minTasks: 500, icon: '👑' },
 };
 
 // Membership tier configuration
@@ -218,16 +218,16 @@ export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: numb
   basic: {
     name: 'Basic',
     cost: 1000,
-    features: ['Referral Access', 'Community Platform'],
+    features: ['Referral Engine', 'VPA Daily Missions', 'Main + Task Wallet'],
   },
   pro: {
     name: 'Pro',
     cost: 2000,
-    features: ['Referral Access', 'Community Platform', 'Activity Center', 'Training Access'],
+    features: ['All Basic Features', 'ALPHA P2P Credits', 'VPA Mission Feed', 'Training Access'],
   },
   elite: {
     name: 'Elite',
     cost: 3000,
-    features: ['All Features', 'Credit Marketplace', 'KYC Verification', 'Priority Support'],
+    features: ['All Pro Features', '8% Team Override', 'Referral Credits Wallet', 'KYC Verification', 'Priority Support'],
   },
 };

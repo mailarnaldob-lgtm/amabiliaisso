@@ -34,7 +34,7 @@ const appSections: AppSection[] = [
     icon: TrendingUp, 
     path: '/alpha/finance',
     color: 'from-blue-500 to-indigo-600',
-    description: 'P2P Lending'
+    description: 'ALPHA P2P Credits'
   },
   { 
     id: 'growth', 
