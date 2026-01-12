@@ -29,7 +29,7 @@ interface WalletTransaction {
 
 export default function Transactions() {
   const { user } = useAuth();
-  const { data: wallets } = useWallets();
+  const { wallets } = useWallets();
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['wallet-transactions', user?.id],
@@ -49,14 +49,14 @@ export default function Transactions() {
   });
 
   const getWalletName = (walletId: string) => {
-    const wallet = wallets?.find(w => w.id === walletId);
+    const wallet = wallets.find(w => w.id === walletId);
     if (!wallet) return 'Unknown';
     return wallet.wallet_type.charAt(0).toUpperCase() + wallet.wallet_type.slice(1) + ' Wallet';
   };
 
-  const taskWallet = wallets?.find(w => w.wallet_type === 'task');
-  const royaltyWallet = wallets?.find(w => w.wallet_type === 'royalty');
-  const mainWallet = wallets?.find(w => w.wallet_type === 'main');
+  const taskWallet = wallets.find(w => w.wallet_type === 'task');
+  const royaltyWallet = wallets.find(w => w.wallet_type === 'royalty');
+  const mainWallet = wallets.find(w => w.wallet_type === 'main');
 
   return (
     <div className="min-h-screen bg-background">

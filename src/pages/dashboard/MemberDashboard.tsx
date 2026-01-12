@@ -32,20 +32,20 @@ import { useToast } from '@/hooks/use-toast';
 export default function MemberDashboard() {
   const { user, signOut } = useAuth();
   const { data: profile, isLoading: profileLoading, error: profileError, refetch: refetchProfile, isFetching: profileFetching } = useProfile();
-  const { data: wallets, isLoading: walletsLoading, error: walletsError, refetch: refetchWallets, isFetching: walletsFetching } = useWallets();
+  const { wallets, isFallback, isLoading: walletsLoading, error: walletsError, refetch: refetchWallets, isFetching: walletsFetching, totalBalance, getBalance } = useWallets();
   const { totalReferrals, totalEarnings, pendingEarnings } = useReferralStats();
   const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const taskWallet = wallets?.find(w => w.wallet_type === 'task');
-  const royaltyWallet = wallets?.find(w => w.wallet_type === 'royalty');
-  const mainWallet = wallets?.find(w => w.wallet_type === 'main');
+  const taskWallet = wallets.find(w => w.wallet_type === 'task');
+  const royaltyWallet = wallets.find(w => w.wallet_type === 'royalty');
+  const mainWallet = wallets.find(w => w.wallet_type === 'main');
 
-  const totalCredits = (taskWallet?.balance || 0) + (royaltyWallet?.balance || 0) + (mainWallet?.balance || 0);
+  const totalCredits = totalBalance;
 
-  // Check if we're using fallback data (all wallets have zero balance)
-  const isUsingFallback = wallets && wallets.length > 0 && wallets.every(w => w.balance === 0);
+  // Check if we're using fallback data
+  const isUsingFallback = isFallback;
 
   const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code || ''}`;
 
