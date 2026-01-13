@@ -45,13 +45,6 @@ export default function BankApp() {
       subtitle="Wallet & Exchanger"
       appColor="from-amber-500 to-orange-600"
     >
-      {/* Demo Notice */}
-      <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-          <AlertTriangle className="h-4 w-4" />
-          <span className="text-xs font-medium">UI MOCKUP - For demonstration purposes only</span>
-        </div>
-      </div>
 
       {/* User State Indicator */}
       <UserStateIndicator state="ACTIVE" fraudScore={15} />

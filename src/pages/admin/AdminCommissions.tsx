@@ -1,13 +1,29 @@
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle, Wallet, TrendingUp } from 'lucide-react';
+import { 
+  Users, 
+  CreditCard, 
+  LogOut, 
+  LayoutDashboard, 
+  Shield, 
+  FileCheck,
+  Eye,
+  Settings,
+  DollarSign,
+  ArrowLeft,
+  TrendingUp,
+  CheckCircle,
+  Wallet
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { useEffect } from 'react';
+import { getAdminInfo, clearAdminSession, isAdminSessionValid } from '@/lib/adminSession';
 
 interface CommissionWithProfile {
   id: string;
@@ -22,9 +38,33 @@ interface CommissionWithProfile {
   created_at: string | null;
 }
 
+const navItems = [
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/task-proofs', label: 'Activity Proofs', icon: FileCheck },
+  { href: '/admin/members', label: 'Members', icon: Users },
+  { href: '/admin/payments', label: 'Payments', icon: CreditCard },
+  { href: '/admin/commissions', label: 'Commissions', icon: DollarSign },
+  { href: '/admin/god-eye', label: 'God-Eye Panel', icon: Eye },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
+];
+
 export default function AdminCommissions() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const adminInfo = getAdminInfo();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!isAdminSessionValid()) {
+      navigate('/admin/login');
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    clearAdminSession();
+    navigate('/');
+  };
 
   const { data: commissions, isLoading } = useQuery({
     queryKey: ['admin-commissions'],
@@ -36,6 +76,7 @@ export default function AdminCommissions() {
       if (error) throw error;
       return data as CommissionWithProfile[];
     },
+    enabled: isAdminSessionValid(),
   });
 
   const { data: stats } = useQuery({
@@ -52,6 +93,7 @@ export default function AdminCommissions() {
       
       return { total, paid, pending, count: data.length };
     },
+    enabled: isAdminSessionValid(),
   });
 
   const markAsPaid = useMutation({
@@ -74,10 +116,51 @@ export default function AdminCommissions() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <AdminSidebar />
+      {/* Sidebar */}
+      <aside className="w-64 border-r border-border bg-card flex flex-col">
+        <div className="p-6 border-b border-border">
+          <Link to="/admin" className="flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" />
+            <span className="text-xl font-bold text-primary">Admin Panel</span>
+          </Link>
+          {adminInfo && (
+            <p className="text-sm text-muted-foreground mt-2">{adminInfo.username}</p>
+          )}
+        </div>
+        
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map((item) => (
+            <Link key={item.href} to={item.href}>
+              <Button
+                variant={location.pathname === item.href ? 'secondary' : 'ghost'}
+                className="w-full justify-start gap-2"
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Button>
+            </Link>
+          ))}
+        </nav>
+        
+        <div className="p-4 border-t border-border space-y-2">
+          <Link to="/dashboard">
+            <Button variant="outline" className="w-full gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to App
+            </Button>
+          </Link>
+          <Button variant="ghost" className="w-full gap-2" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" /> Logout
+          </Button>
+        </div>
+      </aside>
 
+      {/* Main Content */}
       <main className="flex-1 p-8">
-        <h2 className="text-2xl font-bold mb-6">Referral Commissions</h2>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">Referral Commissions</h2>
+          <p className="text-muted-foreground">View and manage referral commission payouts</p>
+        </div>
 
         {/* Stats */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
@@ -88,29 +171,29 @@ export default function AdminCommissions() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">₱{(stats?.total || 0).toLocaleString()}</p>
+              <p className="text-3xl font-bold">₳{(stats?.total || 0).toLocaleString()}</p>
             </CardContent>
           </Card>
 
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" /> Paid Out
+                <CheckCircle className="h-4 w-4 text-emerald-500" /> Paid Out
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">₱{(stats?.paid || 0).toLocaleString()}</p>
+              <p className="text-3xl font-bold text-emerald-500">₳{(stats?.paid || 0).toLocaleString()}</p>
             </CardContent>
           </Card>
 
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" /> Pending
+                <TrendingUp className="h-4 w-4 text-amber-500" /> Pending
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">₱{(stats?.pending || 0).toLocaleString()}</p>
+              <p className="text-3xl font-bold text-amber-500">₳{(stats?.pending || 0).toLocaleString()}</p>
             </CardContent>
           </Card>
 
@@ -126,9 +209,23 @@ export default function AdminCommissions() {
 
         {/* Commissions Table */}
         <Card className="border-border">
-          <CardContent className="pt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              Commission History
+            </CardTitle>
+            <CardDescription>All referral commission payouts</CardDescription>
+          </CardHeader>
+          <CardContent>
             {isLoading ? (
-              <div className="text-center py-8">Loading...</div>
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : commissions?.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No commissions yet</p>
+              </div>
             ) : (
               <Table>
                 <TableHeader>
@@ -152,9 +249,9 @@ export default function AdminCommissions() {
                       <TableCell className="capitalize">
                         <Badge variant="outline">{commission.membership_tier}</Badge>
                       </TableCell>
-                      <TableCell>₱{commission.membership_amount.toLocaleString()}</TableCell>
+                      <TableCell>₳{commission.membership_amount.toLocaleString()}</TableCell>
                       <TableCell className="font-medium text-primary">
-                        ₱{commission.commission_amount.toLocaleString()}
+                        ₳{commission.commission_amount.toLocaleString()}
                       </TableCell>
                       <TableCell>
                         <Badge variant={commission.is_paid ? 'default' : 'secondary'}>
