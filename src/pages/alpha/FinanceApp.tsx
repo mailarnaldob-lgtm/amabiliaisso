@@ -127,18 +127,6 @@ export default function FinanceApp() {
       subtitle="P2P Smart Credit"
       appColor="from-blue-500 to-indigo-600"
     >
-      {/* Demo Notice */}
-      <div className="mb-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-            <AlertTriangle className="h-4 w-4" />
-            <span className="text-xs font-medium">UI MOCKUP - For demonstration purposes only</span>
-          </div>
-          <Button variant="ghost" size="sm" className="text-xs h-6" onClick={() => setShowDebtorView(true)}>
-            Demo: Debtor View
-          </Button>
-        </div>
-      </div>
 
       {/* Circuit Breaker Status */}
       <CircuitBreakerIndicator reserveRatio={115} />

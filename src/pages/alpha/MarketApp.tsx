@@ -93,13 +93,6 @@ export default function MarketApp() {
       subtitle="VPA Missions"
       appColor="from-emerald-500 to-teal-600"
     >
-      {/* Demo Notice */}
-      <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-          <AlertTriangle className="h-4 w-4" />
-          <span className="text-xs font-medium">UI MOCKUP - For demonstration purposes only</span>
-        </div>
-      </div>
 
       {/* Daily Progress */}
       <Card className="mb-6 overflow-hidden">

@@ -77,13 +77,6 @@ export default function GrowthApp() {
       subtitle="Royalties & Network"
       appColor="from-purple-500 to-pink-600"
     >
-      {/* Demo Notice */}
-      <div className="mb-4 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
-        <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-          <AlertTriangle className="h-4 w-4" />
-          <span className="text-xs font-medium">UI MOCKUP - For demonstration purposes only</span>
-        </div>
-      </div>
 
       {/* Referral Code Card */}
       <Card className="mb-6 overflow-hidden">
