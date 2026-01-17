@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -73,119 +73,120 @@ export default function AdminCommissions() {
   });
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <AdminSidebar />
-
-      <main className="flex-1 p-8">
-        <h2 className="text-2xl font-bold mb-6">Referral Commissions</h2>
-
-        {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Wallet className="h-4 w-4 text-primary" /> Total Commissions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">₱{(stats?.total || 0).toLocaleString()}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" /> Paid Out
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">₱{(stats?.paid || 0).toLocaleString()}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" /> Pending
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">₱{(stats?.pending || 0).toLocaleString()}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Referrals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{stats?.count || 0}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Commissions Table */}
+    <AdminLayout title="Referral Commissions">
+      {/* Stats */}
+      <div className="grid md:grid-cols-4 gap-6 mb-8">
         <Card className="border-border">
-          <CardContent className="pt-6">
-            {isLoading ? (
-              <div className="text-center py-8">Loading...</div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Tier</TableHead>
-                    <TableHead>Membership Amount</TableHead>
-                    <TableHead>Commission</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {commissions?.map((commission) => (
-                    <TableRow key={commission.id}>
-                      <TableCell>
-                        {commission.created_at
-                          ? format(new Date(commission.created_at), 'MMM dd, yyyy')
-                          : '-'}
-                      </TableCell>
-                      <TableCell className="capitalize">
-                        <Badge variant="outline">{commission.membership_tier}</Badge>
-                      </TableCell>
-                      <TableCell>₱{commission.membership_amount.toLocaleString()}</TableCell>
-                      <TableCell className="font-medium text-primary">
-                        ₱{commission.commission_amount.toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={commission.is_paid ? 'default' : 'secondary'}>
-                          {commission.is_paid ? 'Paid' : 'Pending'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {!commission.is_paid && (
-                          <Button
-                            size="sm"
-                            onClick={() => markAsPaid.mutate(commission.id)}
-                            disabled={markAsPaid.isPending}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Mark Paid
-                          </Button>
-                        )}
-                        {commission.is_paid && commission.paid_at && (
-                          <span className="text-sm text-muted-foreground">
-                            {format(new Date(commission.paid_at), 'MMM dd, yyyy')}
-                          </span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Wallet className="h-4 w-4 text-primary" /> Total Commissions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">₱{(stats?.total || 0).toLocaleString()}</p>
           </CardContent>
         </Card>
-      </main>
-    </div>
+
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-primary" /> Paid Out
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">₱{(stats?.paid || 0).toLocaleString()}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" /> Pending
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">₱{(stats?.pending || 0).toLocaleString()}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Referrals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{stats?.count || 0}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Commissions Table */}
+      <Card className="border-border">
+        <CardContent className="pt-6">
+          {isLoading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Tier</TableHead>
+                  <TableHead>Membership Amount</TableHead>
+                  <TableHead>Commission</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {commissions?.map((commission) => (
+                  <TableRow key={commission.id}>
+                    <TableCell>
+                      {commission.created_at
+                        ? format(new Date(commission.created_at), 'MMM dd, yyyy')
+                        : '-'}
+                    </TableCell>
+                    <TableCell className="capitalize">
+                      <Badge variant="outline">{commission.membership_tier}</Badge>
+                    </TableCell>
+                    <TableCell>₱{commission.membership_amount.toLocaleString()}</TableCell>
+                    <TableCell className="font-medium text-primary">
+                      ₱{commission.commission_amount.toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={commission.is_paid ? 'default' : 'secondary'}>
+                        {commission.is_paid ? 'Paid' : 'Pending'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {!commission.is_paid && (
+                        <Button
+                          size="sm"
+                          onClick={() => markAsPaid.mutate(commission.id)}
+                          disabled={markAsPaid.isPending}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Mark Paid
+                        </Button>
+                      )}
+                      {commission.is_paid && commission.paid_at && (
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(commission.paid_at), 'MMM dd, yyyy')}
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {commissions?.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      No commissions found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </AdminLayout>
   );
 }
