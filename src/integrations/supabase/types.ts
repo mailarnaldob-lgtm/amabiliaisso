@@ -14,6 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
+      loan_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          from_wallet_id: string | null
+          id: string
+          loan_id: string
+          to_wallet_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          from_wallet_id?: string | null
+          id?: string
+          loan_id: string
+          to_wallet_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          from_wallet_id?: string | null
+          id?: string
+          loan_id?: string
+          to_wallet_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_transactions_from_wallet_id_fkey"
+            columns: ["from_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_transactions_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_transactions_to_wallet_id_fkey"
+            columns: ["to_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          accepted_at: string | null
+          borrower_id: string | null
+          created_at: string | null
+          due_at: string | null
+          escrow_wallet_id: string | null
+          id: string
+          interest_amount: number | null
+          interest_rate: number
+          lender_id: string
+          principal_amount: number
+          processing_fee: number | null
+          repaid_at: string | null
+          status: Database["public"]["Enums"]["loan_status"]
+          term_days: number
+          total_repayment: number | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          borrower_id?: string | null
+          created_at?: string | null
+          due_at?: string | null
+          escrow_wallet_id?: string | null
+          id?: string
+          interest_amount?: number | null
+          interest_rate?: number
+          lender_id: string
+          principal_amount: number
+          processing_fee?: number | null
+          repaid_at?: string | null
+          status?: Database["public"]["Enums"]["loan_status"]
+          term_days?: number
+          total_repayment?: number | null
+        }
+        Update: {
+          accepted_at?: string | null
+          borrower_id?: string | null
+          created_at?: string | null
+          due_at?: string | null
+          escrow_wallet_id?: string | null
+          id?: string
+          interest_amount?: number | null
+          interest_rate?: number
+          lender_id?: string
+          principal_amount?: number
+          processing_fee?: number | null
+          repaid_at?: string | null
+          status?: Database["public"]["Enums"]["loan_status"]
+          term_days?: number
+          total_repayment?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_escrow_wallet_id_fkey"
+            columns: ["escrow_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membership_payments: {
         Row: {
           amount: number
@@ -152,6 +272,95 @@ export type Database = {
         }
         Relationships: []
       }
+      task_submissions: {
+        Row: {
+          id: string
+          proof_type: string
+          proof_url: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reward_amount: number | null
+          status: string
+          submitted_at: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          proof_type: string
+          proof_url?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reward_amount?: number | null
+          status?: string
+          submitted_at?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          proof_type?: string
+          proof_url?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reward_amount?: number | null
+          status?: string
+          submitted_at?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          proof_type: string
+          required_level: string
+          reward: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          proof_type?: string
+          required_level?: string
+          reward?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          proof_type?: string
+          required_level?: string
+          reward?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -246,6 +455,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cash_out_with_lock: {
+        Args: {
+          p_account_name: string
+          p_account_number: string
+          p_amount: number
+          p_fee_percent: number
+          p_payment_method: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -254,9 +474,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      transfer_with_lock: {
+        Args: {
+          p_amount: number
+          p_from_type: Database["public"]["Enums"]["wallet_type"]
+          p_to_type: Database["public"]["Enums"]["wallet_type"]
+          p_user_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "member"
+      loan_status: "pending" | "active" | "repaid" | "defaulted" | "cancelled"
       membership_tier: "basic" | "pro" | "elite"
       payment_status: "pending" | "approved" | "rejected"
       wallet_type: "task" | "royalty" | "main"
@@ -388,6 +618,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "member"],
+      loan_status: ["pending", "active", "repaid", "defaulted", "cancelled"],
       membership_tier: ["basic", "pro", "elite"],
       payment_status: ["pending", "approved", "rejected"],
       wallet_type: ["task", "royalty", "main"],

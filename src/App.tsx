@@ -24,6 +24,9 @@ import MyProfile from "./pages/dashboard/MyProfile";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminMembers from "./pages/admin/AdminMembers";
 import AdminPayments from "./pages/admin/AdminPayments";
+import AdminTasks from "./pages/admin/AdminTasks";
+import AdminCommissions from "./pages/admin/AdminCommissions";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +55,9 @@ const App = () => (
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/members" element={<ProtectedRoute requireAdmin><AdminMembers /></ProtectedRoute>} />
             <Route path="/admin/payments" element={<ProtectedRoute requireAdmin><AdminPayments /></ProtectedRoute>} />
+            <Route path="/admin/tasks" element={<ProtectedRoute requireAdmin><AdminTasks /></ProtectedRoute>} />
+            <Route path="/admin/commissions" element={<ProtectedRoute requireAdmin><AdminCommissions /></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
             
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />

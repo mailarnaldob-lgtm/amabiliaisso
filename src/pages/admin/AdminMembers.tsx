@@ -1,20 +1,28 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { MemberEditDialog } from '@/components/admin/MemberEditDialog';
+import { DeleteConfirmDialog } from '@/components/admin/DeleteConfirmDialog';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, CreditCard, LogOut, LayoutDashboard, Search } from 'lucide-react';
-import { useState } from 'react';
+import { Search, Pencil, Trash2, UserCheck, UserX } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Profile = Tables<'profiles'>;
 
 export default function AdminMembers() {
-  const { signOut } = useAuth();
-  const location = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
 
   const { data: members, isLoading } = useQuery({
     queryKey: ['admin-members'],
@@ -28,47 +36,78 @@ export default function AdminMembers() {
     },
   });
 
-  const filteredMembers = members?.filter(m =>
-    m.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    m.referral_code.toLowerCase().includes(search.toLowerCase())
+  const toggleKyc = useMutation({
+    mutationFn: async ({ id, verified }: { id: string; verified: boolean }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_kyc_verified: verified, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'KYC status updated' });
+      queryClient.invalidateQueries({ queryKey: ['admin-members'] });
+    },
+    onError: (error: Error) => {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    },
+  });
+
+  const deleteMember = useMutation({
+    mutationFn: async (id: string) => {
+      // Note: This won't delete the auth.users record (which requires service role)
+      // But it removes the profile, effectively disabling the user
+      const { error } = await supabase.from('profiles').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Member profile deleted' });
+      queryClient.invalidateQueries({ queryKey: ['admin-members'] });
+      setDeleteDialogOpen(false);
+      setSelectedMember(null);
+    },
+    onError: (error: Error) => {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    },
+  });
+
+  const filteredMembers = members?.filter(
+    (m) =>
+      m.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      m.referral_code.toLowerCase().includes(search.toLowerCase()) ||
+      (m.phone && m.phone.includes(search))
   );
 
-  const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/members', label: 'Members', icon: Users },
-    { href: '/admin/payments', label: 'Payments', icon: CreditCard },
-  ];
+  const handleEdit = (member: Profile) => {
+    setSelectedMember(member);
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = (member: Profile) => {
+    setSelectedMember(member);
+    setDeleteDialogOpen(true);
+  };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <aside className="w-64 border-r border-border bg-card p-6">
-        <div className="mb-8"><h1 className="text-xl font-bold text-primary">Admin Panel</h1></div>
-        <nav className="space-y-2">
-          {navItems.map((item) => (
-            <Link key={item.href} to={item.href}>
-              <Button variant={location.pathname === item.href ? 'secondary' : 'ghost'} className="w-full justify-start gap-2">
-                <item.icon className="h-4 w-4" />{item.label}
-              </Button>
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-8 pt-8 border-t border-border">
-          <Link to="/dashboard"><Button variant="outline" className="w-full mb-2">Back to App</Button></Link>
-          <Button variant="ghost" className="w-full gap-2" onClick={() => signOut()}><LogOut className="h-4 w-4" /> Logout</Button>
+    <AdminLayout
+      title="Members"
+      actions={
+        <div className="relative w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search members..."
+            className="pl-10"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-      </aside>
-
-      <main className="flex-1 p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Members</h2>
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search members..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
-          </div>
-        </div>
-
-        <Card className="border-border">
-          <CardContent className="pt-6">
+      }
+    >
+      <Card className="border-border">
+        <CardContent className="pt-6">
+          {isLoading ? (
+            <div className="text-center py-8">Loading members...</div>
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -78,6 +117,7 @@ export default function AdminMembers() {
                   <TableHead>KYC</TableHead>
                   <TableHead>Referral Code</TableHead>
                   <TableHead>Joined</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -85,17 +125,75 @@ export default function AdminMembers() {
                   <TableRow key={member.id}>
                     <TableCell className="font-medium">{member.full_name}</TableCell>
                     <TableCell>{member.phone || '-'}</TableCell>
-                    <TableCell><Badge variant="outline" className="capitalize">{member.membership_tier || 'basic'}</Badge></TableCell>
-                    <TableCell>{member.is_kyc_verified ? <Badge>Verified</Badge> : <Badge variant="secondary">Pending</Badge>}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {member.membership_tier || 'basic'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {member.is_kyc_verified ? (
+                        <Badge>Verified</Badge>
+                      ) : (
+                        <Badge variant="secondary">Pending</Badge>
+                      )}
+                    </TableCell>
                     <TableCell className="font-mono">{member.referral_code}</TableCell>
-                    <TableCell>{member.created_at ? format(new Date(member.created_at), 'MMM dd, yyyy') : '-'}</TableCell>
+                    <TableCell>
+                      {member.created_at ? format(new Date(member.created_at), 'MMM dd, yyyy') : '-'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() =>
+                            toggleKyc.mutate({ id: member.id, verified: !member.is_kyc_verified })
+                          }
+                          title={member.is_kyc_verified ? 'Revoke KYC' : 'Verify KYC'}
+                        >
+                          {member.is_kyc_verified ? (
+                            <UserX className="h-4 w-4 text-destructive" />
+                          ) : (
+                            <UserCheck className="h-4 w-4 text-primary" />
+                          )}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleEdit(member)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleDelete(member)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
+                {filteredMembers?.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      No members found
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <MemberEditDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        member={selectedMember}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => selectedMember && deleteMember.mutate(selectedMember.id)}
+        title="Delete Member"
+        description={`Are you sure you want to delete "${selectedMember?.full_name}"? This will remove their profile data.`}
+        isLoading={deleteMember.isPending}
+      />
+    </AdminLayout>
   );
 }
