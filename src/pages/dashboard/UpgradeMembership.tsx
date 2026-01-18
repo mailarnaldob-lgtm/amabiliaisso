@@ -151,12 +151,8 @@ export default function UpgradeMembership() {
         
         if (uploadError) throw new Error(`Failed to upload proof: ${uploadError.message}`);
         
-        // Get public URL for the uploaded file
-        const { data: urlData } = supabase.storage
-          .from('payment-proofs')
-          .getPublicUrl(fileName);
-        
-        proofUrl = urlData?.publicUrl || null;
+        // Store the file path (not public URL) - we'll use signed URLs for viewing
+        proofUrl = uploadData.path;
       }
 
       const { error } = await supabase.from('membership_payments').insert({

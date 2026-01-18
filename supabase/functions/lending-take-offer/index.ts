@@ -10,6 +10,33 @@ interface TakeOfferRequest {
   loan_id: string;
 }
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_SECONDS = 3600; // 1 hour
+const RATE_LIMIT_MAX_OPERATIONS = 10; // Max 10 loan operations per hour
+
+async function checkRateLimit(supabase: any, userId: string): Promise<{ allowed: boolean; remaining: number }> {
+  const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW_SECONDS * 1000);
+  
+  const { count, error } = await supabase
+    .from('loan_transactions')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', oneHourAgo.toISOString());
+  
+  if (error) {
+    console.error('Rate limit check error:', error);
+    return { allowed: true, remaining: RATE_LIMIT_MAX_OPERATIONS };
+  }
+  
+  const currentCount = count || 0;
+  const remaining = Math.max(0, RATE_LIMIT_MAX_OPERATIONS - currentCount);
+  
+  return {
+    allowed: currentCount < RATE_LIMIT_MAX_OPERATIONS,
+    remaining,
+  };
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -59,6 +86,19 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Check rate limit
+    const rateLimit = await checkRateLimit(adminSupabase, user.id);
+    if (!rateLimit.allowed) {
+      console.log(`Rate limit exceeded for user ${user.id}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Rate limit exceeded. Maximum ${RATE_LIMIT_MAX_OPERATIONS} loan operations per hour. Try again later.` 
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Check user's profile for Elite tier and KYC
     const { data: profile, error: profileError } = await adminSupabase

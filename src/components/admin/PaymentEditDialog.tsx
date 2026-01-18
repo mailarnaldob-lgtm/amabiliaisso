@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ExternalLink, Image } from 'lucide-react';
+import { ExternalLink, Image, Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Payment = Tables<'membership_payments'>;
@@ -36,6 +36,9 @@ export function PaymentEditDialog({ open, onOpenChange, payment }: PaymentEditDi
     rejection_reason: '',
     reference_number: '',
   });
+  
+  const [signedProofUrl, setSignedProofUrl] = useState<string | null>(null);
+  const [isLoadingProof, setIsLoadingProof] = useState(false);
 
   useEffect(() => {
     if (payment) {
@@ -44,6 +47,33 @@ export function PaymentEditDialog({ open, onOpenChange, payment }: PaymentEditDi
         rejection_reason: payment.rejection_reason || '',
         reference_number: payment.reference_number || '',
       });
+      
+      // Generate signed URL for payment proof if it exists
+      if (payment.proof_url) {
+        setIsLoadingProof(true);
+        // Check if it's already a full URL (legacy) or a path (new format)
+        if (payment.proof_url.startsWith('http')) {
+          // Legacy public URL - use as is
+          setSignedProofUrl(payment.proof_url);
+          setIsLoadingProof(false);
+        } else {
+          // New format - generate signed URL
+          supabase.storage
+            .from('payment-proofs')
+            .createSignedUrl(payment.proof_url, 3600) // 1 hour expiry
+            .then(({ data, error }) => {
+              if (error) {
+                console.error('Error generating signed URL:', error);
+                setSignedProofUrl(null);
+              } else {
+                setSignedProofUrl(data?.signedUrl || null);
+              }
+              setIsLoadingProof(false);
+            });
+        }
+      } else {
+        setSignedProofUrl(null);
+      }
     }
   }, [payment]);
 
@@ -108,16 +138,25 @@ export function PaymentEditDialog({ open, onOpenChange, payment }: PaymentEditDi
             <p><strong>Method:</strong> {payment?.payment_method}</p>
             {payment?.proof_url && (
               <div className="pt-2">
-                <a
-                  href={payment.proof_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-primary hover:underline"
-                >
-                  <Image className="h-4 w-4" />
-                  View Payment Proof
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+                {isLoadingProof ? (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading proof...
+                  </div>
+                ) : signedProofUrl ? (
+                  <a
+                    href={signedProofUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-primary hover:underline"
+                  >
+                    <Image className="h-4 w-4" />
+                    View Payment Proof
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground text-sm">Unable to load proof</span>
+                )}
               </div>
             )}
           </div>
