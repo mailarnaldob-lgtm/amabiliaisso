@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Users, Wallet, Shield } from 'lucide-react';
+import { Eye, EyeOff, Users, Wallet, Shield, Check, X } from 'lucide-react';
+import { passwordSchema, getPasswordStrength } from '@/lib/validations';
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -30,6 +31,13 @@ export default function Auth() {
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Password validation state
+  const passwordStrength = getPasswordStrength(signupPassword);
+  const passwordValidation = passwordSchema.safeParse(signupPassword);
+  const passwordErrors = !passwordValidation.success 
+    ? passwordValidation.error.errors.map(e => e.message) 
+    : [];
 
   useEffect(() => {
     if (user) {
@@ -66,11 +74,13 @@ export default function Auth() {
     e.preventDefault();
     setIsLoading(true);
     
-    if (signupPassword.length < 6) {
+    // Validate password with zod schema
+    const passwordResult = passwordSchema.safeParse(signupPassword);
+    if (!passwordResult.success) {
       toast({
         variant: 'destructive',
-        title: 'Password too short',
-        description: 'Password must be at least 6 characters.',
+        title: 'Password Requirements Not Met',
+        description: passwordResult.error.errors[0]?.message || 'Please create a stronger password.',
       });
       setIsLoading(false);
       return;
@@ -253,7 +263,7 @@ export default function Auth() {
                         value={signupPassword}
                         onChange={(e) => setSignupPassword(e.target.value)}
                         required
-                        minLength={6}
+                        minLength={8}
                       />
                       <Button
                         type="button"
@@ -265,6 +275,48 @@ export default function Auth() {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
+                    
+                    {/* Password Strength Indicator */}
+                    {signupPassword.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full transition-all ${passwordStrength.color}`}
+                              style={{ width: `${(passwordStrength.score / 6) * 100}%` }}
+                            />
+                          </div>
+                          <span className={`text-xs font-medium capitalize ${
+                            passwordStrength.label === 'weak' ? 'text-destructive' :
+                            passwordStrength.label === 'fair' ? 'text-yellow-600' :
+                            passwordStrength.label === 'good' ? 'text-blue-600' :
+                            'text-green-600'
+                          }`}>
+                            {passwordStrength.label}
+                          </span>
+                        </div>
+                        
+                        {/* Password Requirements Checklist */}
+                        <div className="text-xs space-y-1">
+                          <div className={`flex items-center gap-1.5 ${signupPassword.length >= 8 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                            {signupPassword.length >= 8 ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            At least 8 characters
+                          </div>
+                          <div className={`flex items-center gap-1.5 ${/[A-Z]/.test(signupPassword) ? 'text-green-600' : 'text-muted-foreground'}`}>
+                            {/[A-Z]/.test(signupPassword) ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            One uppercase letter
+                          </div>
+                          <div className={`flex items-center gap-1.5 ${/[a-z]/.test(signupPassword) ? 'text-green-600' : 'text-muted-foreground'}`}>
+                            {/[a-z]/.test(signupPassword) ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            One lowercase letter
+                          </div>
+                          <div className={`flex items-center gap-1.5 ${/[0-9]/.test(signupPassword) ? 'text-green-600' : 'text-muted-foreground'}`}>
+                            {/[0-9]/.test(signupPassword) ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            One number
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
