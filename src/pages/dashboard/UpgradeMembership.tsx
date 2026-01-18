@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -15,7 +15,10 @@ import {
   Zap,
   Star,
   CheckCircle,
-  Copy
+  Copy,
+  Upload,
+  X,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -63,8 +66,11 @@ export default function UpgradeMembership() {
   const [selectedTier, setSelectedTier] = useState<string>('pro');
   const [paymentMethod, setPaymentMethod] = useState<string>('gcash');
   const [referenceNumber, setReferenceNumber] = useState('');
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ reference_number?: string }>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentTierIndex = MEMBERSHIP_TIERS.findIndex(t => t.id === profile?.membership_tier);
   const availableTiers = MEMBERSHIP_TIERS.filter((_, index) => index > currentTierIndex);
@@ -77,14 +83,81 @@ export default function UpgradeMembership() {
     toast({ title: 'Copied!', description: 'Account number copied to clipboard' });
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ 
+        variant: 'destructive', 
+        title: 'Invalid File Type', 
+        description: 'Only images (JPEG, PNG, WebP) and PDFs are allowed.' 
+      });
+      return;
+    }
+    
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast({ 
+        variant: 'destructive', 
+        title: 'File Too Large', 
+        description: 'Please upload a file smaller than 5MB.' 
+      });
+      return;
+    }
+    
+    setProofFile(file);
+    
+    // Generate preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProofPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setProofPreview(null);
+    }
+  };
+
+  const removeFile = () => {
+    setProofFile(null);
+    setProofPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const submitPayment = useMutation({
     mutationFn: async () => {
       if (!user || !selectedTierData) throw new Error('Invalid data');
 
       let proofUrl = null;
 
-      // For now, we'll just store the reference number as proof
-      // In production, you'd upload the file to storage
+      // Upload proof file to Supabase Storage if provided
+      if (proofFile) {
+        const fileExt = proofFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}_payment_proof.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('payment-proofs')
+          .upload(fileName, proofFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        if (uploadError) throw new Error(`Failed to upload proof: ${uploadError.message}`);
+        
+        // Get public URL for the uploaded file
+        const { data: urlData } = supabase.storage
+          .from('payment-proofs')
+          .getPublicUrl(fileName);
+        
+        proofUrl = urlData?.publicUrl || null;
+      }
 
       const { error } = await supabase.from('membership_payments').insert({
         user_id: user.id,
@@ -104,6 +177,10 @@ export default function UpgradeMembership() {
         description: 'Your payment is being reviewed. You will be notified once approved.',
       });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      // Reset form
+      setReferenceNumber('');
+      setProofFile(null);
+      setProofPreview(null);
     },
     onError: (error: Error) => {
       toast({
@@ -281,9 +358,49 @@ export default function UpgradeMembership() {
           <Card className="mb-8 border-border">
             <CardHeader>
               <CardTitle>3. Submit Payment Proof</CardTitle>
-              <CardDescription>Enter your transaction reference number</CardDescription>
+              <CardDescription>Upload a screenshot of your payment and enter the reference number</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* File Upload */}
+              <div className="space-y-2">
+                <Label>Payment Screenshot (Recommended)</Label>
+                <div className="border-2 border-dashed border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
+                  {proofFile ? (
+                    <div className="flex items-center gap-4">
+                      {proofPreview ? (
+                        <img src={proofPreview} alt="Payment proof" className="w-20 h-20 object-cover rounded-lg" />
+                      ) : (
+                        <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center">
+                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{proofFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(proofFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                      <Button type="button" variant="ghost" size="icon" onClick={removeFile}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center py-4 cursor-pointer">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-sm font-medium">Click to upload proof</span>
+                      <span className="text-xs text-muted-foreground mt-1">JPEG, PNG, WebP or PDF (max 5MB)</span>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,application/pdf"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="reference">Reference Number *</Label>
                 <Input

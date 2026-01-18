@@ -79,86 +79,21 @@ export function SubmissionReviewDialog({ open, onOpenChange, submission }: Submi
     mutationFn: async () => {
       if (!submission || !user) throw new Error('Missing data');
 
-      // Update submission status
-      const { error: submissionError } = await supabase
-        .from('task_submissions')
-        .update({
-          status: 'approved',
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user.id,
-          reward_amount: taskReward,
-        })
-        .eq('id', submission.id);
+      // Use server-side RPC function for atomic operations
+      const { data, error } = await supabase.rpc('approve_task_submission', {
+        p_submission_id: submission.id,
+        p_admin_id: user.id,
+      });
 
-      if (submissionError) throw submissionError;
-
-      // Get user's task wallet
-      const { data: taskWallet, error: walletError } = await supabase
-        .from('wallets')
-        .select('id, balance')
-        .eq('user_id', submission.user_id)
-        .eq('wallet_type', 'task')
-        .single();
-
-      if (walletError) throw walletError;
-
-      // Credit task wallet
-      const { error: creditError } = await supabase
-        .from('wallets')
-        .update({ balance: (taskWallet.balance || 0) + taskReward })
-        .eq('id', taskWallet.id);
-
-      if (creditError) throw creditError;
-
-      // Log transaction
-      const { error: txError } = await supabase
-        .from('wallet_transactions')
-        .insert({
-          wallet_id: taskWallet.id,
-          user_id: submission.user_id,
-          amount: taskReward,
-          transaction_type: 'task_reward',
-          description: `Reward for task: ${submission.task?.title}`,
-          reference_id: submission.id,
-        });
-
-      if (txError) throw txError;
-
-      // If Elite upline exists, credit 8% royalty
-      if (hasEliteUpline && uplineInfo) {
-        const { data: royaltyWallet, error: royaltyWalletError } = await supabase
-          .from('wallets')
-          .select('id, balance')
-          .eq('user_id', uplineInfo.id)
-          .eq('wallet_type', 'royalty')
-          .single();
-
-        if (royaltyWalletError) throw royaltyWalletError;
-
-        const { error: royaltyCreditError } = await supabase
-          .from('wallets')
-          .update({ balance: (royaltyWallet.balance || 0) + royaltyAmount })
-          .eq('id', royaltyWallet.id);
-
-        if (royaltyCreditError) throw royaltyCreditError;
-
-        // Log royalty transaction
-        const { error: royaltyTxError } = await supabase
-          .from('wallet_transactions')
-          .insert({
-            wallet_id: royaltyWallet.id,
-            user_id: uplineInfo.id,
-            amount: royaltyAmount,
-            transaction_type: 'team_override',
-            description: `8% Team Override from ${submission.user?.full_name}'s task completion`,
-            reference_id: submission.id,
-          });
-
-        if (royaltyTxError) throw royaltyTxError;
-      }
+      if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      toast({ title: 'Submission approved', description: 'Reward has been credited to user wallet' });
+    onSuccess: (data) => {
+      const result = data as { success: boolean; reward_credited: number; royalty_credited: number };
+      toast({ 
+        title: 'Submission approved', 
+        description: `Reward ₳${result.reward_credited} credited${result.royalty_credited > 0 ? ` + ₳${result.royalty_credited} royalty` : ''}` 
+      });
       queryClient.invalidateQueries({ queryKey: ['admin-submissions'] });
       queryClient.invalidateQueries({ queryKey: ['admin-tasks'] });
       onOpenChange(false);
@@ -172,17 +107,15 @@ export function SubmissionReviewDialog({ open, onOpenChange, submission }: Submi
     mutationFn: async () => {
       if (!submission || !user) throw new Error('Missing data');
 
-      const { error } = await supabase
-        .from('task_submissions')
-        .update({
-          status: 'rejected',
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user.id,
-          rejection_reason: rejectionReason || 'Submission did not meet requirements',
-        })
-        .eq('id', submission.id);
+      // Use server-side RPC function for atomic operations
+      const { data, error } = await supabase.rpc('reject_task_submission', {
+        p_submission_id: submission.id,
+        p_admin_id: user.id,
+        p_rejection_reason: rejectionReason || 'Submission did not meet requirements',
+      });
 
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       toast({ title: 'Submission rejected' });
