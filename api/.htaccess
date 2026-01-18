@@ -1,0 +1,52 @@
+# AMABILIA NETWORK - API .htaccess
+# =================================
+# Security and configuration for the API directory
+# Upload this file to: /api/.htaccess on Hostinger
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Handle CORS preflight
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect config directory
+<IfModule mod_rewrite.c>
+    RewriteRule ^config/ - [F,L]
+    RewriteRule ^helpers/ - [F,L]
+</IfModule>
+
+# Block access to sensitive files
+<FilesMatch "\.(sql|log|txt|md|json)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Set PHP settings
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log /home/u325953503/logs/php_errors.log
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+</IfModule>
+
+# Set content type for PHP files
+<FilesMatch "\.php$">
+    Header set Content-Type "application/json; charset=utf-8"
+</FilesMatch>
