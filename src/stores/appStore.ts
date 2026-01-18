@@ -3,7 +3,7 @@ import { create } from 'zustand';
 export type WalletType = 'main' | 'task' | 'royalty';
 export type ArmyLevel = 'cadet' | 'specialist' | 'operative' | 'vanguard' | 'elite_operator';
 export type MembershipTier = 'basic' | 'pro' | 'elite';
-export type LoanStatus = 'active' | 'pending' | 'repaid' | 'defaulted';
+// LoanStatus is now managed in the database via loan_status enum
 
 export interface Wallet {
   type: WalletType;
@@ -24,27 +24,8 @@ export interface Task {
   deadline?: Date;
 }
 
-export interface LoanOffer {
-  id: string;
-  lenderId: string;
-  lenderName: string;
-  principal: number;
-  interestRate: number;
-  termDays: number;
-  createdAt: Date;
-  status: 'available' | 'taken' | 'repaid';
-}
-
-export interface ActiveLoan {
-  id: string;
-  lenderId: string;
-  borrowerId: string;
-  principal: number;
-  interest: number;
-  totalDue: number;
-  dueDate: Date;
-  status: LoanStatus;
-}
+// LoanOffer and ActiveLoan types are now in src/hooks/useLending.ts
+// All lending data comes from the database with proper server-side validation
 
 interface AppState {
   // User state
@@ -171,39 +152,8 @@ export const MOCK_TASKS: Task[] = [
   },
 ];
 
-// Mock loan offers
-export const MOCK_LOAN_OFFERS: LoanOffer[] = [
-  {
-    id: 'loan-001',
-    lenderId: 'lender-001',
-    lenderName: 'Maria Santos',
-    principal: 5000,
-    interestRate: 3,
-    termDays: 7,
-    createdAt: new Date(),
-    status: 'available',
-  },
-  {
-    id: 'loan-002',
-    lenderId: 'lender-002',
-    lenderName: 'Juan Dela Cruz',
-    principal: 10000,
-    interestRate: 3,
-    termDays: 7,
-    createdAt: new Date(),
-    status: 'available',
-  },
-  {
-    id: 'loan-003',
-    lenderId: 'lender-003',
-    lenderName: 'Ana Reyes',
-    principal: 2500,
-    interestRate: 3,
-    termDays: 7,
-    createdAt: new Date(),
-    status: 'available',
-  },
-];
+// Note: Loan offers are now fetched from the database via useLending hook
+// Mock data removed for security - all lending operations now use server-side validation
 
 // Army level configuration
 export const ARMY_LEVELS: Record<ArmyLevel, { name: string; minTasks: number; icon: string }> = {
