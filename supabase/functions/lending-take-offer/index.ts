@@ -14,6 +14,9 @@ interface TakeOfferRequest {
 const RATE_LIMIT_WINDOW_SECONDS = 3600; // 1 hour
 const RATE_LIMIT_MAX_OPERATIONS = 10; // Max 10 loan operations per hour
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function checkRateLimit(supabase: any, userId: string): Promise<{ allowed: boolean; remaining: number }> {
   const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW_SECONDS * 1000);
   
@@ -81,6 +84,14 @@ serve(async (req) => {
       );
     }
 
+    // Validate UUID format
+    if (typeof loan_id !== 'string' || !UUID_REGEX.test(loan_id)) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid loan ID format" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Use service role client for privileged operations
     const adminSupabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -100,161 +111,43 @@ serve(async (req) => {
       );
     }
 
-    // Check user's profile for Elite tier and KYC
-    const { data: profile, error: profileError } = await adminSupabase
-      .from("profiles")
-      .select("membership_tier, is_kyc_verified, full_name")
-      .eq("id", user.id)
-      .single();
+    // Call the atomic database function
+    const { data, error } = await adminSupabase.rpc('lending_take_offer', {
+      p_user_id: user.id,
+      p_loan_id: loan_id,
+    });
 
-    if (profileError || !profile) {
+    if (error) {
+      console.error('Database error:', error);
       return new Response(
-        JSON.stringify({ success: false, error: "Profile not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (profile.membership_tier !== "elite") {
-      return new Response(
-        JSON.stringify({ success: false, error: "Elite membership required for borrowing" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!profile.is_kyc_verified) {
-      return new Response(
-        JSON.stringify({ success: false, error: "KYC verification required for borrowing" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get the loan offer
-    const { data: loan, error: loanError } = await adminSupabase
-      .from("loans")
-      .select("*")
-      .eq("id", loan_id)
-      .single();
-
-    if (loanError || !loan) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Loan offer not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validate loan state
-    if (loan.status !== "pending") {
-      return new Response(
-        JSON.stringify({ success: false, error: "Loan offer is no longer available" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (loan.lender_id === user.id) {
-      return new Response(
-        JSON.stringify({ success: false, error: "You cannot borrow from your own offer" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get borrower's main wallet
-    const { data: borrowerWallet, error: borrowerWalletError } = await adminSupabase
-      .from("wallets")
-      .select("id, balance")
-      .eq("user_id", user.id)
-      .eq("wallet_type", "main")
-      .single();
-
-    if (borrowerWalletError || !borrowerWallet) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Borrower wallet not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Calculate due date
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + loan.term_days);
-
-    // Update loan to active
-    const { error: updateLoanError } = await adminSupabase
-      .from("loans")
-      .update({
-        borrower_id: user.id,
-        status: "active",
-        accepted_at: new Date().toISOString(),
-        due_at: dueDate.toISOString(),
-      })
-      .eq("id", loan_id);
-
-    if (updateLoanError) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to accept loan offer" }),
+        JSON.stringify({ success: false, error: error.message || "Database operation failed" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Credit borrower's wallet with principal
-    const { error: creditError } = await adminSupabase
-      .from("wallets")
-      .update({
-        balance: borrowerWallet.balance + loan.principal_amount,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", borrowerWallet.id);
-
-    if (creditError) {
-      // Rollback loan status
-      await adminSupabase
-        .from("loans")
-        .update({
-          borrower_id: null,
-          status: "pending",
-          accepted_at: null,
-          due_at: null,
-        })
-        .eq("id", loan_id);
-
+    // Check if the RPC returned an error in the response
+    if (!data.success) {
+      const statusCode = data.error?.includes('Elite') || data.error?.includes('KYC') ? 403 : 
+                        data.error?.includes('not found') ? 404 : 400;
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to credit borrower wallet" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: data.error }),
+        { status: statusCode, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Log transaction
-    await adminSupabase
-      .from("loan_transactions")
-      .insert({
-        loan_id,
-        user_id: user.id,
-        to_wallet_id: borrowerWallet.id,
-        amount: loan.principal_amount,
-        transaction_type: "disbursement",
-        description: `Loan disbursed - ₳${loan.principal_amount}`,
-      });
-
-    await adminSupabase
-      .from("wallet_transactions")
-      .insert({
-        wallet_id: borrowerWallet.id,
-        user_id: user.id,
-        amount: loan.principal_amount,
-        transaction_type: "loan_received",
-        description: `Loan received`,
-        reference_id: loan_id,
-      });
+    console.log(`Loan ${loan_id} accepted by borrower ${user.id}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         loan: {
-          id: loan_id,
-          principal_amount: loan.principal_amount,
-          interest_amount: loan.interest_amount,
-          total_repayment: loan.total_repayment,
-          due_at: dueDate.toISOString(),
+          id: data.loan_id,
+          principal_amount: data.principal_amount,
+          interest_amount: data.interest_amount,
+          total_repayment: data.total_repayment,
+          due_at: data.due_at,
         },
-        new_balance: borrowerWallet.balance + loan.principal_amount,
+        new_balance: data.new_balance,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

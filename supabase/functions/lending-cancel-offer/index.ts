@@ -14,6 +14,9 @@ interface CancelOfferRequest {
 const RATE_LIMIT_WINDOW_SECONDS = 3600; // 1 hour
 const RATE_LIMIT_MAX_OPERATIONS = 10; // Max 10 loan operations per hour
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function checkRateLimit(supabase: any, userId: string): Promise<{ allowed: boolean; remaining: number }> {
   const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW_SECONDS * 1000);
   
@@ -81,6 +84,14 @@ serve(async (req) => {
       );
     }
 
+    // Validate UUID format
+    if (typeof loan_id !== 'string' || !UUID_REGEX.test(loan_id)) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid loan ID format" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Use service role client for privileged operations
     const adminSupabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -100,115 +111,38 @@ serve(async (req) => {
       );
     }
 
-    // Get the loan offer
-    const { data: loan, error: loanError } = await adminSupabase
-      .from("loans")
-      .select("*")
-      .eq("id", loan_id)
-      .single();
+    // Call the atomic database function
+    const { data, error } = await adminSupabase.rpc('lending_cancel_offer', {
+      p_user_id: user.id,
+      p_loan_id: loan_id,
+    });
 
-    if (loanError || !loan) {
+    if (error) {
+      console.error('Database error:', error);
       return new Response(
-        JSON.stringify({ success: false, error: "Loan offer not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validate ownership
-    if (loan.lender_id !== user.id) {
-      return new Response(
-        JSON.stringify({ success: false, error: "You can only cancel your own offers" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validate loan state
-    if (loan.status !== "pending") {
-      return new Response(
-        JSON.stringify({ success: false, error: "Only pending offers can be cancelled" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get lender's wallet
-    const { data: wallet, error: walletError } = await adminSupabase
-      .from("wallets")
-      .select("id, balance")
-      .eq("user_id", user.id)
-      .eq("wallet_type", "main")
-      .single();
-
-    if (walletError || !wallet) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Wallet not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Update loan to cancelled
-    const { error: updateLoanError } = await adminSupabase
-      .from("loans")
-      .update({ status: "cancelled" })
-      .eq("id", loan_id);
-
-    if (updateLoanError) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to cancel loan offer" }),
+        JSON.stringify({ success: false, error: error.message || "Database operation failed" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Refund principal to lender's wallet (fee is non-refundable)
-    const { error: refundError } = await adminSupabase
-      .from("wallets")
-      .update({
-        balance: wallet.balance + loan.principal_amount,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", wallet.id);
-
-    if (refundError) {
-      // Rollback
-      await adminSupabase
-        .from("loans")
-        .update({ status: "pending" })
-        .eq("id", loan_id);
-
+    // Check if the RPC returned an error in the response
+    if (!data.success) {
+      const statusCode = data.error?.includes('not found') ? 404 : 
+                        data.error?.includes('only cancel your own') ? 403 : 400;
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to refund wallet" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: data.error }),
+        { status: statusCode, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Log transaction
-    await adminSupabase
-      .from("loan_transactions")
-      .insert({
-        loan_id,
-        user_id: user.id,
-        to_wallet_id: wallet.id,
-        amount: loan.principal_amount,
-        transaction_type: "escrow_release",
-        description: `Loan offer cancelled - ₳${loan.principal_amount} returned`,
-      });
-
-    await adminSupabase
-      .from("wallet_transactions")
-      .insert({
-        wallet_id: wallet.id,
-        user_id: user.id,
-        amount: loan.principal_amount,
-        transaction_type: "escrow_refund",
-        description: `Escrow refund for cancelled loan offer`,
-        reference_id: loan_id,
-      });
+    console.log(`Loan ${loan_id} cancelled by user ${user.id}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Loan offer cancelled successfully",
-        refunded_amount: loan.principal_amount,
-        new_balance: wallet.balance + loan.principal_amount,
+        message: data.message,
+        refunded_amount: data.refunded_amount,
+        new_balance: data.new_balance,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -14,6 +14,9 @@ interface RepayLoanRequest {
 const RATE_LIMIT_WINDOW_SECONDS = 3600; // 1 hour
 const RATE_LIMIT_MAX_OPERATIONS = 10; // Max 10 loan operations per hour
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function checkRateLimit(supabase: any, userId: string): Promise<{ allowed: boolean; remaining: number }> {
   const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW_SECONDS * 1000);
   
@@ -81,6 +84,14 @@ serve(async (req) => {
       );
     }
 
+    // Validate UUID format
+    if (typeof loan_id !== 'string' || !UUID_REGEX.test(loan_id)) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid loan ID format" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Use service role client for privileged operations
     const adminSupabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -100,193 +111,43 @@ serve(async (req) => {
       );
     }
 
-    // Get the loan
-    const { data: loan, error: loanError } = await adminSupabase
-      .from("loans")
-      .select("*")
-      .eq("id", loan_id)
-      .single();
+    // Call the atomic database function
+    const { data, error } = await adminSupabase.rpc('lending_repay_loan', {
+      p_user_id: user.id,
+      p_loan_id: loan_id,
+    });
 
-    if (loanError || !loan) {
+    if (error) {
+      console.error('Database error:', error);
       return new Response(
-        JSON.stringify({ success: false, error: "Loan not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validate borrower ownership
-    if (loan.borrower_id !== user.id) {
-      return new Response(
-        JSON.stringify({ success: false, error: "You can only repay your own loans" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validate loan state
-    if (loan.status !== "active") {
-      return new Response(
-        JSON.stringify({ success: false, error: "Only active loans can be repaid" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get borrower's main wallet
-    const { data: borrowerWallet, error: borrowerWalletError } = await adminSupabase
-      .from("wallets")
-      .select("id, balance")
-      .eq("user_id", user.id)
-      .eq("wallet_type", "main")
-      .single();
-
-    if (borrowerWalletError || !borrowerWallet) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Borrower wallet not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Check sufficient balance for repayment
-    const repaymentAmount = loan.total_repayment || (loan.principal_amount + (loan.interest_amount || 0));
-    
-    if (borrowerWallet.balance < repaymentAmount) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Insufficient balance. You need ₳${repaymentAmount.toFixed(2)} to repay this loan.` 
-        }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get lender's main wallet
-    const { data: lenderWallet, error: lenderWalletError } = await adminSupabase
-      .from("wallets")
-      .select("id, balance")
-      .eq("user_id", loan.lender_id)
-      .eq("wallet_type", "main")
-      .single();
-
-    if (lenderWalletError || !lenderWallet) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Lender wallet not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Deduct from borrower's wallet
-    const { error: deductError } = await adminSupabase
-      .from("wallets")
-      .update({
-        balance: borrowerWallet.balance - repaymentAmount,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", borrowerWallet.id);
-
-    if (deductError) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to deduct repayment from wallet" }),
+        JSON.stringify({ success: false, error: error.message || "Database operation failed" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Credit lender's wallet
-    const { error: creditError } = await adminSupabase
-      .from("wallets")
-      .update({
-        balance: lenderWallet.balance + repaymentAmount,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", lenderWallet.id);
-
-    if (creditError) {
-      // Rollback borrower deduction
-      await adminSupabase
-        .from("wallets")
-        .update({
-          balance: borrowerWallet.balance,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", borrowerWallet.id);
-
+    // Check if the RPC returned an error in the response
+    if (!data.success) {
+      const statusCode = data.error?.includes('not found') ? 404 : 
+                        data.error?.includes('only repay your own') ? 403 : 400;
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to credit lender wallet" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: data.error }),
+        { status: statusCode, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Update loan to repaid
-    const { error: updateLoanError } = await adminSupabase
-      .from("loans")
-      .update({
-        status: "repaid",
-        repaid_at: new Date().toISOString(),
-      })
-      .eq("id", loan_id);
-
-    if (updateLoanError) {
-      // Rollback wallet changes
-      await adminSupabase
-        .from("wallets")
-        .update({ balance: borrowerWallet.balance, updated_at: new Date().toISOString() })
-        .eq("id", borrowerWallet.id);
-      await adminSupabase
-        .from("wallets")
-        .update({ balance: lenderWallet.balance, updated_at: new Date().toISOString() })
-        .eq("id", lenderWallet.id);
-
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to update loan status" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Log transactions
-    await adminSupabase
-      .from("loan_transactions")
-      .insert({
-        loan_id,
-        user_id: user.id,
-        from_wallet_id: borrowerWallet.id,
-        to_wallet_id: lenderWallet.id,
-        amount: repaymentAmount,
-        transaction_type: "repayment",
-        description: `Loan repaid - ₳${repaymentAmount.toFixed(2)} (Principal: ₳${loan.principal_amount}, Interest: ₳${loan.interest_amount || 0})`,
-      });
-
-    await adminSupabase
-      .from("wallet_transactions")
-      .insert([
-        {
-          wallet_id: borrowerWallet.id,
-          user_id: user.id,
-          amount: -repaymentAmount,
-          transaction_type: "loan_repayment",
-          description: `Loan repayment to lender`,
-          reference_id: loan_id,
-        },
-        {
-          wallet_id: lenderWallet.id,
-          user_id: loan.lender_id,
-          amount: repaymentAmount,
-          transaction_type: "loan_received_repayment",
-          description: `Loan repayment received from borrower`,
-          reference_id: loan_id,
-        },
-      ]);
-
-    console.log(`Loan ${loan_id} repaid successfully. Amount: ₳${repaymentAmount}`);
+    console.log(`Loan ${loan_id} repaid by borrower ${user.id}. Amount: ₳${data.total_repaid}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Loan repaid successfully",
+        message: data.message,
         repayment: {
-          loan_id,
-          principal_amount: loan.principal_amount,
-          interest_amount: loan.interest_amount || 0,
-          total_repaid: repaymentAmount,
+          loan_id: data.loan_id,
+          principal_amount: data.principal_amount,
+          interest_amount: data.interest_amount,
+          total_repaid: data.total_repaid,
         },
-        new_balance: borrowerWallet.balance - repaymentAmount,
+        new_balance: data.new_balance,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

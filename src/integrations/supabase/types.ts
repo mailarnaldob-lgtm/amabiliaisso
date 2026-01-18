@@ -482,6 +482,27 @@ export type Database = {
         }
         Returns: boolean
       }
+      lending_cancel_offer: {
+        Args: { p_loan_id: string; p_user_id: string }
+        Returns: Json
+      }
+      lending_post_offer: {
+        Args: {
+          p_interest_rate?: number
+          p_principal_amount: number
+          p_term_days?: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      lending_repay_loan: {
+        Args: { p_loan_id: string; p_user_id: string }
+        Returns: Json
+      }
+      lending_take_offer: {
+        Args: { p_loan_id: string; p_user_id: string }
+        Returns: Json
+      }
       reject_membership_payment: {
         Args: {
           p_admin_id: string
