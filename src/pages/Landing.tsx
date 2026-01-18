@@ -383,7 +383,7 @@ export default function Landing() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">© 2025 Amabilia Network. All rights reserved.</div>
+          <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">© 2026 Amabilia Network. All rights reserved.</div>
         </div>
       </footer>
     </div>;
