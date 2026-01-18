@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { ExternalLink, Image } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Payment = Tables<'membership_payments'>;
@@ -48,30 +49,31 @@ export function PaymentEditDialog({ open, onOpenChange, payment }: PaymentEditDi
 
   const updatePayment = useMutation({
     mutationFn: async (data: typeof formData) => {
-      if (!payment) throw new Error('No payment selected');
+      if (!payment || !user) throw new Error('No payment selected');
 
-      const { error: paymentError } = await supabase
-        .from('membership_payments')
-        .update({
-          status: data.status,
-          rejection_reason: data.status === 'rejected' ? data.rejection_reason : null,
-          reference_number: data.reference_number || null,
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user?.id,
-        })
-        .eq('id', payment.id);
-      if (paymentError) throw paymentError;
-
-      // Update profile tier if approved
-      if (data.status === 'approved') {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ 
-            membership_tier: payment.tier,
-            membership_amount: payment.amount,
+      // Use server-side RPC for status changes that modify profile
+      if (data.status === 'approved' && payment.status !== 'approved') {
+        const { error } = await supabase.rpc('approve_membership_payment', {
+          p_payment_id: payment.id,
+          p_admin_id: user.id,
+        });
+        if (error) throw error;
+      } else if (data.status === 'rejected' && payment.status !== 'rejected') {
+        const { error } = await supabase.rpc('reject_membership_payment', {
+          p_payment_id: payment.id,
+          p_admin_id: user.id,
+          p_rejection_reason: data.rejection_reason || 'Payment could not be verified',
+        });
+        if (error) throw error;
+      } else {
+        // For non-status changes (just updating reference number)
+        const { error: paymentError } = await supabase
+          .from('membership_payments')
+          .update({
+            reference_number: data.reference_number || null,
           })
-          .eq('id', payment.user_id);
-        if (profileError) throw profileError;
+          .eq('id', payment.id);
+        if (paymentError) throw paymentError;
       }
     },
     onSuccess: () => {
@@ -104,6 +106,20 @@ export function PaymentEditDialog({ open, onOpenChange, payment }: PaymentEditDi
             <p><strong>Tier:</strong> {payment?.tier}</p>
             <p><strong>Amount:</strong> ₱{payment?.amount?.toLocaleString()}</p>
             <p><strong>Method:</strong> {payment?.payment_method}</p>
+            {payment?.proof_url && (
+              <div className="pt-2">
+                <a
+                  href={payment.proof_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-primary hover:underline"
+                >
+                  <Image className="h-4 w-4" />
+                  View Payment Proof
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="reference_number">Reference Number</Label>

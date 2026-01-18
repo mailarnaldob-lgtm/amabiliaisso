@@ -59,24 +59,18 @@ export default function AdminPayments() {
   });
 
   const quickAction = useMutation({
-    mutationFn: async ({ id, status, tier, userId }: { id: string; status: 'approved' | 'rejected'; tier: string; userId: string }) => {
-      const { error: paymentError } = await supabase
-        .from('membership_payments')
-        .update({
-          status,
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user?.id,
-        })
-        .eq('id', id);
-      if (paymentError) throw paymentError;
-
-      if (status === 'approved') {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ membership_tier: tier as 'basic' | 'pro' | 'elite' })
-          .eq('id', userId);
-        if (profileError) throw profileError;
-      }
+    mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
+      if (!user) throw new Error('Not authenticated');
+      
+      // Use server-side RPC function for atomic operations
+      const rpcName = status === 'approved' ? 'approve_membership_payment' : 'reject_membership_payment';
+      const { data, error } = await supabase.rpc(rpcName, {
+        p_payment_id: id,
+        p_admin_id: user.id,
+      });
+      
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       toast({ title: 'Payment updated' });
@@ -232,8 +226,6 @@ export default function AdminPayments() {
                                 quickAction.mutate({
                                   id: payment.id,
                                   status: 'approved',
-                                  tier: payment.tier,
-                                  userId: payment.user_id,
                                 })
                               }
                               title="Approve"
@@ -247,8 +239,6 @@ export default function AdminPayments() {
                                 quickAction.mutate({
                                   id: payment.id,
                                   status: 'rejected',
-                                  tier: payment.tier,
-                                  userId: payment.user_id,
                                 })
                               }
                               title="Reject"

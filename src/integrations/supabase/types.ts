@@ -455,6 +455,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_membership_payment: {
+        Args: { p_admin_id: string; p_payment_id: string }
+        Returns: Json
+      }
+      approve_task_submission: {
+        Args: { p_admin_id: string; p_submission_id: string }
+        Returns: Json
+      }
       cash_out_with_lock: {
         Args: {
           p_account_name: string
@@ -473,6 +481,22 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      reject_membership_payment: {
+        Args: {
+          p_admin_id: string
+          p_payment_id: string
+          p_rejection_reason?: string
+        }
+        Returns: Json
+      }
+      reject_task_submission: {
+        Args: {
+          p_admin_id: string
+          p_rejection_reason?: string
+          p_submission_id: string
+        }
+        Returns: Json
       }
       transfer_with_lock: {
         Args: {

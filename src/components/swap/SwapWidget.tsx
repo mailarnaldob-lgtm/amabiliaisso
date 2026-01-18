@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { ArrowDownUp, ArrowRight, Wallet, Banknote, CreditCard, Building2 } from 'lucide-react';
+import { ArrowDownUp, ArrowRight, AlertTriangle } from 'lucide-react';
 import { cn, formatAlpha } from '@/lib/utils';
 import { useAppStore } from '@/stores/appStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const paymentMethods = [
   { id: 'gcash', name: 'GCash', icon: '💚' },
@@ -13,7 +15,8 @@ const paymentMethods = [
 ];
 
 export function SwapWidget() {
-  const { swapMode, setSwapMode, wallets, swapToAlpha, swapToPHP } = useAppStore();
+  const { swapMode, setSwapMode, wallets } = useAppStore();
+  const { user } = useAuth();
   const [amount, setAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('gcash');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -26,6 +29,12 @@ export function SwapWidget() {
   const netAmount = numericAmount - fee;
 
   const handleSwap = async () => {
+    // Require authentication
+    if (!user) {
+      toast.error('Please log in to perform transactions');
+      return;
+    }
+
     if (numericAmount <= 0) {
       toast.error('Please enter a valid amount');
       return;
@@ -36,25 +45,21 @@ export function SwapWidget() {
       return;
     }
 
-    setIsProcessing(true);
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    if (swapMode === 'cashin') {
-      swapToAlpha(numericAmount);
-      toast.success(`Successfully converted ₱${formatAlpha(numericAmount)} to ₳${formatAlpha(numericAmount)}`);
-    } else {
-      swapToPHP(numericAmount);
-      toast.success(`Withdrawal of ₱${formatAlpha(netAmount)} initiated`);
-    }
-    
-    setAmount('');
-    setIsProcessing(false);
+    // Show coming soon message - actual swap functionality requires edge functions
+    toast.info('This feature is currently under maintenance. Please try again later.');
   };
 
   return (
     <div className="w-full max-w-md mx-auto">
+      {/* Authentication Notice */}
+      {!user && (
+        <Alert className="mb-4 border-yellow-500/50 bg-yellow-500/10">
+          <AlertTriangle className="h-4 w-4 text-yellow-500" />
+          <AlertTitle>Authentication Required</AlertTitle>
+          <AlertDescription>Please log in to use the swap feature.</AlertDescription>
+        </Alert>
+      )}
+      
       {/* Swap Mode Toggle */}
       <div className="flex rounded-xl bg-secondary p-1 mb-6">
         <button
