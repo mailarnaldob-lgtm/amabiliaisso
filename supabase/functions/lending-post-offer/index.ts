@@ -27,7 +27,6 @@ async function checkRateLimit(supabase: any, userId: string): Promise<{ allowed:
   
   if (error) {
     console.error('Rate limit check error:', error);
-    // Fail open but log the error
     return { allowed: true, remaining: RATE_LIMIT_MAX_OPERATIONS };
   }
   
@@ -39,6 +38,9 @@ async function checkRateLimit(supabase: any, userId: string): Promise<{ allowed:
     remaining,
   };
 }
+
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -76,24 +78,24 @@ serve(async (req) => {
     const body: PostOfferRequest = await req.json();
     const { principal_amount, interest_rate = 3.0, term_days = 7 } = body;
 
-    // Validate input
-    if (!principal_amount || principal_amount <= 0) {
+    // Validate input types
+    if (typeof principal_amount !== 'number' || isNaN(principal_amount)) {
       return new Response(
-        JSON.stringify({ success: false, error: "Invalid principal amount" }),
+        JSON.stringify({ success: false, error: "Principal amount must be a valid number" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (principal_amount < 100) {
+    if (typeof interest_rate !== 'number' || isNaN(interest_rate)) {
       return new Response(
-        JSON.stringify({ success: false, error: "Minimum lending amount is ₳100" }),
+        JSON.stringify({ success: false, error: "Interest rate must be a valid number" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (principal_amount > 100000) {
+    if (typeof term_days !== 'number' || isNaN(term_days) || !Number.isInteger(term_days)) {
       return new Response(
-        JSON.stringify({ success: false, error: "Maximum lending amount is ₳100,000" }),
+        JSON.stringify({ success: false, error: "Term days must be a valid integer" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -117,155 +119,47 @@ serve(async (req) => {
       );
     }
 
-    // Check user's profile for Elite tier and KYC
-    const { data: profile, error: profileError } = await adminSupabase
-      .from("profiles")
-      .select("membership_tier, is_kyc_verified, full_name")
-      .eq("id", user.id)
-      .single();
+    // Call the atomic database function
+    const { data, error } = await adminSupabase.rpc('lending_post_offer', {
+      p_user_id: user.id,
+      p_principal_amount: principal_amount,
+      p_interest_rate: interest_rate,
+      p_term_days: term_days,
+    });
 
-    if (profileError || !profile) {
+    if (error) {
+      console.error('Database error:', error);
       return new Response(
-        JSON.stringify({ success: false, error: "Profile not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (profile.membership_tier !== "elite") {
-      return new Response(
-        JSON.stringify({ success: false, error: "Elite membership required for lending" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!profile.is_kyc_verified) {
-      return new Response(
-        JSON.stringify({ success: false, error: "KYC verification required for lending" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get user's main wallet and lock it
-    const { data: wallet, error: walletError } = await adminSupabase
-      .from("wallets")
-      .select("id, balance")
-      .eq("user_id", user.id)
-      .eq("wallet_type", "main")
-      .single();
-
-    if (walletError || !wallet) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Main wallet not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Check sufficient balance
-    const processingFee = principal_amount * 0.008; // 0.8% fee
-    const totalRequired = principal_amount + processingFee;
-
-    if (wallet.balance < totalRequired) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Insufficient balance. You need ₳${totalRequired.toFixed(2)} (including 0.8% fee)` 
-        }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Calculate loan details
-    const interestAmount = principal_amount * (interest_rate / 100);
-    const totalRepayment = principal_amount + interestAmount;
-
-    // Start transaction: deduct from wallet and create loan
-    // 1. Update wallet balance
-    const { error: updateWalletError } = await adminSupabase
-      .from("wallets")
-      .update({ 
-        balance: wallet.balance - totalRequired,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", wallet.id);
-
-    if (updateWalletError) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to update wallet" }),
+        JSON.stringify({ success: false, error: error.message || "Database operation failed" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // 2. Create loan record
-    const { data: loan, error: loanError } = await adminSupabase
-      .from("loans")
-      .insert({
-        lender_id: user.id,
-        principal_amount,
-        interest_rate,
-        interest_amount: interestAmount,
-        processing_fee: processingFee,
-        total_repayment: totalRepayment,
-        term_days,
-        status: "pending",
-        escrow_wallet_id: wallet.id,
-      })
-      .select()
-      .single();
-
-    if (loanError) {
-      // Rollback wallet update
-      await adminSupabase
-        .from("wallets")
-        .update({ 
-          balance: wallet.balance,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", wallet.id);
-
+    // Check if the RPC returned an error in the response
+    if (!data.success) {
+      const statusCode = data.error?.includes('Elite') || data.error?.includes('KYC') ? 403 : 400;
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to create loan offer" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: data.error }),
+        { status: statusCode, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // 3. Log transaction
-    await adminSupabase
-      .from("loan_transactions")
-      .insert({
-        loan_id: loan.id,
-        user_id: user.id,
-        from_wallet_id: wallet.id,
-        amount: principal_amount,
-        transaction_type: "escrow_deposit",
-        description: `Loan offer created - ₳${principal_amount} locked in escrow`,
-      });
-
-    // Log fee transaction
-    await adminSupabase
-      .from("wallet_transactions")
-      .insert({
-        wallet_id: wallet.id,
-        user_id: user.id,
-        amount: -processingFee,
-        transaction_type: "lending_fee",
-        description: `Lending processing fee (0.8%)`,
-        reference_id: loan.id,
-      });
+    console.log(`Loan offer created: ${data.loan_id} by user ${user.id}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         loan: {
-          id: loan.id,
-          principal_amount,
-          interest_rate,
-          interest_amount: interestAmount,
-          processing_fee: processingFee,
-          total_repayment: totalRepayment,
-          term_days,
+          id: data.loan_id,
+          principal_amount: data.principal_amount,
+          interest_rate: data.interest_rate,
+          interest_amount: data.interest_amount,
+          processing_fee: data.processing_fee,
+          total_repayment: data.total_repayment,
+          term_days: data.term_days,
           status: "pending",
         },
-        new_balance: wallet.balance - totalRequired,
+        new_balance: data.new_balance,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
