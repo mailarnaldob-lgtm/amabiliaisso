@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Clock, TrendingUp, Shield, AlertTriangle, Plus, Wallet, X, Loader2 } from 'lucide-react';
+import { Clock, TrendingUp, Shield, AlertTriangle, Plus, Wallet, X, Loader2, CreditCard } from 'lucide-react';
 import { cn, formatAlpha } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,9 +18,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   useLoanOffers,
   useMyLoanOffers,
+  useMyActiveLoans,
   usePostLoanOffer,
   useTakeLoanOffer,
   useCancelLoanOffer,
+  useRepayLoan,
   LoanOffer,
 } from '@/hooks/useLending';
 
@@ -140,6 +142,93 @@ function MyOfferCard({ offer, onCancel, isLoading }: MyOfferCardProps) {
           )}
         </Button>
       )}
+    </div>
+  );
+}
+
+interface ActiveLoanCardProps {
+  loan: LoanOffer;
+  onRepay: (loan: LoanOffer) => void;
+  isLoading: boolean;
+  walletBalance: number;
+}
+
+function ActiveLoanCard({ loan, onRepay, isLoading, walletBalance }: ActiveLoanCardProps) {
+  const dueDate = loan.due_at ? new Date(loan.due_at) : null;
+  const now = new Date();
+  const daysRemaining = dueDate ? Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+  const isOverdue = daysRemaining < 0;
+  const repaymentAmount = loan.total_repayment || (loan.principal_amount + (loan.interest_amount || 0));
+  const canRepay = walletBalance >= repaymentAmount;
+
+  return (
+    <div className={cn(
+      "glass-card rounded-xl p-4 space-y-4",
+      isOverdue && "border-2 border-destructive"
+    )}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center">
+            <CreditCard className="w-5 h-5 text-warning" />
+          </div>
+          <div>
+            <p className="font-medium text-foreground">Active Loan</p>
+            <p className="text-xs text-muted-foreground">From: {loan.lender_name || 'Anonymous'}</p>
+          </div>
+        </div>
+        <Badge variant={isOverdue ? 'destructive' : 'outline'} className={isOverdue ? '' : 'border-warning text-warning'}>
+          {isOverdue ? 'Overdue' : `${daysRemaining} days left`}
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 py-3 px-4 rounded-lg bg-secondary/50">
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground mb-1">Principal</p>
+          <p className="font-bold text-foreground">₳{formatAlpha(loan.principal_amount)}</p>
+        </div>
+        <div className="text-center border-x border-border">
+          <p className="text-xs text-muted-foreground mb-1">Interest</p>
+          <p className="font-bold text-alpha">₳{formatAlpha(loan.interest_amount || 0)}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground mb-1">Due Date</p>
+          <p className="font-bold text-foreground">
+            {dueDate?.toLocaleDateString() || 'N/A'}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+        <span className="text-sm text-muted-foreground">Total Repayment</span>
+        <span className="font-bold text-destructive">₳{formatAlpha(repaymentAmount)}</span>
+      </div>
+
+      {!canRepay && (
+        <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+          <p className="text-xs text-muted-foreground">
+            Insufficient balance. You need ₳{formatAlpha(repaymentAmount)} to repay this loan.
+          </p>
+        </div>
+      )}
+
+      <Button
+        onClick={() => onRepay(loan)}
+        disabled={isLoading || !canRepay}
+        className="w-full bg-success hover:bg-success/90 text-success-foreground"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Processing Repayment...
+          </>
+        ) : (
+          <>
+            <CreditCard className="w-4 h-4 mr-2" />
+            Repay Loan
+          </>
+        )}
+      </Button>
     </div>
   );
 }
@@ -266,8 +355,10 @@ export function LendingMarketplace() {
   const { data: wallets } = useWallets();
   const { data: loanOffers, isLoading: offersLoading } = useLoanOffers();
   const { data: myOffers, isLoading: myOffersLoading } = useMyLoanOffers();
+  const { data: myActiveLoans, isLoading: activeLoansLoading } = useMyActiveLoans();
   const takeLoan = useTakeLoanOffer();
   const cancelOffer = useCancelLoanOffer();
+  const repayLoan = useRepayLoan();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [processingLoanId, setProcessingLoanId] = useState<string | null>(null);
@@ -289,6 +380,15 @@ export function LendingMarketplace() {
     setProcessingLoanId(offer.id);
     try {
       await cancelOffer.mutateAsync({ loan_id: offer.id });
+    } finally {
+      setProcessingLoanId(null);
+    }
+  };
+
+  const handleRepayLoan = async (loan: LoanOffer) => {
+    setProcessingLoanId(loan.id);
+    try {
+      await repayLoan.mutateAsync({ loan_id: loan.id });
     } finally {
       setProcessingLoanId(null);
     }
@@ -369,11 +469,30 @@ export function LendingMarketplace() {
         </TabsList>
 
         <TabsContent value="bear" className="space-y-4 mt-4">
+          {/* My Active Loans (Borrower) */}
+          {myActiveLoans && myActiveLoans.length > 0 && (
+            <div className="space-y-3 mb-6">
+              <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Your Active Loans
+              </h3>
+              {myActiveLoans.map((loan) => (
+                <ActiveLoanCard
+                  key={loan.id}
+                  loan={loan}
+                  onRepay={handleRepayLoan}
+                  isLoading={processingLoanId === loan.id}
+                  walletBalance={mainWallet?.balance || 0}
+                />
+              ))}
+            </div>
+          )}
+
           <p className="text-sm text-muted-foreground">
             Browse available loan offers and get instant ₳ liquidity.
           </p>
 
-          {offersLoading ? (
+          {offersLoading || activeLoansLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
