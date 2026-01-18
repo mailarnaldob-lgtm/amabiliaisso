@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Clock, TrendingUp, Shield, AlertTriangle, Plus, Wallet } from 'lucide-react';
-import { cn, formatAlpha, formatCountdown } from '@/lib/utils';
-import { useAppStore, LoanOffer, MOCK_LOAN_OFFERS } from '@/stores/appStore';
+import { Clock, TrendingUp, Shield, AlertTriangle, Plus, Wallet, X, Loader2 } from 'lucide-react';
+import { cn, formatAlpha } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -12,19 +11,30 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useProfile } from '@/hooks/useProfile';
+import { useWallets } from '@/hooks/useWallets';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  useLoanOffers,
+  useMyLoanOffers,
+  usePostLoanOffer,
+  useTakeLoanOffer,
+  useCancelLoanOffer,
+  LoanOffer,
+} from '@/hooks/useLending';
 
 interface LoanOfferCardProps {
   offer: LoanOffer;
   onTakeOffer: (offer: LoanOffer) => void;
+  isLoading: boolean;
 }
 
-function LoanOfferCard({ offer, onTakeOffer }: LoanOfferCardProps) {
-  const interest = offer.principal * (offer.interestRate / 100);
-  const totalRepayment = offer.principal + interest;
+function LoanOfferCard({ offer, onTakeOffer, isLoading }: LoanOfferCardProps) {
+  const interest = offer.principal_amount * (offer.interest_rate / 100);
+  const totalRepayment = offer.principal_amount + interest;
   const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + offer.termDays);
+  dueDate.setDate(dueDate.getDate() + offer.term_days);
 
   return (
     <div className="glass-card rounded-xl p-4 space-y-4">
@@ -34,7 +44,7 @@ function LoanOfferCard({ offer, onTakeOffer }: LoanOfferCardProps) {
             <span className="text-lg">🐂</span>
           </div>
           <div>
-            <p className="font-medium text-foreground">{offer.lenderName}</p>
+            <p className="font-medium text-foreground">{offer.lender_name || 'Anonymous'}</p>
             <p className="text-xs text-muted-foreground">Verified Lender</p>
           </div>
         </div>
@@ -46,15 +56,15 @@ function LoanOfferCard({ offer, onTakeOffer }: LoanOfferCardProps) {
       <div className="grid grid-cols-3 gap-4 py-3 px-4 rounded-lg bg-secondary/50">
         <div className="text-center">
           <p className="text-xs text-muted-foreground mb-1">Principal</p>
-          <p className="font-bold text-foreground">₳{formatAlpha(offer.principal)}</p>
+          <p className="font-bold text-foreground">₳{formatAlpha(offer.principal_amount)}</p>
         </div>
         <div className="text-center border-x border-border">
           <p className="text-xs text-muted-foreground mb-1">Interest</p>
-          <p className="font-bold text-alpha">{offer.interestRate}%</p>
+          <p className="font-bold text-alpha">{offer.interest_rate}%</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-muted-foreground mb-1">Term</p>
-          <p className="font-bold text-foreground">{offer.termDays} Days</p>
+          <p className="font-bold text-foreground">{offer.term_days} Days</p>
         </div>
       </div>
 
@@ -65,10 +75,71 @@ function LoanOfferCard({ offer, onTakeOffer }: LoanOfferCardProps) {
 
       <Button
         onClick={() => onTakeOffer(offer)}
+        disabled={isLoading}
         className="w-full alpha-gradient text-alpha-foreground"
       >
-        🐻 Take This Offer
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          '🐻 Take This Offer'
+        )}
       </Button>
+    </div>
+  );
+}
+
+interface MyOfferCardProps {
+  offer: LoanOffer;
+  onCancel: (offer: LoanOffer) => void;
+  isLoading: boolean;
+}
+
+function MyOfferCard({ offer, onCancel, isLoading }: MyOfferCardProps) {
+  const isActive = offer.status === 'active';
+
+  return (
+    <div className="glass-card rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="font-medium text-foreground">₳{formatAlpha(offer.principal_amount)}</p>
+          <p className="text-xs text-muted-foreground">
+            {isActive ? `Due: ${new Date(offer.due_at!).toLocaleDateString()}` : 'Awaiting borrower'}
+          </p>
+        </div>
+        <Badge variant={isActive ? 'default' : 'outline'}>
+          {isActive ? 'Active' : 'Pending'}
+        </Badge>
+      </div>
+
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-muted-foreground">Expected Return</span>
+        <span className="text-success font-medium">₳{formatAlpha(offer.total_repayment || 0)}</span>
+      </div>
+
+      {!isActive && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onCancel(offer)}
+          disabled={isLoading}
+          className="w-full"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Cancelling...
+            </>
+          ) : (
+            <>
+              <X className="w-4 h-4 mr-1" />
+              Cancel Offer
+            </>
+          )}
+        </Button>
+      )}
     </div>
   );
 }
@@ -81,28 +152,23 @@ interface CreateOfferModalProps {
 
 function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalProps) {
   const [amount, setAmount] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const postOffer = usePostLoanOffer();
 
   const numericAmount = parseFloat(amount) || 0;
   const interest = numericAmount * 0.03;
   const fee = numericAmount * 0.008;
+  const totalRequired = numericAmount + fee;
 
   const handleSubmit = async () => {
-    if (numericAmount <= 0) {
-      toast.error('Please enter a valid amount');
+    if (numericAmount < 100) {
       return;
     }
-    if (numericAmount > walletBalance) {
-      toast.error('Insufficient balance');
+    if (totalRequired > walletBalance) {
       return;
     }
 
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    toast.success('Loan offer posted! Your ₳ is now in escrow.');
+    await postOffer.mutateAsync({ principal_amount: numericAmount });
     setAmount('');
-    setIsSubmitting(false);
     onClose();
   };
 
@@ -125,7 +191,7 @@ function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalPr
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Lending Amount</label>
+            <label className="text-sm font-medium">Lending Amount (min ₳100)</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg alpha-text">₳</span>
               <Input
@@ -134,8 +200,13 @@ function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalPr
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="pl-8 text-xl font-bold"
+                min="100"
+                max="100000"
               />
             </div>
+            {numericAmount > 0 && numericAmount < 100 && (
+              <p className="text-xs text-destructive">Minimum amount is ₳100</p>
+            )}
           </div>
 
           <div className="space-y-2 p-4 rounded-lg bg-secondary/50">
@@ -149,12 +220,16 @@ function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalPr
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Processing Fee</span>
-              <span className="text-warning">0.8%</span>
+              <span className="text-warning">0.8% (₳{formatAlpha(fee)})</span>
             </div>
             <div className="border-t border-border my-2" />
             <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Total Required</span>
+              <span className="text-foreground font-medium">₳{formatAlpha(totalRequired)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Expected Return</span>
-              <span className="text-success font-bold">₳{formatAlpha(numericAmount + interest - fee)}</span>
+              <span className="text-success font-bold">₳{formatAlpha(numericAmount + interest)}</span>
             </div>
           </div>
 
@@ -167,10 +242,17 @@ function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalPr
 
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || numericAmount <= 0}
+            disabled={postOffer.isPending || numericAmount < 100 || totalRequired > walletBalance}
             className="w-full alpha-gradient text-alpha-foreground"
           >
-            {isSubmitting ? 'Processing...' : 'Post Offer & Lock ₳'}
+            {postOffer.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              'Post Offer & Lock ₳'
+            )}
           </Button>
         </div>
       </DialogContent>
@@ -179,27 +261,48 @@ function CreateOfferModal({ isOpen, onClose, walletBalance }: CreateOfferModalPr
 }
 
 export function LendingMarketplace() {
-  const { wallets, isKycVerified, membershipTier } = useAppStore();
-  const [offers, setOffers] = useState<LoanOffer[]>(MOCK_LOAN_OFFERS);
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
+  const { data: wallets } = useWallets();
+  const { data: loanOffers, isLoading: offersLoading } = useLoanOffers();
+  const { data: myOffers, isLoading: myOffersLoading } = useMyLoanOffers();
+  const takeLoan = useTakeLoanOffer();
+  const cancelOffer = useCancelLoanOffer();
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedOffer, setSelectedOffer] = useState<LoanOffer | null>(null);
+  const [processingLoanId, setProcessingLoanId] = useState<string | null>(null);
 
-  const mainWallet = wallets.find((w) => w.type === 'main');
-  const canAccess = membershipTier === 'elite' && isKycVerified;
+  const mainWallet = wallets?.find((w) => w.wallet_type === 'main');
+  const canAccess = profile?.membership_tier === 'elite' && profile?.is_kyc_verified;
 
-  const handleTakeOffer = (offer: LoanOffer) => {
-    if (!canAccess) {
-      toast.error('Elite membership and KYC verification required');
-      return;
+  const handleTakeOffer = async (offer: LoanOffer) => {
+    if (!canAccess) return;
+    setProcessingLoanId(offer.id);
+    try {
+      await takeLoan.mutateAsync({ loan_id: offer.id });
+    } finally {
+      setProcessingLoanId(null);
     }
-    
-    const interest = offer.principal * (offer.interestRate / 100);
-    const totalRepayment = offer.principal + interest;
-    
-    toast.success(`Loan of ₳${formatAlpha(offer.principal)} received! Repay ₳${formatAlpha(totalRepayment)} in 7 days.`);
-    
-    setOffers((prev) => prev.filter((o) => o.id !== offer.id));
   };
+
+  const handleCancelOffer = async (offer: LoanOffer) => {
+    setProcessingLoanId(offer.id);
+    try {
+      await cancelOffer.mutateAsync({ loan_id: offer.id });
+    } finally {
+      setProcessingLoanId(null);
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+        <Shield className="w-12 h-12 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-bold text-foreground mb-2">Authentication Required</h2>
+        <p className="text-muted-foreground">Please sign in to access the lending marketplace.</p>
+      </div>
+    );
+  }
 
   if (!canAccess) {
     return (
@@ -213,19 +316,21 @@ export function LendingMarketplace() {
         </p>
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Badge variant={membershipTier === 'elite' ? 'default' : 'outline'}>
-              {membershipTier === 'elite' ? '✓' : '○'} Elite Membership
+            <Badge variant={profile?.membership_tier === 'elite' ? 'default' : 'outline'}>
+              {profile?.membership_tier === 'elite' ? '✓' : '○'} Elite Membership
             </Badge>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={isKycVerified ? 'default' : 'outline'}>
-              {isKycVerified ? '✓' : '○'} KYC Verified
+            <Badge variant={profile?.is_kyc_verified ? 'default' : 'outline'}>
+              {profile?.is_kyc_verified ? '✓' : '○'} KYC Verified
             </Badge>
           </div>
         </div>
       </div>
     );
   }
+
+  const totalLiquidity = (loanOffers || []).reduce((sum, o) => sum + o.principal_amount, 0);
 
   return (
     <div className="space-y-6">
@@ -240,12 +345,12 @@ export function LendingMarketplace() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 rounded-lg bg-secondary/50 text-center">
-            <p className="text-2xl font-bold text-foreground">{offers.length}</p>
+            <p className="text-2xl font-bold text-foreground">{loanOffers?.length || 0}</p>
             <p className="text-xs text-muted-foreground">Active Offers</p>
           </div>
           <div className="p-3 rounded-lg bg-secondary/50 text-center">
             <p className="text-2xl font-bold alpha-text">
-              ₳{formatAlpha(offers.reduce((sum, o) => sum + o.principal, 0))}
+              ₳{formatAlpha(totalLiquidity)}
             </p>
             <p className="text-xs text-muted-foreground">Total Liquidity</p>
           </div>
@@ -267,9 +372,28 @@ export function LendingMarketplace() {
           <p className="text-sm text-muted-foreground">
             Browse available loan offers and get instant ₳ liquidity.
           </p>
-          {offers.map((offer) => (
-            <LoanOfferCard key={offer.id} offer={offer} onTakeOffer={handleTakeOffer} />
-          ))}
+
+          {offersLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : loanOffers && loanOffers.length > 0 ? (
+            loanOffers.map((offer) => (
+              <LoanOfferCard
+                key={offer.id}
+                offer={offer}
+                onTakeOffer={handleTakeOffer}
+                isLoading={processingLoanId === offer.id}
+              />
+            ))
+          ) : (
+            <div className="p-6 rounded-xl border-2 border-dashed border-border text-center">
+              <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">
+                No loan offers available right now. Check back later!
+              </p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="bull" className="space-y-4 mt-4">
@@ -286,12 +410,31 @@ export function LendingMarketplace() {
             </Button>
           </div>
 
-          <div className="p-6 rounded-xl border-2 border-dashed border-border text-center">
-            <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">
-              No active lending offers yet. Post your first offer to start earning!
-            </p>
-          </div>
+          {/* My Active Offers */}
+          {myOffersLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : myOffers && myOffers.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-foreground">Your Active Offers</h3>
+              {myOffers.map((offer) => (
+                <MyOfferCard
+                  key={offer.id}
+                  offer={offer}
+                  onCancel={handleCancelOffer}
+                  isLoading={processingLoanId === offer.id}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="p-6 rounded-xl border-2 border-dashed border-border text-center">
+              <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">
+                No active lending offers yet. Post your first offer to start earning!
+              </p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
