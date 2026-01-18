@@ -1,8 +1,9 @@
 import { MemberLayout } from '@/components/layouts/MemberLayout';
-import { useAppStore, MEMBERSHIP_TIERS, ARMY_LEVELS } from '@/stores/appStore';
+import { useAppStore, ARMY_LEVELS } from '@/stores/appStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Settings, Shield, LogOut, ChevronRight } from 'lucide-react';
+import { getTierDisplayLabel } from '@/lib/tierUtils';
 
 export default function Profile() {
   const { userName, membershipTier, armyLevel, isKycVerified, referralCode } = useAppStore();
@@ -18,7 +19,7 @@ export default function Profile() {
           <h2 className="text-xl font-bold text-foreground">{userName}</h2>
           <div className="flex items-center justify-center gap-2 mt-2">
             <Badge className="alpha-gradient text-alpha-foreground">
-              {MEMBERSHIP_TIERS[membershipTier].name}
+              {getTierDisplayLabel(membershipTier)}
             </Badge>
             {isKycVerified && (
               <Badge variant="outline" className="border-success text-success">

@@ -23,6 +23,8 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getTierDisplayLabel, isPaidTier } from '@/lib/tierUtils';
+import { WithdrawalDialog } from '@/components/wallet/WithdrawalDialog';
 
 export default function MemberDashboard() {
   const { user, signOut } = useAuth();
@@ -30,6 +32,7 @@ export default function MemberDashboard() {
   const { data: wallets, isLoading: walletsLoading } = useWallets();
   const { totalReferrals, totalEarnings, pendingEarnings } = useReferralStats();
   const { toast } = useToast();
+  const [withdrawalOpen, setWithdrawalOpen] = useState(false);
 
   const taskWallet = wallets?.find(w => w.wallet_type === 'task');
   const royaltyWallet = wallets?.find(w => w.wallet_type === 'royalty');
@@ -107,13 +110,13 @@ export default function MemberDashboard() {
               </h1>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="capitalize">
-                  {profile?.membership_tier || 'basic'} Member
+                  {getTierDisplayLabel(profile?.membership_tier || null)} Account
                 </Badge>
-                {!profile?.membership_tier || profile?.membership_tier === 'basic' ? (
+                {!isPaidTier(profile?.membership_tier || null) && (
                   <Badge variant="secondary" className="text-xs">
                     Upgrade to unlock more features
                   </Badge>
-                ) : null}
+                )}
               </div>
             </div>
           </div>
@@ -127,12 +130,19 @@ export default function MemberDashboard() {
                 <p className="text-primary-foreground/80 text-sm mb-1">Total Balance</p>
                 <p className="text-4xl font-bold">₱{totalBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
               </div>
-              <Button variant="secondary" className="gap-2">
+              <Button variant="secondary" className="gap-2" onClick={() => setWithdrawalOpen(true)}>
                 Withdraw <ArrowUpRight className="h-4 w-4" />
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Withdrawal Dialog */}
+        <WithdrawalDialog
+          open={withdrawalOpen}
+          onOpenChange={setWithdrawalOpen}
+          mainWalletBalance={mainWallet?.balance || 0}
+        />
 
         {/* Wallet Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">

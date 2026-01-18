@@ -13,6 +13,7 @@ import { Search, Pencil, Trash2, UserCheck, UserX } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
+import { getTierDisplayLabel } from '@/lib/tierUtils';
 
 type Profile = Tables<'profiles'>;
 
@@ -127,7 +128,7 @@ export default function AdminMembers() {
                     <TableCell>{member.phone || '-'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="capitalize">
-                        {member.membership_tier || 'basic'}
+                        {getTierDisplayLabel(member.membership_tier)}
                       </Badge>
                     </TableCell>
                     <TableCell>

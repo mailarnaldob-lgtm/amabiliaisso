@@ -12,6 +12,7 @@ import { ArrowLeft, User, Mail, Phone, Shield, Crown, Zap, Star } from 'lucide-r
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { profileSchema } from '@/lib/validations';
+import { getTierDisplayLabel, isPaidTier } from '@/lib/tierUtils';
 
 export default function MyProfile() {
   const { user } = useAuth();
@@ -122,7 +123,7 @@ export default function MyProfile() {
             <div className="flex items-center justify-between">
               <div>
                 <Badge className="capitalize text-sm px-4 py-1">
-                  {profile?.membership_tier || 'basic'} Member
+                  {getTierDisplayLabel(profile?.membership_tier || null)} Account
                 </Badge>
                 {profile?.is_kyc_verified && (
                   <Badge variant="outline" className="ml-2">
