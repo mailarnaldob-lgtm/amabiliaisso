@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Package, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useIsAdmin } from "@/hooks/useUserRole";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAdmin } = useIsAdmin();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
@@ -28,9 +30,11 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <Link to="/admin">
-            <Button variant="outline">Admin Portal</Button>
-          </Link>
+          {isAdmin && (
+            <Link to="/admin">
+              <Button variant="outline">Admin Portal</Button>
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -68,9 +72,11 @@ export function Header() {
             >
               Contact
             </Link>
-            <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
-              <Button variant="outline" className="w-full">Admin Portal</Button>
-            </Link>
+            {isAdmin && (
+              <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                <Button variant="outline" className="w-full">Admin Portal</Button>
+              </Link>
+            )}
           </nav>
         </div>
       )}

@@ -188,3 +188,35 @@ export function useCancelLoanOffer() {
     },
   });
 }
+
+// Repay a loan
+export function useRepayLoan() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ loan_id }: { loan_id: string }) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await supabase.functions.invoke('lending-repay-loan', {
+        body: { loan_id },
+      });
+
+      if (response.error) throw new Error(response.error.message);
+      if (!response.data.success) throw new Error(response.data.error);
+
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['loan-offers'] });
+      queryClient.invalidateQueries({ queryKey: ['my-loan-offers'] });
+      queryClient.invalidateQueries({ queryKey: ['my-active-loans'] });
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      toast.success(`Loan repaid! ₳${data.repayment.total_repaid.toLocaleString()} sent to lender.`);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to repay loan');
+    },
+  });
+}
