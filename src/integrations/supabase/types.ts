@@ -463,6 +463,15 @@ export type Database = {
         Args: { p_admin_id: string; p_submission_id: string }
         Returns: Json
       }
+      cash_in_with_lock: {
+        Args: {
+          p_amount: number
+          p_payment_method: string
+          p_reference_number?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       cash_out_with_lock: {
         Args: {
           p_account_name: string

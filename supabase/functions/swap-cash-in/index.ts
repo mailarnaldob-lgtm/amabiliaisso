@@ -12,6 +12,25 @@ interface CashInRequest {
   reference_number?: string;
 }
 
+// Safe error messages for clients
+const ERROR_MESSAGES: Record<string, string> = {
+  'INVALID_AMOUNT': 'Invalid amount provided',
+  'MIN_AMOUNT': 'Minimum cash-in amount is ₱100',
+  'MAX_AMOUNT': 'Maximum cash-in amount is ₱50,000',
+  'WALLET_NOT_FOUND': 'Wallet not found. Please contact support.',
+  'UNAUTHORIZED': 'Authentication required',
+  'UNKNOWN': 'An error occurred. Please try again.',
+};
+
+function getSafeErrorMessage(error: string): string {
+  if (error.includes('Minimum')) return ERROR_MESSAGES.MIN_AMOUNT;
+  if (error.includes('Maximum')) return ERROR_MESSAGES.MAX_AMOUNT;
+  if (error.includes('Invalid')) return ERROR_MESSAGES.INVALID_AMOUNT;
+  if (error.includes('not found')) return ERROR_MESSAGES.WALLET_NOT_FOUND;
+  if (error.includes('Unauthorized')) return ERROR_MESSAGES.UNAUTHORIZED;
+  return ERROR_MESSAGES.UNKNOWN;
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -22,7 +41,7 @@ serve(async (req) => {
     // Get authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('Missing authorization header');
+      throw new Error('Unauthorized');
     }
 
     // Create Supabase client with user's JWT
@@ -38,10 +57,11 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { amount, payment_method, reference_number }: CashInRequest = await req.json();
+    const body = await req.json();
+    const { amount, payment_method, reference_number }: CashInRequest = body;
 
-    // Validate amount
-    if (!amount || amount <= 0) {
+    // Input validation
+    if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
       throw new Error('Invalid amount');
     }
 
@@ -53,81 +73,53 @@ serve(async (req) => {
       throw new Error('Maximum cash-in amount is ₱50,000');
     }
 
-    // Use service role for wallet operations
+    if (!payment_method || typeof payment_method !== 'string') {
+      throw new Error('Invalid payment method');
+    }
+
+    // Sanitize inputs
+    const sanitizedPaymentMethod = payment_method.slice(0, 50).replace(/[<>]/g, '');
+    const sanitizedReference = reference_number 
+      ? String(reference_number).slice(0, 100).replace(/[<>]/g, '') 
+      : null;
+
+    // Use service role for RPC call
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get user's main wallet
-    const { data: wallet, error: walletError } = await supabaseAdmin
-      .from('wallets')
-      .select('id, balance')
-      .eq('user_id', user.id)
-      .eq('wallet_type', 'main')
-      .single();
+    // Call atomic RPC function to prevent race conditions
+    const { data: result, error: rpcError } = await supabaseAdmin.rpc('cash_in_with_lock', {
+      p_user_id: user.id,
+      p_amount: amount,
+      p_payment_method: sanitizedPaymentMethod,
+      p_reference_number: sanitizedReference
+    });
 
-    if (walletError || !wallet) {
-      console.error('Wallet fetch error:', walletError);
-      throw new Error('Main wallet not found');
+    if (rpcError) {
+      console.error('[CASH-IN] RPC error:', rpcError);
+      throw new Error('Transaction failed. Please try again.');
     }
 
-    // Calculate the ₳ amount (1:1 peg with PHP, no fee on cash-in)
-    const alphaAmount = amount;
-    const newBalance = (wallet.balance || 0) + alphaAmount;
+    const rpcResult = result as { success: boolean; error?: string; transaction_id?: string; amount?: number; new_balance?: number };
 
-    // Start transaction: Update wallet balance
-    const { error: updateError } = await supabaseAdmin
-      .from('wallets')
-      .update({ 
-        balance: newBalance,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', wallet.id);
-
-    if (updateError) {
-      console.error('Wallet update error:', updateError);
-      throw new Error('Failed to update wallet balance');
+    if (!rpcResult.success) {
+      throw new Error(rpcResult.error || 'Transaction failed');
     }
 
-    // Log the transaction
-    const { data: transaction, error: txError } = await supabaseAdmin
-      .from('wallet_transactions')
-      .insert({
-        wallet_id: wallet.id,
-        user_id: user.id,
-        amount: alphaAmount,
-        transaction_type: 'cash_in',
-        description: `Cash-in via ${payment_method}${reference_number ? ` (Ref: ${reference_number})` : ''}`
-      })
-      .select()
-      .single();
-
-    if (txError) {
-      console.error('Transaction log error:', txError);
-      // Rollback wallet update
-      await supabaseAdmin
-        .from('wallets')
-        .update({ 
-          balance: wallet.balance,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', wallet.id);
-      throw new Error('Failed to log transaction');
-    }
-
-    console.log(`Cash-in successful: User ${user.id} minted ₳${alphaAmount} via ${payment_method}`);
+    console.log(`[CASH-IN] Success: User ${user.id} credited ₳${amount} via ${sanitizedPaymentMethod}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         data: {
-          transaction_id: transaction.id,
+          transaction_id: rpcResult.transaction_id,
           amount_php: amount,
-          amount_alpha: alphaAmount,
-          new_balance: newBalance,
-          payment_method,
-          reference_number
+          amount_alpha: amount,
+          new_balance: rpcResult.new_balance,
+          payment_method: sanitizedPaymentMethod,
+          reference_number: sanitizedReference
         }
       }),
       { 
@@ -136,12 +128,16 @@ serve(async (req) => {
       }
     );
 
-  } catch (error: any) {
-    console.error('Swap cash-in error:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const safeMessage = getSafeErrorMessage(errorMessage);
+    
+    console.error('[CASH-IN] Error:', errorMessage);
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: safeMessage 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
