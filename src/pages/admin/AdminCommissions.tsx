@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,12 +19,12 @@ import {
   ArrowLeft,
   TrendingUp,
   CheckCircle,
-  Wallet
+  Wallet,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { useEffect } from 'react';
-import { getAdminInfo, clearAdminSession, isAdminSessionValid } from '@/lib/adminSession';
+import { initAdminSession, clearAdminSession, getAdminInfoSync } from '@/lib/adminSession';
 
 interface CommissionWithProfile {
   id: string;
@@ -51,14 +52,22 @@ const navItems = [
 export default function AdminCommissions() {
   const location = useLocation();
   const navigate = useNavigate();
-  const adminInfo = getAdminInfo();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; role: string } | null>(null);
 
   useEffect(() => {
-    if (!isAdminSessionValid()) {
-      navigate('/admin/login');
-    }
+    const init = async () => {
+      const isAdmin = await initAdminSession();
+      if (!isAdmin) {
+        navigate('/admin/login');
+        return;
+      }
+      setAdminInfo(getAdminInfoSync());
+      setIsInitialized(true);
+    };
+    init();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -76,7 +85,7 @@ export default function AdminCommissions() {
       if (error) throw error;
       return data as CommissionWithProfile[];
     },
-    enabled: isAdminSessionValid(),
+    enabled: isInitialized,
   });
 
   const { data: stats } = useQuery({
@@ -93,7 +102,7 @@ export default function AdminCommissions() {
       
       return { total, paid, pending, count: data.length };
     },
-    enabled: isAdminSessionValid(),
+    enabled: isInitialized,
   });
 
   const markAsPaid = useMutation({
@@ -114,6 +123,14 @@ export default function AdminCommissions() {
     },
   });
 
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
@@ -124,7 +141,7 @@ export default function AdminCommissions() {
             <span className="text-xl font-bold text-primary">Admin Panel</span>
           </Link>
           {adminInfo && (
-            <p className="text-sm text-muted-foreground mt-2">{adminInfo.username}</p>
+            <p className="text-sm text-muted-foreground mt-2">{adminInfo.email}</p>
           )}
         </div>
         
@@ -219,7 +236,7 @@ export default function AdminCommissions() {
           <CardContent>
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : commissions?.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect } from 'react';
 import { 
   Users, 
   CreditCard, 
@@ -17,9 +17,10 @@ import {
   Eye,
   Settings,
   DollarSign,
-  ArrowLeft
+  ArrowLeft,
+  Loader2
 } from 'lucide-react';
-import { getAdminInfo, clearAdminSession, isAdminSessionValid } from '@/lib/adminSession';
+import { initAdminSession, clearAdminSession, getAdminInfoSync } from '@/lib/adminSession';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -34,17 +35,25 @@ const navItems = [
 export default function AdminSettings() {
   const location = useLocation();
   const navigate = useNavigate();
-  const adminInfo = getAdminInfo();
   const { toast } = useToast();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; role: string } | null>(null);
   
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [orderAlerts, setOrderAlerts] = useState(true);
   const [lowStockAlerts, setLowStockAlerts] = useState(false);
 
   useEffect(() => {
-    if (!isAdminSessionValid()) {
-      navigate('/admin/login');
-    }
+    const init = async () => {
+      const isAdmin = await initAdminSession();
+      if (!isAdmin) {
+        navigate('/admin/login');
+        return;
+      }
+      setAdminInfo(getAdminInfoSync());
+      setIsInitialized(true);
+    };
+    init();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -59,6 +68,14 @@ export default function AdminSettings() {
     });
   };
 
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
@@ -69,7 +86,7 @@ export default function AdminSettings() {
             <span className="text-xl font-bold text-primary">Admin Panel</span>
           </Link>
           {adminInfo && (
-            <p className="text-sm text-muted-foreground mt-2">{adminInfo.username}</p>
+            <p className="text-sm text-muted-foreground mt-2">{adminInfo.email}</p>
           )}
         </div>
         

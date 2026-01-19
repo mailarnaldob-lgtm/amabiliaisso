@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,10 +19,10 @@ import {
   Settings,
   DollarSign,
   ArrowLeft,
-  Info
+  Info,
+  Loader2
 } from 'lucide-react';
-import { getAdminInfo, clearAdminSession, isAdminSessionValid } from '@/lib/adminSession';
-import { useEffect } from 'react';
+import { initAdminSession, clearAdminSession, getAdminInfoSync } from '@/lib/adminSession';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -36,13 +37,20 @@ const navItems = [
 export default function AdminDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const adminInfo = getAdminInfo();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; role: string } | null>(null);
 
   useEffect(() => {
-    // Redirect if no valid admin session
-    if (!isAdminSessionValid()) {
-      navigate('/admin/login');
-    }
+    const init = async () => {
+      const isAdmin = await initAdminSession();
+      if (!isAdmin) {
+        navigate('/admin/login');
+        return;
+      }
+      setAdminInfo(getAdminInfoSync());
+      setIsInitialized(true);
+    };
+    init();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -51,26 +59,46 @@ export default function AdminDashboard() {
   };
 
   const { data: stats } = useQuery({
-    queryKey: ['admin-stats-mysql'],
+    queryKey: ['admin-stats'],
     queryFn: async () => {
-      // Fetch stats via edge function
-      const { data, error } = await supabase.functions.invoke('mysql-task-proofs', {
-        body: { action: 'stats' }
-      });
-
-      if (error) {
-        console.error('Failed to fetch stats:', error);
-        return { totalMembers: 0, totalCredits: 0, pendingReviews: 0 };
-      }
-
+      // Get member count
+      const { count: memberCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      // Get total credits from wallets
+      const { data: wallets } = await supabase
+        .from('wallets')
+        .select('balance');
+      const totalCredits = wallets?.reduce((sum, w) => sum + (Number(w.balance) || 0), 0) || 0;
+      
+      // Get pending reviews
+      const { count: pendingPayments } = await supabase
+        .from('membership_payments')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      
+      const { count: pendingTasks } = await supabase
+        .from('task_submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      
       return {
-        totalMembers: data?.stats?.totalUsers || 0,
-        totalCredits: data?.stats?.totalRevenue || 0,
-        pendingReviews: data?.stats?.pendingProofs || 0,
+        totalMembers: memberCount || 0,
+        totalCredits,
+        pendingReviews: (pendingPayments || 0) + (pendingTasks || 0),
       };
     },
-    enabled: isAdminSessionValid(),
+    enabled: isInitialized,
   });
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -82,7 +110,7 @@ export default function AdminDashboard() {
             <span className="text-xl font-bold text-primary">Admin Panel</span>
           </Link>
           {adminInfo && (
-            <p className="text-sm text-muted-foreground mt-2">{adminInfo.username}</p>
+            <p className="text-sm text-muted-foreground mt-2">{adminInfo.email}</p>
           )}
         </div>
         
@@ -128,13 +156,13 @@ export default function AdminDashboard() {
         {/* Admin Login Instructions */}
         <Alert className="mb-6 border-primary/50 bg-primary/5">
           <Info className="h-4 w-4 text-primary" />
-          <AlertTitle>Admin Access</AlertTitle>
+          <AlertTitle>Secure Admin Access</AlertTitle>
           <AlertDescription className="text-sm">
-            <p className="mb-2">To login as admin:</p>
+            <p className="mb-2">Admin authentication uses Supabase Auth with role-based access control:</p>
             <ol className="list-decimal list-inside space-y-1">
-              <li>Navigate to <code className="bg-muted px-1 rounded">/admin/login</code></li>
-              <li>Enter your admin credentials (configured in MySQL admins table)</li>
-              <li>Session is stored securely in memory (not localStorage)</li>
+              <li>Login with your admin email at <code className="bg-muted px-1 rounded">/admin/login</code></li>
+              <li>Your admin role is verified server-side via the <code className="bg-muted px-1 rounded">has_role()</code> function</li>
+              <li>All admin operations are protected by Row Level Security policies</li>
             </ol>
           </AlertDescription>
         </Alert>
