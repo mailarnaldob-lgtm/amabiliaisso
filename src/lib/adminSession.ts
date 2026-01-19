@@ -99,5 +99,4 @@ export function getAdminSessionToken(): string | null {
 
 export function setAdminSession(_token: string, _expiresAt: string, _info?: { username: string; role: string }): void {
   // No-op - session is managed by Supabase Auth now
-  console.warn('setAdminSession is deprecated. Admin sessions are now managed via Supabase Auth.');
 }
