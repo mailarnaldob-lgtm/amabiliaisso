@@ -272,6 +272,95 @@ export type Database = {
         }
         Relationships: []
       }
+      task_submissions: {
+        Row: {
+          id: string
+          proof_type: string
+          proof_url: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reward_amount: number | null
+          status: string
+          submitted_at: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          proof_type: string
+          proof_url?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reward_amount?: number | null
+          status?: string
+          submitted_at?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          proof_type?: string
+          proof_url?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reward_amount?: number | null
+          status?: string
+          submitted_at?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          proof_type: string
+          required_level: string
+          reward: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          proof_type?: string
+          required_level?: string
+          reward?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          proof_type?: string
+          required_level?: string
+          reward?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -366,6 +455,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_membership_payment: {
+        Args: { p_admin_id: string; p_payment_id: string }
+        Returns: Json
+      }
+      approve_task_submission: {
+        Args: { p_admin_id: string; p_submission_id: string }
+        Returns: Json
+      }
       cash_out_with_lock: {
         Args: {
           p_account_name: string
@@ -384,6 +481,43 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      lending_cancel_offer: {
+        Args: { p_loan_id: string; p_user_id: string }
+        Returns: Json
+      }
+      lending_post_offer: {
+        Args: {
+          p_interest_rate?: number
+          p_principal_amount: number
+          p_term_days?: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      lending_repay_loan: {
+        Args: { p_loan_id: string; p_user_id: string }
+        Returns: Json
+      }
+      lending_take_offer: {
+        Args: { p_loan_id: string; p_user_id: string }
+        Returns: Json
+      }
+      reject_membership_payment: {
+        Args: {
+          p_admin_id: string
+          p_payment_id: string
+          p_rejection_reason?: string
+        }
+        Returns: Json
+      }
+      reject_task_submission: {
+        Args: {
+          p_admin_id: string
+          p_rejection_reason?: string
+          p_submission_id: string
+        }
+        Returns: Json
       }
       transfer_with_lock: {
         Args: {
