@@ -57,7 +57,7 @@ export default function MyReferrals() {
               Share Your Referral Link
             </CardTitle>
             <CardDescription>
-              Earn 50% commission (₱400) on every ₱800 activation from your referrals
+              Earn 40% commission on every membership purchase from your referrals
             </CardDescription>
           </CardHeader>
           <CardContent>

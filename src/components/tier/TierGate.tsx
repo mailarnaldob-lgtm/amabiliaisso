@@ -1,49 +1,45 @@
 import { ReactNode } from 'react';
-import { useProfile } from '@/hooks/useProfile';
-import { MembershipTier } from '@/stores/appStore';
+import { useAppStore, MembershipTier } from '@/stores/appStore';
 import { LockedFeature } from './LockedFeature';
 
 interface TierGateProps {
   children: ReactNode;
-  requiredTier?: MembershipTier;
+  requiredTier: MembershipTier;
   featureName?: string;
 }
 
-/**
- * TierGate - Simplified for single-tier activation model
- * 
- * With the new ₱800 single activation fee, access is binary:
- * - null tier = OBSERVER (free, cannot participate)
- * - Any non-null tier = ACTIVATED MEMBER (full access)
- */
+const tierHierarchy: Record<MembershipTier, number> = {
+  basic: 1,
+  pro: 2,
+  elite: 3,
+};
+
 export function TierGate({ children, requiredTier, featureName }: TierGateProps) {
-  const { data: profile } = useProfile();
+  const membershipTier = useAppStore((state) => state.membershipTier);
   
-  // With single-tier model, just check if user is activated (has any tier)
-  const isActivated = profile?.membership_tier !== null && profile?.membership_tier !== undefined;
+  const hasAccess = tierHierarchy[membershipTier] >= tierHierarchy[requiredTier];
   
-  if (!isActivated) {
-    return <LockedFeature tierRequired={requiredTier || 'basic'} featureName={featureName} />;
+  if (!hasAccess) {
+    return <LockedFeature tierRequired={requiredTier} featureName={featureName} />;
   }
   
   return <>{children}</>;
 }
 
 export function useTierAccess() {
-  const { data: profile } = useProfile();
+  const membershipTier = useAppStore((state) => state.membershipTier);
   
-  // With single-tier model, check if user has any tier (is activated)
-  const isActivated = profile?.membership_tier !== null && profile?.membership_tier !== undefined;
+  const hasTierAccess = (requiredTier: MembershipTier): boolean => {
+    return tierHierarchy[membershipTier] >= tierHierarchy[requiredTier];
+  };
   
   return {
-    currentTier: profile?.membership_tier || null,
-    isActivated,
-    // Legacy compatibility - all activated users have full access
-    isBasic: isActivated,
-    isPro: isActivated,
-    isElite: isActivated,
-    canAccessPro: isActivated,
-    canAccessElite: isActivated,
-    hasTierAccess: (_requiredTier: MembershipTier): boolean => isActivated,
+    currentTier: membershipTier,
+    hasTierAccess,
+    isBasic: membershipTier === 'basic',
+    isPro: membershipTier === 'pro',
+    isElite: membershipTier === 'elite',
+    canAccessPro: tierHierarchy[membershipTier] >= tierHierarchy.pro,
+    canAccessElite: membershipTier === 'elite',
   };
 }

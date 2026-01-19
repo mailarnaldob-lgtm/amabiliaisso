@@ -170,18 +170,17 @@ export default function GrowthApp() {
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Direct Referral Activation</span>
+                  <span className="text-muted-foreground">Direct Referral Upgrade</span>
                   <Badge className="bg-purple-500">50%</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">VPA Worker Payout</span>
-                  <Badge variant="outline">90%</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Platform Gas Fee</span>
-                  <Badge variant="secondary">10%</Badge>
+                  <span className="text-muted-foreground">Network VPA Mission</span>
+                  <Badge variant="outline">10%</Badge>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                If debt {">"} 0: Royalties redirected to debt repayment
+              </p>
             </CardContent>
           </Card>
 

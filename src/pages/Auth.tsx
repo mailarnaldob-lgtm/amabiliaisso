@@ -116,8 +116,8 @@ export default function Auth() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg">50% Referral Commission</h3>
-                <p className="opacity-80">Earn ₱400 (50%) on every ₱800 activation</p>
+                <h3 className="font-semibold text-lg">40% Referral Commission</h3>
+                <p className="opacity-80">Earn 40% on every membership you refer</p>
               </div>
             </div>
             
