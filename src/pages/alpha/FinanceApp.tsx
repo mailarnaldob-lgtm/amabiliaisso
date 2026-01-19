@@ -22,6 +22,7 @@ import { RiskDisclosureModal } from '@/components/alpha/RiskDisclosureModal';
 import { LoanCountdownTimer } from '@/components/alpha/LoanCountdownTimer';
 import { CircuitBreakerIndicator } from '@/components/alpha/CircuitBreakerIndicator';
 import { DebtorRescuePanel } from '@/components/alpha/DebtorRescuePanel';
+import { useReferredUsersCount } from '@/hooks/useReferrals';
 
 // Demo loan marketplace data
 const lendOffers = [
@@ -73,14 +74,16 @@ const demoRescueMissions = [
   },
 ];
 
+const REQUIRED_REFERRALS = 3;
+
 export default function FinanceApp() {
   const [riskModalOpen, setRiskModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ type: 'lend' | 'borrow'; amount: number } | null>(null);
   const [showDebtorView, setShowDebtorView] = useState(false);
   
-  // Demo qualification status
-  const qualificationMet = false;
-  const referralCount = 1;
+  // Real qualification check: user needs 3+ referred users
+  const { data: referralCount = 0, isLoading: isLoadingReferrals } = useReferredUsersCount();
+  const qualificationMet = referralCount >= REQUIRED_REFERRALS;
 
   const handleLendClick = (amount: number) => {
     setPendingAction({ type: 'lend', amount });
