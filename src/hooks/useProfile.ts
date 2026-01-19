@@ -31,45 +31,34 @@ export function useProfile() {
       if (!user) return null;
       
       try {
-        console.log('[useProfile] Fetching profile from MySQL backend');
+        console.log('[useProfile] Fetching profile from Supabase');
         
-        // Fetch profile from MySQL via edge function
-        const { data, error } = await supabase.functions.invoke('mysql-user-data', {
-          body: { 
-            action: 'GET_PROFILE',
-            email: user.email,
-            user_id: user.id 
-          }
-        });
+        // Fetch profile directly from Supabase
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
 
         if (error) {
-          console.warn('[useProfile] Edge function error, using fallback:', error.message);
+          console.warn('[useProfile] Supabase error, using fallback:', error.message);
           return createFallbackProfile(user, true);
         }
 
-        // Handle standardized API response format
-        if (data?.success === false) {
-          console.warn('[useProfile] Backend error:', data.error, data.code);
-          return createFallbackProfile(user, true);
-        }
-
-        // Extract profile from various response formats
-        const profileData = data?.data?.profile || data?.data?.user || data?.user || data?.profile;
-        
         if (!profileData) {
-          console.log('[useProfile] No profile in response, using fallback');
+          console.log('[useProfile] No profile found, using fallback');
           return createFallbackProfile(user, true);
         }
 
-        // Map MySQL user data to Profile interface
+        // Map Supabase profile data to Profile interface
         return {
-          id: profileData.id?.toString() || user.id,
-          full_name: profileData.fullname || profileData.full_name || user.user_metadata?.full_name || 'User',
+          id: profileData.id,
+          full_name: profileData.full_name || user.user_metadata?.full_name || 'User',
           phone: profileData.phone || null,
           referral_code: profileData.referral_code || generateReferralCode(user.id),
-          referred_by: profileData.referrer_id?.toString() || profileData.referred_by || null,
+          referred_by: profileData.referred_by || null,
           membership_tier: profileData.membership_tier || 'basic',
-          membership_amount: profileData.membership_amount ? parseFloat(profileData.membership_amount) : null,
+          membership_amount: profileData.membership_amount ? Number(profileData.membership_amount) : null,
           is_kyc_verified: Boolean(profileData.is_kyc_verified),
           avatar_url: profileData.avatar_url || null,
           created_at: profileData.created_at || null,

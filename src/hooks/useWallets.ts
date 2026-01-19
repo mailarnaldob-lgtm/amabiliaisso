@@ -38,44 +38,32 @@ export function useWallets() {
       if (!user) return { wallets: [], isFallback: false };
       
       try {
-        console.log('[useWallets] Fetching wallets from MySQL backend');
+        console.log('[useWallets] Fetching wallets from Supabase');
         
-        // Fetch wallets from MySQL via edge function
-        const { data, error } = await supabase.functions.invoke('mysql-user-data', {
-          body: { 
-            action: 'GET_WALLETS',
-            email: user.email,
-            user_id: user.id 
-          }
-        });
+        // Fetch wallets directly from Supabase
+        const { data: walletsData, error } = await supabase
+          .from('wallets')
+          .select('*')
+          .eq('user_id', user.id);
 
         if (error) {
-          console.warn('[useWallets] Edge function error, using defaults:', error.message);
+          console.warn('[useWallets] Supabase error, using defaults:', error.message);
           return createDefaultWallets(user.id);
         }
 
-        // Handle standardized API response format
-        if (data?.success === false) {
-          console.warn('[useWallets] Backend error:', data.error, data.code);
-          return createDefaultWallets(user.id);
-        }
-
-        // Extract wallets from various response formats
-        const walletsData = data?.data?.wallets || data?.wallets || data?.data;
-        
-        if (!Array.isArray(walletsData) || walletsData.length === 0) {
-          console.log('[useWallets] No wallets in response, using defaults');
+        if (!walletsData || walletsData.length === 0) {
+          console.log('[useWallets] No wallets found, using defaults');
           return createDefaultWallets(user.id);
         }
 
         // Map wallet data with proper type handling
-        const wallets = walletsData.map((w: Record<string, unknown>) => ({
-          id: String(w.id || `${w.wallet_type}-${user.id}`),
-          user_id: String(w.user_id || user.id),
-          wallet_type: (w.wallet_type || 'main') as 'task' | 'royalty' | 'main',
-          balance: typeof w.balance === 'string' ? parseFloat(w.balance) || 0 : Number(w.balance) || 0,
-          created_at: w.created_at ? String(w.created_at) : null,
-          updated_at: w.updated_at ? String(w.updated_at) : null,
+        const wallets: Wallet[] = walletsData.map((w) => ({
+          id: w.id,
+          user_id: w.user_id,
+          wallet_type: w.wallet_type,
+          balance: Number(w.balance) || 0,
+          created_at: w.created_at || null,
+          updated_at: w.updated_at || null,
         }));
 
         console.log('[useWallets] Loaded', wallets.length, 'wallets');
