@@ -20,14 +20,22 @@ export function isValidAmount(value: unknown, min = 0, max = Infinity): value is
   return typeof value === 'number' && !isNaN(value) && value > min && value <= max;
 }
 
-// Sanitize string input (remove potential XSS/injection characters)
+// Sanitize string input - preserves legitimate characters, only removes HTML tags
+// SQL injection is prevented by parameterized queries (RPC functions)
+// XSS is prevented by React's JSX escaping
 export function sanitizeString(value: unknown, maxLength = 200): string {
   if (typeof value !== 'string') return '';
   return value
     .trim()
     .slice(0, maxLength)
-    .replace(/<[^>]*>/g, '') // Remove HTML tags
-    .replace(/[<>'"`;]/g, ''); // Remove dangerous characters
+    .replace(/<[^>]*>/g, ''); // Remove HTML tags only - apostrophes/quotes are safe
+}
+
+// Validate name format - allows international names with apostrophes, hyphens, periods
+export function isValidName(value: string): boolean {
+  // Allows: letters (including unicode), spaces, apostrophes, hyphens, periods, commas
+  // Examples: O'Brien, María José, Jean-Pierre, Smith Jr., van der Berg
+  return /^[\p{L}\s'.\-,]+$/u.test(value) && value.length >= 2;
 }
 
 // Validate alphanumeric with spaces only
@@ -155,15 +163,17 @@ export function validateCashOut(input: unknown): ValidationResult<CashOutInput> 
     return { success: false, error: 'Invalid payment method. Use GCash, Maya, or Bank Transfer' };
   }
 
-  // Validate and sanitize account name (letters and spaces only, 1-100 chars)
+  // Validate and sanitize account name - supports international names
   if (typeof account_name !== 'string') {
     return { success: false, error: 'Account name is required' };
   }
-  const sanitizedAccountName = sanitizeString(account_name, 100);
-  if (sanitizedAccountName.length < 2) {
+  const trimmedAccountName = account_name.trim().slice(0, 100);
+  if (trimmedAccountName.length < 2) {
     return { success: false, error: 'Account name must be at least 2 characters' };
   }
-  if (!/^[a-zA-Z\s.,-]+$/.test(sanitizedAccountName)) {
+  // Allow letters (including unicode), spaces, apostrophes, hyphens, periods, commas
+  // Examples: O'Brien, María José, Jean-Pierre, Smith Jr.
+  if (!/^[\p{L}\s'.\-,]+$/u.test(trimmedAccountName)) {
     return { success: false, error: 'Account name can only contain letters, spaces, and basic punctuation' };
   }
 
@@ -182,7 +192,7 @@ export function validateCashOut(input: unknown): ValidationResult<CashOutInput> 
       amount: parsedAmount as number,
       payment_method: payment_method.toLowerCase(),
       account_number: sanitizedAccountNumber,
-      account_name: sanitizedAccountName
+      account_name: trimmedAccountName
     }
   };
 }
