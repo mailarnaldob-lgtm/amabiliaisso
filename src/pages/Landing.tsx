@@ -388,8 +388,8 @@ export default function Landing() {
                 <CardDescription>Network Growth</CardDescription>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
-                <p>• 50% activation bonuses</p>
-                <p>• 10% mission royalties</p>
+                <p>• 40% referral commissions</p>
+                <p>• 8% team override royalties</p>
                 <p>• Automated debt recovery via royalties</p>
               </CardContent>
             </Card>
@@ -631,8 +631,17 @@ export default function Landing() {
             </div>
           </div>
           
-          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} ₳LPHA Ecosystem. All rights reserved.</p>
+          {/* Global Disclaimer */}
+          <div className="pt-6 border-t border-border text-center text-xs text-muted-foreground/60 max-w-3xl mx-auto">
+            <p>
+              ₳ credits are internal system units and do not represent money, stored value, or investment. 
+              No financial services are offered on this site. All membership fees are one-time registration payments 
+              subject to admin verification. Credits cannot be redeemed for cash.
+            </p>
+          </div>
+          
+          <div className="pt-4 text-center text-sm text-muted-foreground">
+            <p>© {new Date().getFullYear()} Amabilia Network. All rights reserved.</p>
           </div>
         </div>
       </footer>
