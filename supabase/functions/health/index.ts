@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,7 +11,6 @@ interface HealthStatus {
   timestamp: string;
   services: {
     edge_functions: 'ok' | 'error';
-    php_proxy: 'ok' | 'error' | 'unknown';
     database: 'ok' | 'error' | 'unknown';
   };
   version: string;
@@ -28,26 +28,19 @@ serve(async (req) => {
     timestamp: new Date().toISOString(),
     services: {
       edge_functions: 'ok',
-      php_proxy: 'unknown',
       database: 'unknown',
     },
-    version: '1.0.0',
+    version: '2.0.0',
     uptime_check: true,
   };
 
   try {
-    // Check PHP proxy health
-    const phpHealthCheck = await checkPhpProxy();
-    healthStatus.services.php_proxy = phpHealthCheck ? 'ok' : 'error';
-
-    // Check database via PHP proxy
-    if (phpHealthCheck) {
-      const dbHealthCheck = await checkDatabase();
-      healthStatus.services.database = dbHealthCheck ? 'ok' : 'error';
-    }
+    // Check Supabase database connectivity
+    const dbHealthCheck = await checkDatabase();
+    healthStatus.services.database = dbHealthCheck ? 'ok' : 'error';
 
     // Determine overall status
-    if (healthStatus.services.php_proxy === 'error' || healthStatus.services.database === 'error') {
+    if (healthStatus.services.database === 'error') {
       healthStatus.status = 'degraded';
     }
 
@@ -83,63 +76,20 @@ serve(async (req) => {
   }
 });
 
-async function checkPhpProxy(): Promise<boolean> {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const response = await fetch('https://www.amabilianetwork.com/api/health.php', {
-      method: 'GET',
-      signal: controller.signal,
-    });
-    
-    clearTimeout(timeoutId);
-    
-    // Check if response is JSON
-    const text = await response.text();
-    if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
-      console.error('[HEALTH] PHP proxy returned HTML instead of JSON');
-      return false;
-    }
-    
-    try {
-      const data = JSON.parse(text);
-      return data.status === 'ok' || response.ok;
-    } catch {
-      // If we can't parse but got a response, consider it partially working
-      return response.ok;
-    }
-  } catch (error) {
-    console.error('[HEALTH] PHP proxy check failed:', error);
-    return false;
-  }
-}
-
 async function checkDatabase(): Promise<boolean> {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const response = await fetch('https://www.amabilianetwork.com/api/health.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'db_check' }),
-      signal: controller.signal,
-    });
-    
-    clearTimeout(timeoutId);
-    
-    const text = await response.text();
-    if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
-      return false;
-    }
-    
-    try {
-      const data = JSON.parse(text);
-      return data.database === 'connected' || data.success === true;
-    } catch {
-      return false;
-    }
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
+
+    // Simple query to check database connectivity
+    const { error } = await supabase
+      .from('profiles')
+      .select('id')
+      .limit(1);
+
+    return !error;
   } catch (error) {
     console.error('[HEALTH] Database check failed:', error);
     return false;

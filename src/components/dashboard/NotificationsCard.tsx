@@ -13,7 +13,8 @@ export function NotificationsCard() {
   const [referralAlerts, setReferralAlerts] = useState(true);
 
   const handleToggle = (setting: string, value: boolean) => {
-    // TODO: Persist to MySQL via edge function
+    // Notification preferences are stored locally for now
+    // Future: Could persist to user_preferences table in Supabase
     toast({
       title: 'Preference Updated',
       description: `${setting} has been ${value ? 'enabled' : 'disabled'}.`,
