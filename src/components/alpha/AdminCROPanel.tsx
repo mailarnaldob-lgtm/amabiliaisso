@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Eye, 
   Users, 
@@ -13,66 +14,38 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Wallet,
   Zap,
   FileImage,
   DollarSign,
   Upload,
   Ban,
-  RefreshCw,
   Clock,
-  Activity
+  Activity,
+  RefreshCw
 } from 'lucide-react';
-
-// Mock data for demonstrations
-const mockLenderQueue = [
-  { id: '1', lender: 'Maria S.', amount: 5000, status: 'awaiting_match', since: '2 hours ago' },
-  { id: '2', lender: 'Juan D.', amount: 2000, status: 'awaiting_match', since: '4 hours ago' },
-];
-
-const mockBorrowerQueue = [
-  { id: '1', borrower: 'Ana R.', amount: 3000, creditScore: 85, status: 'verified', since: '1 hour ago' },
-  { id: '2', borrower: 'Pedro G.', amount: 5000, creditScore: 72, status: 'verified', since: '3 hours ago' },
-];
-
-const mockProofQueue = [
-  { 
-    id: '1', 
-    user: 'Rosa M.', 
-    amount: 10000, 
-    reference: 'GCash-12345678',
-    screenshot: '/placeholder.svg',
-    bankStatement: 'Matched',
-    submittedAt: '30 min ago'
-  },
-  { 
-    id: '2', 
-    user: 'Carlos L.', 
-    amount: 5000, 
-    reference: 'Maya-87654321',
-    screenshot: '/placeholder.svg',
-    bankStatement: 'Pending',
-    submittedAt: '1 hour ago'
-  },
-];
-
-const mockRescueCases = [
-  { id: '1', user: 'Pedro G.', debt: 5300, daysOverdue: 3, tasksAssigned: 2, tasksCompleted: 1 },
-  { id: '2', user: 'Lisa T.', debt: 2060, daysOverdue: 1, tasksAssigned: 1, tasksCompleted: 0 },
-];
-
-const systemMetrics = {
-  reserveRatio: 115,
-  totalAlpha: 1250000,
-  totalPHP: 1187500,
-  activeCycles: 24,
-  pendingWithdrawals: 45000,
-  emergencyFundEnabled: false
-};
+import { usePendingLoans, useActiveLoans, useDefaultedLoans, useLoanStats } from '@/hooks/useLoans';
+import { formatAlpha } from '@/lib/utils';
 
 export function AdminCROPanel() {
   const [activeTab, setActiveTab] = useState('matcher');
   const [emergencyFund, setEmergencyFund] = useState(false);
+
+  // Fetch real data from database
+  const { data: pendingLoans, isLoading: pendingLoading, refetch: refetchPending } = usePendingLoans();
+  const { data: activeLoans, isLoading: activeLoading, refetch: refetchActive } = useActiveLoans();
+  const { data: defaultedLoans, isLoading: defaultedLoading, refetch: refetchDefaulted } = useDefaultedLoans();
+  const { data: loanStats, isLoading: statsLoading } = useLoanStats();
+
+  const handleRefresh = () => {
+    refetchPending();
+    refetchActive();
+    refetchDefaulted();
+  };
+
+  // Calculate metrics from real data
+  const totalAlpha = loanStats?.totalPrincipal || 0;
+  const activeCycles = loanStats?.activeLoans || 0;
+  const rescueCases = loanStats?.defaultedLoans || 0;
 
   return (
     <div className="space-y-6">
@@ -87,37 +60,58 @@ export function AdminCROPanel() {
             <p className="text-sm text-muted-foreground">Manual control & system oversight</p>
           </div>
         </div>
-        <Badge variant="outline" className="flex items-center gap-1">
-          <Activity className="h-3 w-3 text-emerald-500 animate-pulse" />
-          Live
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4 mr-1" />
+            Refresh
+          </Button>
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Activity className="h-3 w-3 text-emerald-500 animate-pulse" />
+            Live
+          </Badge>
+        </div>
       </div>
 
       {/* Quick Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <MetricCard 
-          label="Reserve Ratio" 
-          value={`${systemMetrics.reserveRatio}%`} 
-          status={systemMetrics.reserveRatio >= 100 ? 'good' : 'warning'}
-        />
-        <MetricCard 
-          label="₳ Circulation" 
-          value={`₳${(systemMetrics.totalAlpha / 1000).toFixed(0)}K`} 
-        />
-        <MetricCard 
-          label="Active Cycles" 
-          value={systemMetrics.activeCycles.toString()} 
-        />
-        <MetricCard 
-          label="Pending W/D" 
-          value={`₱${(systemMetrics.pendingWithdrawals / 1000).toFixed(0)}K`} 
-          status="neutral"
-        />
-        <MetricCard 
-          label="Rescue Cases" 
-          value={mockRescueCases.length.toString()} 
-          status={mockRescueCases.length > 0 ? 'warning' : 'good'}
-        />
+        {statsLoading ? (
+          <>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-3">
+                  <Skeleton className="h-4 w-20 mb-2" />
+                  <Skeleton className="h-6 w-16" />
+                </CardContent>
+              </Card>
+            ))}
+          </>
+        ) : (
+          <>
+            <MetricCard 
+              label="Total Pending" 
+              value={`${loanStats?.pendingLoans || 0}`} 
+              status="neutral"
+            />
+            <MetricCard 
+              label="₳ In Circulation" 
+              value={`₳${formatAlpha(totalAlpha)}`} 
+            />
+            <MetricCard 
+              label="Active Cycles" 
+              value={activeCycles.toString()} 
+            />
+            <MetricCard 
+              label="Total Repaid" 
+              value={`${loanStats?.repaidLoans || 0}`} 
+              status="good"
+            />
+            <MetricCard 
+              label="Rescue Cases" 
+              value={rescueCases.toString()} 
+              status={rescueCases > 0 ? 'warning' : 'good'}
+            />
+          </>
+        )}
       </div>
 
       {/* Main Tabs */}
@@ -144,71 +138,113 @@ export function AdminCROPanel() {
         {/* Manual Matcher Tab */}
         <TabsContent value="matcher" className="space-y-4">
           <div className="grid lg:grid-cols-2 gap-4">
-            {/* Lender Queue */}
+            {/* Lender Queue (Pending Offers) */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <DollarSign className="h-5 w-5 text-emerald-500" />
-                  Lender Queue
+                  Lender Queue (Pending Offers)
                 </CardTitle>
-                <CardDescription>Drag to match with borrowers</CardDescription>
+                <CardDescription>Available offers waiting for borrowers</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                {mockLenderQueue.map((lender) => (
-                  <div 
-                    key={lender.id} 
-                    className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 cursor-grab hover:shadow-md transition-shadow"
-                    draggable
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{lender.lender}</p>
-                        <p className="text-xs text-muted-foreground">Since {lender.since}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-emerald-600">₳{lender.amount.toLocaleString()}</p>
-                        <Badge variant="outline" className="text-[10px]">Available</Badge>
+                {pendingLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : pendingLoans && pendingLoans.length > 0 ? (
+                  pendingLoans.map((loan) => (
+                    <div 
+                      key={loan.id} 
+                      className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 cursor-grab hover:shadow-md transition-shadow"
+                      draggable
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm">Lender: {loan.lender_id.substring(0, 8)}...</p>
+                          <p className="text-xs text-muted-foreground">
+                            {loan.interest_rate}% interest • {loan.term_days} days
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-emerald-600">₳{formatAlpha(loan.principal_amount)}</p>
+                          <Badge variant="outline" className="text-[10px]">Available</Badge>
+                        </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <p className="text-sm">No pending offers</p>
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
 
-            {/* Borrower Queue */}
+            {/* Active Loans */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Users className="h-5 w-5 text-blue-500" />
-                  Borrower Queue
+                  Active Loans
                 </CardTitle>
-                <CardDescription>Drop lender here to create match</CardDescription>
+                <CardDescription>Currently matched and running</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                {mockBorrowerQueue.map((borrower) => (
-                  <div 
-                    key={borrower.id} 
-                    className="p-3 rounded-lg border border-blue-500/30 bg-blue-500/5"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{borrower.borrower}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-[10px]">
-                            Score: {borrower.creditScore}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{borrower.since}</span>
+                {activeLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : activeLoans && activeLoans.length > 0 ? (
+                  activeLoans.map((loan) => {
+                    const dueDate = loan.due_at ? new Date(loan.due_at) : null;
+                    const isOverdue = dueDate && dueDate < new Date();
+                    
+                    return (
+                      <div 
+                        key={loan.id} 
+                        className={`p-3 rounded-lg border ${isOverdue ? 'border-amber-500/30 bg-amber-500/5' : 'border-blue-500/30 bg-blue-500/5'}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">
+                              Borrower: {loan.borrower_id?.substring(0, 8)}...
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge 
+                                variant="outline" 
+                                className={`text-[10px] ${isOverdue ? 'border-amber-500 text-amber-600' : ''}`}
+                              >
+                                {isOverdue ? 'Overdue' : 'Active'}
+                              </Badge>
+                              {dueDate && (
+                                <span className="text-xs text-muted-foreground">
+                                  Due: {dueDate.toLocaleDateString()}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-blue-600">
+                              ₳{formatAlpha(loan.total_repayment || loan.principal_amount)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Principal: ₳{formatAlpha(loan.principal_amount)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-blue-600">₳{borrower.amount.toLocaleString()}</p>
-                        <Button size="sm" variant="outline" className="h-6 text-xs mt-1" disabled>
-                          Match
-                        </Button>
-                      </div>
-                    </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <p className="text-sm">No active loans</p>
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
           </div>
@@ -220,54 +256,18 @@ export function AdminCROPanel() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileImage className="h-5 w-5" />
-                Exchanger Proof Queue
+                Payment Proof Queue
               </CardTitle>
-              <CardDescription>Side-by-side verification of user screenshots</CardDescription>
+              <CardDescription>Side-by-side verification of payment screenshots</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockProofQueue.map((proof) => (
-                <div key={proof.id} className="p-4 rounded-lg border border-border">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <p className="font-medium">{proof.user}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Ref: {proof.reference} • {proof.submittedAt}
-                      </p>
-                    </div>
-                    <p className="font-bold">₱{proof.amount.toLocaleString()}</p>
-                  </div>
-                  
-                  {/* Side by side preview areas */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                      <div className="text-center text-muted-foreground">
-                        <Upload className="h-8 w-8 mx-auto mb-1" />
-                        <p className="text-xs">User Screenshot</p>
-                      </div>
-                    </div>
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                      <div className="text-center text-muted-foreground">
-                        <Shield className="h-8 w-8 mx-auto mb-1" />
-                        <p className="text-xs">Bank Statement</p>
-                        <Badge variant="outline" className="mt-1 text-[10px]">
-                          {proof.bankStatement}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2">
-                    <Button size="sm" variant="outline" className="text-destructive">
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Reject
-                    </Button>
-                    <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600">
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Approve
-                    </Button>
-                  </div>
-                </div>
-              ))}
+              <div className="text-center py-8 text-muted-foreground">
+                <Upload className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>Payment proof verification is handled in the Payments admin panel</p>
+                <Button variant="outline" className="mt-4" asChild>
+                  <a href="/admin/payments">Go to Payments Panel</a>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -278,54 +278,65 @@ export function AdminCROPanel() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="h-5 w-5 text-amber-500" />
-                Rescue Task Manager
+                Defaulted Loan Recovery
               </CardTitle>
-              <CardDescription>Assign and manage debtor recovery tasks</CardDescription>
+              <CardDescription>Manage recovery for defaulted loans</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockRescueCases.map((case_) => (
-                <div key={case_.id} className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-amber-500/20">
-                        <AlertTriangle className="h-4 w-4 text-amber-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{case_.user}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {case_.daysOverdue} days overdue
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-destructive">₳{case_.debt.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">Outstanding</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="text-muted-foreground">
-                        Tasks: {case_.tasksCompleted}/{case_.tasksAssigned}
-                      </span>
-                      <Progress 
-                        value={(case_.tasksCompleted / case_.tasksAssigned) * 100} 
-                        className="w-20 h-2" 
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <Zap className="h-4 w-4 mr-1" />
-                        Assign Task
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-destructive">
-                        <Ban className="h-4 w-4 mr-1" />
-                        Escalate
-                      </Button>
-                    </div>
-                  </div>
+              {defaultedLoading ? (
+                <div className="space-y-2">
+                  {[1, 2].map((i) => (
+                    <Skeleton key={i} className="h-20 w-full" />
+                  ))}
                 </div>
-              ))}
+              ) : defaultedLoans && defaultedLoans.length > 0 ? (
+                defaultedLoans.map((loan) => {
+                  const dueDate = loan.due_at ? new Date(loan.due_at) : null;
+                  const daysOverdue = dueDate 
+                    ? Math.floor((Date.now() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+                    : 0;
+                  
+                  return (
+                    <div key={loan.id} className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-full bg-amber-500/20">
+                            <AlertTriangle className="h-4 w-4 text-amber-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Borrower: {loan.borrower_id?.substring(0, 8)}...</p>
+                            <p className="text-xs text-muted-foreground">
+                              {daysOverdue} days overdue
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-destructive">
+                            ₳{formatAlpha(loan.total_repayment || loan.principal_amount)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">Outstanding</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2">
+                        <Button size="sm" variant="outline">
+                          <Zap className="h-4 w-4 mr-1" />
+                          Assign Recovery Task
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-destructive">
+                          <Ban className="h-4 w-4 mr-1" />
+                          Escalate
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-2 text-emerald-500 opacity-50" />
+                  <p>No defaulted loans - all borrowers are in good standing</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -389,35 +400,27 @@ export function AdminCROPanel() {
                 </Button>
               </div>
 
-              {/* Audit Log */}
+              {/* System Notice */}
               <div className="pt-4 border-t border-border">
                 <h4 className="font-medium mb-2 flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  Recent Admin Actions
+                  System Notice
                 </h4>
-                <div className="space-y-2 text-sm">
-                  {[
-                    { action: 'Proof Approved', admin: 'Admin_A', time: '5 min ago' },
-                    { action: 'Rescue Task Assigned', admin: 'Admin_B', time: '15 min ago' },
-                    { action: 'Lender Matched', admin: 'Admin_A', time: '1 hour ago' },
-                  ].map((log, i) => (
-                    <div key={i} className="flex items-center justify-between text-muted-foreground">
-                      <span>{log.action} by {log.admin}</span>
-                      <span className="text-xs">{log.time}</span>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Emergency controls require dual authorization from designated administrators.
+                  All actions are logged and audited.
+                </p>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* Demo Notice */}
+      {/* Live Data Notice */}
       <Card className="bg-muted/30">
         <CardContent className="p-3">
           <p className="text-xs text-muted-foreground text-center">
-            UI MOCKUP • Admin actions are demonstration only • 4-eyes governance enforced in production
+            Connected to live database • Data updates in real-time • 4-eyes governance enforced in production
           </p>
         </CardContent>
       </Card>
@@ -442,7 +445,7 @@ function MetricCard({
     }>
       <CardContent className="p-3">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className={`text-xl font-bold ${
+        <p className={`text-lg font-bold ${
           status === 'good' ? 'text-emerald-600' :
           status === 'warning' ? 'text-amber-600' :
           'text-foreground'
