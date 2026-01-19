@@ -46,7 +46,7 @@ export default function Profile() {
               <Copy className="h-4 w-4 mr-1" /> Copy
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">Earn 40% commission on every referral!</p>
+          <p className="text-xs text-muted-foreground mt-2">Earn 50% commission (₱400) on every referral!</p>
         </div>
 
         {/* Menu Items */}

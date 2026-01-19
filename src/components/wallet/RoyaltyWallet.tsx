@@ -20,7 +20,7 @@ export function RoyaltyWallet() {
           </div>
           <div>
             <p className="font-medium text-foreground">Referral Credits</p>
-            <p className="text-xs text-muted-foreground">8% Team Override Active</p>
+            <p className="text-xs text-muted-foreground">50% Commission Active</p>
           </div>
         </div>
       </div>
@@ -44,9 +44,9 @@ export function RoyaltyWallet() {
         <div className="p-3 rounded-lg bg-secondary/50">
           <div className="flex items-center gap-2 mb-1">
             <Crown className="h-4 w-4 text-alpha" />
-            <span className="text-xs text-muted-foreground">Override Rate</span>
+            <span className="text-xs text-muted-foreground">Commission Rate</span>
           </div>
-          <p className="font-bold text-alpha">8%</p>
+          <p className="font-bold text-alpha">50%</p>
         </div>
       </div>
     </div>

@@ -25,30 +25,23 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentSchema } from '@/lib/validations';
 import { supabase } from '@/integrations/supabase/client';
 
+// Single ₱800 activation fee - simplified membership
+const ACTIVATION_FEE = 800;
+
 const MEMBERSHIP_TIERS = [
   {
     id: 'basic',
-    name: 'Basic',
-    price: 1000, // ₱1,000
-    icon: Star,
-    color: 'bg-secondary',
-    features: ['40% referral commission', 'Access to community platform'],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: 2000, // ₱2,000
+    name: 'Member Activation',
+    price: ACTIVATION_FEE,
     icon: Zap,
     color: 'bg-primary',
-    features: ['40% referral commission', 'Activity-based credits (VPA)', 'Training access'],
-  },
-  {
-    id: 'elite',
-    name: 'Elite',
-    price: 3000, // ₱3,000
-    icon: Crown,
-    color: 'bg-accent-foreground',
-    features: ['40% referral commission', 'Activity-based credits (VPA)', 'Credit marketplace (P2P)', '8% team override', 'VIP support'],
+    features: [
+      '50% referral commission',
+      'VPA missions (90% payout)',
+      'VOLT liquidity (3% weekly)',
+      'P2P Exchange access',
+      'Full ecosystem access',
+    ],
   },
 ];
 
