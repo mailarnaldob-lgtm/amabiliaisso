@@ -206,22 +206,36 @@ export const ARMY_LEVELS: Record<ArmyLevel, { name: string; minTasks: number; ic
   elite_operator: { name: 'VPA Elite Operator', minTasks: 500, icon: '👑' },
 };
 
-// Membership tier configuration - accurate business logic
-// Note: null tier = FREE ACCOUNT (no payment), basic/pro/elite require payments
+// Single activation membership - ₱800 (simplified from 3-tier system)
+// null tier = OBSERVER (free, can view but not participate)
+// Any non-null tier = ACTIVATED MEMBER with full access
+export const ACTIVATION_FEE = 800;
+
+export const MEMBERSHIP_CONFIG = {
+  activationFee: ACTIVATION_FEE,
+  features: [
+    '50% Referral Commission',
+    'VPA Missions (90% payout)',
+    'VOLT Liquidity (3% weekly)',
+    'P2P Exchange Access',
+  ],
+};
+
+// Legacy export for backwards compatibility
 export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: number; features: string[] }> = {
   basic: {
-    name: 'Basic',
-    cost: 1000, // ₱1,000
-    features: ['40% Referral Commission', 'Access to Community Platform'],
+    name: 'Member',
+    cost: ACTIVATION_FEE,
+    features: MEMBERSHIP_CONFIG.features,
   },
   pro: {
-    name: 'Pro',
-    cost: 2000, // ₱2,000
-    features: ['40% Referral Commission', 'Activity-Based Credits (VPA)', 'Training Access'],
+    name: 'Member',
+    cost: ACTIVATION_FEE,
+    features: MEMBERSHIP_CONFIG.features,
   },
   elite: {
-    name: 'Elite',
-    cost: 3000, // ₱3,000
-    features: ['40% Referral Commission', 'Activity-Based Credits (VPA)', 'Credit Marketplace (P2P Lending)', '8% Team Override Royalties', 'KYC Verification', 'VIP Support'],
+    name: 'Member',
+    cost: ACTIVATION_FEE,
+    features: MEMBERSHIP_CONFIG.features,
   },
 };
