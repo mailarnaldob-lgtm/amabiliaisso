@@ -16,11 +16,14 @@ import {
   Star,
   CheckCircle,
   Copy,
-  Info
+  Info,
+  Loader2,
+  Upload
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentSchema } from '@/lib/validations';
+import { supabase } from '@/integrations/supabase/client';
 
 const MEMBERSHIP_TIERS = [
   {
@@ -64,7 +67,8 @@ export default function UpgradeMembership() {
   const [selectedTier, setSelectedTier] = useState<string>('pro');
   const [paymentMethod, setPaymentMethod] = useState<string>('gcash');
   const [referenceNumber, setReferenceNumber] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [errors, setErrors] = useState<{ reference_number?: string }>({});
 
   const currentTierIndex = MEMBERSHIP_TIERS.findIndex(t => t.id === profile?.membership_tier);
@@ -78,25 +82,83 @@ export default function UpgradeMembership() {
     toast({ title: 'Copied!', description: 'Account number copied to clipboard' });
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid File',
+          description: 'Please upload an image file (JPG, PNG, etc.)',
+        });
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          variant: 'destructive',
+          title: 'File Too Large',
+          description: 'Maximum file size is 5MB',
+        });
+        return;
+      }
+      setProofFile(file);
+    }
+  };
+
   const submitPayment = useMutation({
     mutationFn: async () => {
       if (!user || !selectedTierData) throw new Error('Invalid data');
 
-      // TODO: Replace with MySQL edge function when mysql-submit-payment is implemented
-      console.log('Submitting payment:', {
-        user_id: user.id,
-        tier: selectedTier,
-        amount: selectedTierData.price,
-        payment_method: paymentMethod,
-        reference_number: referenceNumber,
-      });
+      let proofPath: string | null = null;
+
+      // Upload proof file if provided
+      if (proofFile) {
+        setIsUploading(true);
+        const fileExt = proofFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('payment-proofs')
+          .upload(fileName, proofFile);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error('Failed to upload payment proof');
+        }
+        
+        proofPath = fileName;
+        setIsUploading(false);
+      }
+
+      // Insert payment record into membership_payments table
+      const { error } = await supabase
+        .from('membership_payments')
+        .insert({
+          user_id: user.id,
+          tier: selectedTier as 'basic' | 'pro' | 'elite',
+          amount: selectedTierData.price,
+          payment_method: paymentMethod,
+          reference_number: referenceNumber,
+          proof_url: proofPath,
+          status: 'pending',
+        });
+
+      if (error) {
+        console.error('Payment submission error:', error);
+        throw new Error('Failed to submit payment');
+      }
     },
     onSuccess: () => {
       toast({
-        title: 'Submission Received!',
-        description: 'Your registration is pending admin review. You will be notified once verified.',
+        title: 'Payment Submitted!',
+        description: 'Your payment is pending admin verification. You will be notified once approved.',
       });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      // Reset form
+      setReferenceNumber('');
+      setProofFile(null);
     },
     onError: (error: Error) => {
       toast({
@@ -132,9 +194,7 @@ export default function UpgradeMembership() {
       return;
     }
 
-    setIsSubmitting(true);
     await submitPayment.mutateAsync();
-    setIsSubmitting(false);
   };
 
   if (availableTiers.length === 0) {
@@ -282,7 +342,7 @@ export default function UpgradeMembership() {
           <Card className="mb-8 border-border">
             <CardHeader>
               <CardTitle>3. Submit Verification</CardTitle>
-              <CardDescription>Enter your transaction reference number for verification</CardDescription>
+              <CardDescription>Enter your transaction reference number and upload proof</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -298,13 +358,47 @@ export default function UpgradeMembership() {
                 />
                 {errors.reference_number && <p className="text-sm text-destructive">{errors.reference_number}</p>}
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="proof">Payment Screenshot (Optional)</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="proof"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                  />
+                </div>
+                {proofFile && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Upload className="h-4 w-4" />
+                    {proofFile.name}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Upload a screenshot of your payment confirmation (max 5MB)
+                </p>
+              </div>
             </CardContent>
           </Card>
 
           {/* Submit */}
           <div className="text-center">
-            <Button type="submit" size="lg" disabled={isSubmitting} className="px-12">
-              {isSubmitting ? 'Submitting...' : 'Submit for Admin Review'}
+            <Button 
+              type="submit" 
+              size="lg" 
+              disabled={submitPayment.isPending || isUploading} 
+              className="px-12"
+            >
+              {submitPayment.isPending || isUploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {isUploading ? 'Uploading...' : 'Submitting...'}
+                </>
+              ) : (
+                'Submit for Admin Review'
+              )}
             </Button>
             <p className="text-sm text-muted-foreground mt-4">
               Your registration will be verified within 24 hours. You'll receive a notification once approved.

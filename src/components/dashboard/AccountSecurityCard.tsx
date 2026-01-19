@@ -3,28 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Shield, Key, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { PasswordChangeDialog } from './PasswordChangeDialog';
 
 export function AccountSecurityCard() {
-  // This ID is used for smooth-scroll from header gear icon
   const { toast } = useToast();
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-
-  const handleChangePassword = () => {
-    setIsChangingPassword(true);
-    // TODO: Implement password change via MySQL edge function
-    setTimeout(() => {
-      toast({
-        title: 'Feature Coming Soon',
-        description: 'Password change will be available shortly.',
-      });
-      setIsChangingPassword(false);
-    }, 1000);
-  };
 
   const handleEnable2FA = () => {
     toast({
       title: 'Feature Coming Soon',
-      description: 'Two-factor authentication will be available shortly.',
+      description: 'Two-factor authentication will be available in a future update.',
     });
   };
 
@@ -46,14 +33,13 @@ export function AccountSecurityCard() {
               <p className="text-sm text-muted-foreground">Change your account password</p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleChangePassword}
-            disabled={isChangingPassword}
-          >
-            {isChangingPassword ? 'Processing...' : 'Change'}
-          </Button>
+          <PasswordChangeDialog 
+            trigger={
+              <Button variant="outline" size="sm">
+                Change
+              </Button>
+            }
+          />
         </div>
         <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
           <div className="flex items-center gap-3">
