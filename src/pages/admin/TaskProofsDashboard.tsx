@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,176 +17,163 @@ import {
   LogOut, 
   RefreshCw,
   ExternalLink,
-  FileText
+  FileText,
+  Shield,
+  LayoutDashboard,
+  Users,
+  CreditCard,
+  DollarSign,
+  Eye,
+  Settings,
+  FileCheck,
+  ArrowLeft
 } from 'lucide-react';
-import { getAdminSessionToken, clearAdminSession } from './MySQLAdminLogin';
+import { initAdminSession, clearAdminSession, getAdminInfoSync } from '@/lib/adminSession';
 
-interface TaskProof {
-  id: number;
-  task_id: number;
-  task_title?: string;
-  user_id: number;
-  user_email?: string;
-  proof_text: string | null;
+interface TaskSubmission {
+  id: string;
+  task_id: string;
+  user_id: string;
+  proof_type: string;
   proof_url: string | null;
-  reward_amount: number;
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
+  status: string;
+  submitted_at: string;
+  reward_amount: number | null;
+  task?: {
+    title: string;
+    reward: number;
+  };
 }
 
-interface AdminInfo {
-  id: number;
-  username: string;
-  role: string;
-}
+const navItems = [
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/task-proofs', label: 'Activity Proofs', icon: FileCheck },
+  { href: '/admin/members', label: 'Members', icon: Users },
+  { href: '/admin/payments', label: 'Payments', icon: CreditCard },
+  { href: '/admin/commissions', label: 'Commissions', icon: DollarSign },
+  { href: '/admin/god-eye', label: 'God-Eye Panel', icon: Eye },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
+];
 
 export default function TaskProofsDashboard() {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [admin, setAdmin] = useState<AdminInfo | null>(null);
-  const [proofs, setProofs] = useState<TaskProof[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [approving, setApproving] = useState<number | null>(null);
+  const location = useLocation();
+  const queryClient = useQueryClient();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; role: string } | null>(null);
   const [activeTab, setActiveTab] = useState('pending');
 
-  const handleSessionInvalid = useCallback(() => {
-    clearAdminSession();
-    toast.error('Session expired. Please login again.');
-    navigate('/admin/login');
-  }, [navigate]);
-
-  const validateSession = useCallback(async () => {
-    const sessionToken = getAdminSessionToken();
-    if (!sessionToken) {
-      navigate('/admin/login');
-      return null;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('mysql-admin-session', {
-        body: { session_token: sessionToken, action: 'validate' }
-      });
-
-      if (error || !data?.valid) {
-        handleSessionInvalid();
-        return null;
-      }
-
-      return data.admin as AdminInfo;
-    } catch {
-      handleSessionInvalid();
-      return null;
-    }
-  }, [navigate, handleSessionInvalid]);
-
+  // Initialize admin session on mount
   useEffect(() => {
-    const initSession = async () => {
-      const adminInfo = await validateSession();
-      if (adminInfo) {
-        setAdmin(adminInfo);
-      }
-    };
-    initSession();
-  }, [validateSession]);
-
-  useEffect(() => {
-    if (admin) {
-      fetchProofs(activeTab);
-    }
-  }, [admin, activeTab]);
-
-  const fetchProofs = async (status: string) => {
-    const sessionToken = getAdminSessionToken();
-    if (!sessionToken) {
-      handleSessionInvalid();
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mysql-task-proofs?status=${status}&session_token=${encodeURIComponent(sessionToken)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-          }
-        }
-      );
-
-      const result = await response.json();
-
-      if (result.session_invalid) {
-        handleSessionInvalid();
+    const init = async () => {
+      const isAdmin = await initAdminSession();
+      if (!isAdmin) {
+        navigate('/admin/login');
         return;
       }
+      setAdminInfo(getAdminInfoSync());
+      setIsInitialized(true);
+    };
+    init();
+  }, [navigate]);
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to fetch proofs');
-      }
-      
-      if (result.proofs) {
-        setProofs(result.proofs);
-      } else if (result.error) {
-        toast.error(result.error);
-      }
-    } catch (err) {
-      console.error('Fetch proofs error:', err);
-      toast.error('Failed to load task proofs');
-    } finally {
-      setLoading(false);
-    }
+  const handleLogout = async () => {
+    clearAdminSession();
+    navigate('/');
   };
 
-  const handleApprove = async (proofId: number) => {
-    const sessionToken = getAdminSessionToken();
-    if (!sessionToken) {
-      handleSessionInvalid();
+  // Fetch task submissions from Supabase
+  const { data: submissions, isLoading, refetch } = useQuery({
+    queryKey: ['admin-task-submissions', activeTab],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('task_submissions')
+        .select(`
+          *,
+          task:tasks(title, reward)
+        `)
+        .eq('status', activeTab)
+        .order('submitted_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as TaskSubmission[];
+    },
+    enabled: isInitialized,
+  });
+
+  // Use server-side RPC for task approval
+  const approveSubmission = useMutation({
+    mutationFn: async ({ submissionId }: { submissionId: string }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      const { data, error } = await supabase.rpc('approve_task_submission', {
+        p_submission_id: submissionId,
+        p_admin_id: user.id
+      });
+      
+      if (error) throw error;
+      const result = data as { success?: boolean; reward_credited?: number } | null;
+      if (!result?.success) throw new Error('Failed to approve submission');
+      return result;
+    },
+    onSuccess: (data) => {
+      toast.success(`Task approved! ₳${data?.reward_credited || 0} credited.`);
+      queryClient.invalidateQueries({ queryKey: ['admin-task-submissions'] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    }
+  });
+
+  // Use server-side RPC for task rejection
+  const rejectSubmission = useMutation({
+    mutationFn: async ({ submissionId, reason }: { submissionId: string; reason?: string }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      const { data, error } = await supabase.rpc('reject_task_submission', {
+        p_submission_id: submissionId,
+        p_admin_id: user.id,
+        p_rejection_reason: reason || 'Submission did not meet requirements'
+      });
+      
+      if (error) throw error;
+      const result = data as { success?: boolean } | null;
+      if (!result?.success) throw new Error('Failed to reject submission');
+      return result;
+    },
+    onSuccess: () => {
+      toast.success('Submission rejected');
+      queryClient.invalidateQueries({ queryKey: ['admin-task-submissions'] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    }
+  });
+
+  // Get signed URL for proof
+  const handleViewProof = async (proofUrl: string | null) => {
+    if (!proofUrl) {
+      toast.error('No proof uploaded');
       return;
     }
     
-    setApproving(proofId);
-    try {
-      const { data, error } = await supabase.functions.invoke('mysql-approve-proof', {
-        body: { proof_id: proofId, session_token: sessionToken }
-      });
-
-      if (data?.session_invalid) {
-        handleSessionInvalid();
-        return;
-      }
-
-      if (error) {
-        throw error;
-      }
-
-      if (data?.success) {
-        toast.success('Task proof approved and paid!');
-        setProofs(prev => prev.filter(p => p.id !== proofId));
-      } else {
-        toast.error(data?.error || 'Failed to approve');
-      }
-    } catch (err) {
-      console.error('Approve error:', err);
-      toast.error('Failed to approve proof');
-    } finally {
-      setApproving(null);
+    // If it's a full URL, open directly
+    if (proofUrl.startsWith('http')) {
+      window.open(proofUrl, '_blank');
+      return;
     }
-  };
-
-  const handleLogout = async () => {
-    const sessionToken = getAdminSessionToken();
-    if (sessionToken) {
-      try {
-        await supabase.functions.invoke('mysql-admin-session', {
-          body: { session_token: sessionToken, action: 'logout' }
-        });
-      } catch {
-        // Ignore logout errors
-      }
+    
+    // Otherwise try to get signed URL from storage
+    const { data } = await supabase.storage
+      .from('task-proofs')
+      .createSignedUrl(proofUrl, 3600);
+    
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, '_blank');
+    } else {
+      toast.error('Could not load proof');
     }
-    clearAdminSession();
-    navigate('/admin/login');
   };
 
   const getStatusBadge = (status: string) => {
@@ -200,9 +189,9 @@ export default function TaskProofsDashboard() {
     }
   };
 
-  const pendingCount = proofs.filter(p => p.status === 'pending').length;
+  const pendingCount = submissions?.filter(s => s.status === 'pending').length || 0;
 
-  if (!admin) {
+  if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -211,25 +200,53 @@ export default function TaskProofsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold">Task Proofs Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
-              Logged in as <span className="font-medium">{admin.username}</span> ({admin.role})
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar */}
+      <aside className="w-64 border-r border-border bg-card flex flex-col">
+        <div className="p-6 border-b border-border">
+          <Link to="/admin" className="flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" />
+            <span className="text-xl font-bold text-primary">Admin Panel</span>
+          </Link>
+          {adminInfo && (
+            <p className="text-sm text-muted-foreground mt-2">{adminInfo.email}</p>
+          )}
+        </div>
+        
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map((item) => (
+            <Link key={item.href} to={item.href}>
+              <Button
+                variant={location.pathname === item.href ? 'secondary' : 'ghost'}
+                className="w-full justify-start gap-2"
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Button>
+            </Link>
+          ))}
+        </nav>
+        
+        <div className="p-4 border-t border-border space-y-2">
+          <Link to="/dashboard">
+            <Button variant="outline" className="w-full gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to App
+            </Button>
+          </Link>
+          <Button variant="ghost" className="w-full gap-2" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" /> Logout
           </Button>
         </div>
-      </header>
+      </aside>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="flex-1 p-8">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">Task Proofs Dashboard</h2>
+          <p className="text-muted-foreground">Review and approve submitted task proofs</p>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
@@ -240,15 +257,15 @@ export default function TaskProofsDashboard() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Total Proofs</CardDescription>
-              <CardTitle className="text-3xl">{proofs.length}</CardTitle>
+              <CardDescription>Total Submissions</CardDescription>
+              <CardTitle className="text-3xl">{submissions?.length || 0}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Rewards</CardDescription>
               <CardTitle className="text-3xl">
-                ₳{proofs.reduce((sum, p) => sum + (p.reward_amount || 0), 0).toLocaleString()}
+                ₳{submissions?.reduce((sum, s) => sum + (s.reward_amount || s.task?.reward || 0), 0).toLocaleString()}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -258,11 +275,11 @@ export default function TaskProofsDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Task Proofs</CardTitle>
+              <CardTitle>Task Submissions</CardTitle>
               <CardDescription>Review and approve submitted task proofs</CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={() => fetchProofs(activeTab)} disabled={loading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </CardHeader>
@@ -277,14 +294,14 @@ export default function TaskProofsDashboard() {
               </TabsList>
 
               <TabsContent value={activeTab}>
-                {loading ? (
+                {isLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                   </div>
-                ) : proofs.length === 0 ? (
+                ) : !submissions?.length ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No {activeTab} proofs found</p>
+                    <p>No {activeTab} submissions found</p>
                   </div>
                 ) : (
                   <div className="rounded-md border">
@@ -292,8 +309,8 @@ export default function TaskProofsDashboard() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>ID</TableHead>
-                          <TableHead>User</TableHead>
                           <TableHead>Task</TableHead>
+                          <TableHead>Proof Type</TableHead>
                           <TableHead>Proof</TableHead>
                           <TableHead>Reward</TableHead>
                           <TableHead>Status</TableHead>
@@ -302,61 +319,47 @@ export default function TaskProofsDashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {proofs.map((proof) => (
-                          <TableRow key={proof.id}>
-                            <TableCell className="font-mono text-sm">#{proof.id}</TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                <p className="font-medium">User #{proof.user_id}</p>
-                                {proof.user_email && (
-                                  <p className="text-muted-foreground text-xs">{proof.user_email}</p>
-                                )}
-                              </div>
+                        {submissions.map((submission) => (
+                          <TableRow key={submission.id}>
+                            <TableCell className="font-mono text-sm">
+                              #{submission.id.slice(0, 8)}
                             </TableCell>
                             <TableCell>
                               <div className="text-sm">
-                                <p>Task #{proof.task_id}</p>
-                                {proof.task_title && (
-                                  <p className="text-muted-foreground text-xs">{proof.task_title}</p>
-                                )}
+                                <p className="font-medium">{submission.task?.title || 'Unknown Task'}</p>
                               </div>
                             </TableCell>
+                            <TableCell className="capitalize">{submission.proof_type}</TableCell>
                             <TableCell>
-                              <div className="max-w-[200px]">
-                                {proof.proof_url ? (
-                                  <a 
-                                    href={proof.proof_url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-primary hover:underline flex items-center gap-1 text-sm"
-                                  >
-                                    View Proof <ExternalLink className="w-3 h-3" />
-                                  </a>
-                                ) : proof.proof_text ? (
-                                  <p className="text-sm truncate" title={proof.proof_text}>
-                                    {proof.proof_text}
-                                  </p>
-                                ) : (
-                                  <span className="text-muted-foreground text-sm">No proof</span>
-                                )}
-                              </div>
+                              {submission.proof_url ? (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleViewProof(submission.proof_url)}
+                                >
+                                  <ExternalLink className="w-4 h-4 mr-1" />
+                                  View
+                                </Button>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">No proof</span>
+                              )}
                             </TableCell>
                             <TableCell className="font-medium">
-                              ₳{proof.reward_amount?.toLocaleString() || 0}
+                              ₳{(submission.reward_amount || submission.task?.reward || 0).toLocaleString()}
                             </TableCell>
-                            <TableCell>{getStatusBadge(proof.status)}</TableCell>
+                            <TableCell>{getStatusBadge(submission.status)}</TableCell>
                             <TableCell className="text-sm text-muted-foreground">
-                              {new Date(proof.created_at).toLocaleDateString()}
+                              {new Date(submission.submitted_at).toLocaleDateString()}
                             </TableCell>
                             <TableCell>
-                              {proof.status === 'pending' && (
+                              {submission.status === 'pending' && (
                                 <div className="flex gap-2">
                                   <Button 
                                     size="sm" 
-                                    onClick={() => handleApprove(proof.id)}
-                                    disabled={approving === proof.id}
+                                    onClick={() => approveSubmission.mutate({ submissionId: submission.id })}
+                                    disabled={approveSubmission.isPending}
                                   >
-                                    {approving === proof.id ? (
+                                    {approveSubmission.isPending ? (
                                       <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
                                       <>
@@ -365,7 +368,13 @@ export default function TaskProofsDashboard() {
                                       </>
                                     )}
                                   </Button>
-                                  <Button size="sm" variant="outline" className="text-destructive">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="text-destructive"
+                                    onClick={() => rejectSubmission.mutate({ submissionId: submission.id })}
+                                    disabled={rejectSubmission.isPending}
+                                  >
                                     <XCircle className="w-4 h-4" />
                                   </Button>
                                 </div>

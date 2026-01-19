@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,12 +19,13 @@ import {
   Eye,
   Settings,
   DollarSign,
-  ArrowLeft
+  ArrowLeft,
+  Loader2,
+  ExternalLink
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { useEffect } from 'react';
-import { getAdminInfo, clearAdminSession, isAdminSessionValid } from '@/lib/adminSession';
+import { initAdminSession, clearAdminSession, getAdminInfoSync, isAdminSessionValidSync } from '@/lib/adminSession';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -39,17 +41,26 @@ export default function AdminPayments() {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const adminInfo = getAdminInfo();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; role: string } | null>(null);
 
+  // Initialize admin session on mount
   useEffect(() => {
-    if (!isAdminSessionValid()) {
-      navigate('/admin/login');
-    }
+    const init = async () => {
+      const isAdmin = await initAdminSession();
+      if (!isAdmin) {
+        navigate('/admin/login');
+        return;
+      }
+      setAdminInfo(getAdminInfoSync());
+      setIsInitialized(true);
+    };
+    init();
   }, [navigate]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     clearAdminSession();
     navigate('/');
   };
@@ -64,30 +75,86 @@ export default function AdminPayments() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdminSessionValid(),
+    enabled: isInitialized,
   });
 
-  const updatePayment = useMutation({
-    mutationFn: async ({ id, status, tier, userId }: { id: string; status: 'approved' | 'rejected'; tier: string; userId: string }) => {
-      const { error: paymentError } = await supabase
-        .from('membership_payments')
-        .update({ status, reviewed_at: new Date().toISOString(), reviewed_by: user?.id })
-        .eq('id', id);
-      if (paymentError) throw paymentError;
-
-      if (status === 'approved') {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ membership_tier: tier as 'basic' | 'pro' | 'elite' })
-          .eq('id', userId);
-        if (profileError) throw profileError;
-      }
+  // Use server-side RPC for payment approval (prevents client-side manipulation)
+  const approvePayment = useMutation({
+    mutationFn: async ({ paymentId }: { paymentId: string }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      const { data, error } = await supabase.rpc('approve_membership_payment', {
+        p_payment_id: paymentId,
+        p_admin_id: user.id
+      });
+      
+      if (error) throw error;
+      const result = data as { success?: boolean } | null;
+      if (!result?.success) throw new Error('Failed to approve payment');
+      return result;
     },
     onSuccess: () => {
-      toast({ title: 'Payment Updated' });
+      toast({ title: 'Payment Approved', description: 'Membership has been upgraded.' });
       queryClient.invalidateQueries({ queryKey: ['admin-payments'] });
     },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
   });
+
+  const rejectPayment = useMutation({
+    mutationFn: async ({ paymentId, reason }: { paymentId: string; reason?: string }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      const { data, error } = await supabase.rpc('reject_membership_payment', {
+        p_payment_id: paymentId,
+        p_admin_id: user.id,
+        p_rejection_reason: reason || 'Payment could not be verified'
+      });
+      
+      if (error) throw error;
+      const result = data as { success?: boolean } | null;
+      if (!result?.success) throw new Error('Failed to reject payment');
+      return result;
+    },
+    onSuccess: () => {
+      toast({ title: 'Payment Rejected' });
+      queryClient.invalidateQueries({ queryKey: ['admin-payments'] });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  });
+
+  // Get signed URL for payment proof
+  const getProofUrl = async (proofPath: string) => {
+    const { data } = await supabase.storage
+      .from('payment-proofs')
+      .createSignedUrl(proofPath, 3600); // 1 hour expiry
+    return data?.signedUrl;
+  };
+
+  const handleViewProof = async (proofUrl: string | null) => {
+    if (!proofUrl) {
+      toast({ title: 'No proof uploaded', variant: 'destructive' });
+      return;
+    }
+    
+    const signedUrl = await getProofUrl(proofUrl);
+    if (signedUrl) {
+      window.open(signedUrl, '_blank');
+    } else {
+      toast({ title: 'Could not load proof', variant: 'destructive' });
+    }
+  };
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -99,7 +166,7 @@ export default function AdminPayments() {
             <span className="text-xl font-bold text-primary">Admin Panel</span>
           </Link>
           {adminInfo && (
-            <p className="text-sm text-muted-foreground mt-2">{adminInfo.username}</p>
+            <p className="text-sm text-muted-foreground mt-2">{adminInfo.email}</p>
           )}
         </div>
         
@@ -147,7 +214,7 @@ export default function AdminPayments() {
           <CardContent>
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
               <Table>
@@ -158,6 +225,7 @@ export default function AdminPayments() {
                     <TableHead>Amount</TableHead>
                     <TableHead>Method</TableHead>
                     <TableHead>Reference</TableHead>
+                    <TableHead>Proof</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -172,6 +240,20 @@ export default function AdminPayments() {
                       <TableCell>₱{Number(payment.amount).toLocaleString()}</TableCell>
                       <TableCell className="capitalize">{payment.payment_method}</TableCell>
                       <TableCell className="font-mono">{payment.reference_number || '-'}</TableCell>
+                      <TableCell>
+                        {payment.proof_url ? (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleViewProof(payment.proof_url)}
+                          >
+                            <ExternalLink className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <Badge 
                           variant={
@@ -188,26 +270,26 @@ export default function AdminPayments() {
                           <div className="flex gap-2">
                             <Button 
                               size="sm" 
-                              onClick={() => updatePayment.mutate({ 
-                                id: payment.id, 
-                                status: 'approved', 
-                                tier: payment.tier, 
-                                userId: payment.user_id 
-                              })}
+                              onClick={() => approvePayment.mutate({ paymentId: payment.id })}
+                              disabled={approvePayment.isPending}
                             >
-                              <CheckCircle className="h-4 w-4" />
+                              {approvePayment.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <CheckCircle className="h-4 w-4" />
+                              )}
                             </Button>
                             <Button 
                               size="sm" 
                               variant="destructive" 
-                              onClick={() => updatePayment.mutate({ 
-                                id: payment.id, 
-                                status: 'rejected', 
-                                tier: payment.tier, 
-                                userId: payment.user_id 
-                              })}
+                              onClick={() => rejectPayment.mutate({ paymentId: payment.id })}
+                              disabled={rejectPayment.isPending}
                             >
-                              <XCircle className="h-4 w-4" />
+                              {rejectPayment.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <XCircle className="h-4 w-4" />
+                              )}
                             </Button>
                           </div>
                         )}
