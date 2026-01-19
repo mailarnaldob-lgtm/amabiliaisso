@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,7 +25,7 @@ async function safeFetchJson(
     
     // Reject HTML responses
     if (trimmedResponse.startsWith('<!DOCTYPE') || trimmedResponse.startsWith('<html') || trimmedResponse.startsWith('<')) {
-      console.error('[ADMIN_LOGIN] PHP returned HTML:', trimmedResponse.substring(0, 300));
+      console.error('[ADMIN_LOGIN] PHP returned HTML');
       return { ok: false, error: 'Authentication service returned error page', httpStatus: 503 };
     }
     
@@ -36,14 +37,14 @@ async function safeFetchJson(
       const data = JSON.parse(trimmedResponse);
       return { ok: response.ok, data, httpStatus: response.status };
     } catch {
-      console.error('[ADMIN_LOGIN] Invalid JSON:', trimmedResponse.substring(0, 300));
+      console.error('[ADMIN_LOGIN] Invalid JSON');
       return { ok: false, error: 'Invalid response from authentication service', httpStatus: 502 };
     }
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       return { ok: false, error: 'Authentication request timeout', httpStatus: 504 };
     }
-    return { ok: false, error: `Network error: ${error instanceof Error ? error.message : 'Unknown'}`, httpStatus: 503 };
+    return { ok: false, error: 'Network error', httpStatus: 503 };
   }
 }
 
@@ -53,6 +54,48 @@ serve(async (req) => {
   }
 
   try {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claims, error: authError } = await supabase.auth.getClaims(token);
+    
+    if (authError || !claims?.claims) {
+      console.error('[ADMIN_LOGIN] Auth verification failed');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claims.claims.sub;
+
+    // Verify admin role in Supabase
+    const { data: isAdmin } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'admin'
+    });
+
+    if (!isAdmin) {
+      console.error('[ADMIN_LOGIN] Non-admin access attempt');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Admin access required', code: 'FORBIDDEN' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Parse request body safely
     let requestBody: { username?: string; password?: string };
     try {
@@ -66,7 +109,7 @@ serve(async (req) => {
       requestBody = JSON.parse(bodyText);
     } catch {
       return new Response(
-        JSON.stringify({ success: false, error: 'Invalid JSON in request body', code: 'INVALID_JSON' }),
+        JSON.stringify({ success: false, error: 'Invalid request', code: 'INVALID_JSON' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -80,7 +123,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[ADMIN_LOGIN] Attempting login for: ${username}`);
+    console.log(`[ADMIN_LOGIN] Admin ${userId} attempting MySQL login for: ${username}`);
 
     const result = await safeFetchJson('https://amabilianetwork.com/api/admin-auth.php', {
       method: 'POST',

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,6 +52,48 @@ serve(async (req) => {
   }
 
   try {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claims, error: authError } = await supabase.auth.getClaims(token);
+    
+    if (authError || !claims?.claims) {
+      console.error('[APPROVE_PROOF] Auth verification failed');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claims.claims.sub;
+
+    // Verify admin role
+    const { data: isAdmin } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'admin'
+    });
+
+    if (!isAdmin) {
+      console.error('[APPROVE_PROOF] Non-admin access attempt');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Admin access required', code: 'FORBIDDEN' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     let requestBody: { proof_id?: string; session_token?: string };
     try {
       const bodyText = await req.text();
@@ -63,7 +106,7 @@ serve(async (req) => {
       requestBody = JSON.parse(bodyText);
     } catch {
       return new Response(
-        JSON.stringify({ success: false, error: 'Invalid JSON', code: 'INVALID_JSON' }),
+        JSON.stringify({ success: false, error: 'Invalid request', code: 'INVALID_JSON' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -77,19 +120,12 @@ serve(async (req) => {
       );
     }
 
-    if (!session_token) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Session token required', code: 'MISSING_TOKEN' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`[APPROVE_PROOF] Approving proof: ${proof_id}`);
+    console.log(`[APPROVE_PROOF] Admin ${userId} approving proof: ${proof_id}`);
 
     const result = await safeFetchJson('https://amabilianetwork.com/api/approve-proof.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ proof_id, session_token }),
+      body: JSON.stringify({ proof_id, session_token: session_token || '' }),
     });
 
     if (!result.ok) {
@@ -109,7 +145,7 @@ serve(async (req) => {
     }
 
     if (approvalResult.success) {
-      console.log(`[APPROVE_PROOF] Proof ${proof_id} approved successfully`);
+      console.log(`[APPROVE_PROOF] Proof ${proof_id} approved successfully by admin ${userId}`);
       return new Response(
         JSON.stringify({ success: true, data: { message: 'Task proof approved and paid' } }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

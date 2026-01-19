@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,10 +39,9 @@ async function safeFetchJson(
       trimmedResponse.startsWith('<')
     ) {
       console.error('[MYSQL_USER_DATA] PHP returned HTML instead of JSON');
-      console.error('[MYSQL_USER_DATA] Preview:', trimmedResponse.substring(0, 500));
       return {
         ok: false,
-        error: 'Backend service unavailable. The PHP endpoint returned an error page instead of JSON.',
+        error: 'Backend service unavailable',
         httpStatus: 503,
       };
     }
@@ -64,22 +64,21 @@ async function safeFetchJson(
         data,
         httpStatus: response.status,
       };
-    } catch (parseError) {
-      console.error('[MYSQL_USER_DATA] JSON parse failed:', trimmedResponse.substring(0, 500));
+    } catch {
+      console.error('[MYSQL_USER_DATA] JSON parse failed');
       return {
         ok: false,
-        error: 'Backend service returned malformed JSON',
+        error: 'Backend service returned invalid response',
         httpStatus: 502,
       };
     }
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       console.error('[MYSQL_USER_DATA] Request timeout');
-      return { ok: false, error: 'Request timeout - backend did not respond in time', httpStatus: 504 };
+      return { ok: false, error: 'Request timeout', httpStatus: 504 };
     }
-    const errorMessage = error instanceof Error ? error.message : 'Unknown network error';
-    console.error('[MYSQL_USER_DATA] Network error:', errorMessage);
-    return { ok: false, error: `Network error: ${errorMessage}`, httpStatus: 503 };
+    console.error('[MYSQL_USER_DATA] Network error');
+    return { ok: false, error: 'Network error', httpStatus: 503 };
   }
 }
 
@@ -90,6 +89,34 @@ serve(async (req) => {
   }
 
   try {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claims, error: authError } = await supabase.auth.getClaims(token);
+    
+    if (authError || !claims?.claims) {
+      console.error('[MYSQL_USER_DATA] Auth verification failed');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const authenticatedUserId = claims.claims.sub;
+
     // Parse request body safely
     let requestBody: { action?: string; user_id?: string; email?: string };
     try {
@@ -103,7 +130,7 @@ serve(async (req) => {
       requestBody = JSON.parse(bodyText);
     } catch {
       return new Response(
-        JSON.stringify({ success: false, error: 'Invalid JSON in request body', code: 'INVALID_JSON' }),
+        JSON.stringify({ success: false, error: 'Invalid request', code: 'INVALID_JSON' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -117,7 +144,25 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[MYSQL_USER_DATA] Processing action: ${action} for user: ${user_id || email}`);
+    // Authorization check - users can only access their own data unless admin
+    const requestedUserId = user_id || authenticatedUserId;
+    
+    // Check if user is admin
+    const { data: isAdmin } = await supabase.rpc('has_role', {
+      _user_id: authenticatedUserId,
+      _role: 'admin'
+    });
+
+    // Non-admin users can only access their own data
+    if (!isAdmin && requestedUserId !== authenticatedUserId) {
+      console.error('[MYSQL_USER_DATA] Unauthorized access attempt');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Access denied', code: 'FORBIDDEN' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[MYSQL_USER_DATA] Processing action: ${action} for user: ${requestedUserId}`);
 
     // PHP proxy handles DB credentials internally
     const proxyUrl = 'https://www.amabilianetwork.com/api/get-user-data.php';
@@ -125,7 +170,7 @@ serve(async (req) => {
     const result = await safeFetchJson(proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, user_id, email }),
+      body: JSON.stringify({ action, user_id: requestedUserId, email }),
     });
 
     // Handle fetch errors
@@ -159,15 +204,13 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[MYSQL_USER_DATA] Unexpected error:', errorMessage);
+    console.error('[MYSQL_USER_DATA] Unexpected error');
     
     return new Response(
       JSON.stringify({ 
         success: false, 
         error: 'Internal server error',
         code: 'INTERNAL_ERROR',
-        details: errorMessage,
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

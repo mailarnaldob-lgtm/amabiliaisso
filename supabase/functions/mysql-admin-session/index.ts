@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,6 +52,48 @@ serve(async (req) => {
   }
 
   try {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED', valid: false }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claims, error: authError } = await supabase.auth.getClaims(token);
+    
+    if (authError || !claims?.claims) {
+      console.error('[ADMIN_SESSION] Auth verification failed');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED', valid: false }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claims.claims.sub;
+
+    // Verify admin role
+    const { data: isAdmin } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'admin'
+    });
+
+    if (!isAdmin) {
+      console.error('[ADMIN_SESSION] Non-admin access attempt');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Admin access required', code: 'FORBIDDEN', valid: false }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     let requestBody: { session_token?: string; action?: string };
     try {
       const bodyText = await req.text();
@@ -63,7 +106,7 @@ serve(async (req) => {
       requestBody = JSON.parse(bodyText);
     } catch {
       return new Response(
-        JSON.stringify({ success: false, error: 'Invalid JSON', code: 'INVALID_JSON', valid: false }),
+        JSON.stringify({ success: false, error: 'Invalid request', code: 'INVALID_JSON', valid: false }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -76,6 +119,8 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`[ADMIN_SESSION] Admin ${userId} validating session`);
 
     const result = await safeFetchJson('https://amabilianetwork.com/api/admin-session.php', {
       method: 'POST',

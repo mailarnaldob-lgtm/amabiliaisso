@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,7 +24,7 @@ async function safeFetchJson(
     const trimmedResponse = responseText.trim();
     
     if (trimmedResponse.startsWith('<!DOCTYPE') || trimmedResponse.startsWith('<html') || trimmedResponse.startsWith('<')) {
-      console.error('[TASK_PROOFS] PHP returned HTML:', trimmedResponse.substring(0, 300));
+      console.error('[TASK_PROOFS] PHP returned HTML');
       return { ok: false, error: 'Task proofs service returned error page', httpStatus: 503 };
     }
     
@@ -35,7 +36,7 @@ async function safeFetchJson(
       const data = JSON.parse(trimmedResponse);
       return { ok: response.ok, data, httpStatus: response.status };
     } catch {
-      console.error('[TASK_PROOFS] Invalid JSON:', trimmedResponse.substring(0, 300));
+      console.error('[TASK_PROOFS] Invalid JSON');
       return { ok: false, error: 'Invalid response from task proofs service', httpStatus: 502 };
     }
   } catch (error) {
@@ -52,18 +53,55 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const status = url.searchParams.get('status') || 'pending';
-    const sessionToken = url.searchParams.get('session_token') || '';
-
-    if (!sessionToken) {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Session token required', code: 'MISSING_TOKEN' }),
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`[TASK_PROOFS] Fetching proofs with status: ${status}`);
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claims, error: authError } = await supabase.auth.getClaims(token);
+    
+    if (authError || !claims?.claims) {
+      console.error('[TASK_PROOFS] Auth verification failed');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claims.claims.sub;
+
+    // Verify admin role
+    const { data: isAdmin } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'admin'
+    });
+
+    if (!isAdmin) {
+      console.error('[TASK_PROOFS] Non-admin access attempt');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Admin access required', code: 'FORBIDDEN' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const url = new URL(req.url);
+    const status = url.searchParams.get('status') || 'pending';
+
+    console.log(`[TASK_PROOFS] Admin ${userId} fetching proofs with status: ${status}`);
+
+    // For PHP compatibility, still pass session token from query params if provided
+    const sessionToken = url.searchParams.get('session_token') || '';
 
     const result = await safeFetchJson('https://amabilianetwork.com/api/task-proofs.php', {
       method: 'POST',

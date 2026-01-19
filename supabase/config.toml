@@ -4,22 +4,22 @@ project_id = "oquyabvzplwgdiqxctft"
 verify_jwt = false
 
 [functions.swap-cash-in]
-verify_jwt = true
+verify_jwt = false
 
 [functions.swap-cash-out]
-verify_jwt = true
+verify_jwt = false
 
 [functions.wallet-transfer]
-verify_jwt = true
+verify_jwt = false
 
 [functions.lending-post-offer]
-verify_jwt = true
+verify_jwt = false
 
 [functions.lending-take-offer]
-verify_jwt = true
+verify_jwt = false
 
 [functions.lending-repayment]
-verify_jwt = true
+verify_jwt = false
 
 [functions.mysql-admin-login]
 verify_jwt = false
