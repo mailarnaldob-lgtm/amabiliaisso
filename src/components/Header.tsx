@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Package, Menu, X } from "lucide-react";
+import { Zap, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 export function Header() {
@@ -10,15 +10,12 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <Package className="h-8 w-8 text-primary" />
-          <span className="font-serif text-2xl font-bold text-foreground">Amabilia</span>
+          <Zap className="h-8 w-8 text-primary" />
+          <span className="font-serif text-2xl font-bold text-foreground">₳LPHA</span>
         </Link>
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/products" className="text-muted-foreground hover:text-foreground transition-colors">
-            Products
-          </Link>
           <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
             About
           </Link>
@@ -28,8 +25,8 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <Link to="/admin">
-            <Button variant="outline">Admin Portal</Button>
+          <Link to="/auth">
+            <Button>Get Started</Button>
           </Link>
         </div>
 
@@ -48,13 +45,6 @@ export function Header() {
         <div className="md:hidden border-t border-border bg-card">
           <nav className="container py-4 flex flex-col gap-4">
             <Link 
-              to="/products" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Products
-            </Link>
-            <Link 
               to="/about" 
               className="text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setIsMenuOpen(false)}
@@ -68,8 +58,8 @@ export function Header() {
             >
               Contact
             </Link>
-            <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
-              <Button variant="outline" className="w-full">Admin Portal</Button>
+            <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+              <Button className="w-full">Get Started</Button>
             </Link>
           </nav>
         </div>
