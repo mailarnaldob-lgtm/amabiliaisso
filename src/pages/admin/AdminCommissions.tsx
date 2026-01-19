@@ -105,21 +105,25 @@ export default function AdminCommissions() {
     enabled: isInitialized,
   });
 
-  const markAsPaid = useMutation({
+  const verifyCommission = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('referral_commissions')
-        .update({ is_paid: true, paid_at: new Date().toISOString() })
-        .eq('id', id);
+      if (!adminInfo?.id) throw new Error('Admin session not found');
+      const { data, error } = await supabase.rpc('verify_commission_credited', {
+        p_commission_id: id,
+        p_admin_id: adminInfo.id,
+      });
       if (error) throw error;
+      const result = data as { success: boolean; status?: string; error?: string; message?: string };
+      if (!result.success) throw new Error(result.error || 'Verification failed');
+      return result;
     },
-    onSuccess: () => {
-      toast({ title: 'Commission marked as paid' });
+    onSuccess: (result) => {
+      toast({ title: 'Commission Verified', description: result.message });
       queryClient.invalidateQueries({ queryKey: ['admin-commissions'] });
       queryClient.invalidateQueries({ queryKey: ['admin-commission-stats'] });
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Verification Failed', description: error.message });
     },
   });
 
@@ -279,11 +283,12 @@ export default function AdminCommissions() {
                         {!commission.is_paid && (
                           <Button
                             size="sm"
-                            onClick={() => markAsPaid.mutate(commission.id)}
-                            disabled={markAsPaid.isPending}
+                            variant="outline"
+                            onClick={() => verifyCommission.mutate(commission.id)}
+                            disabled={verifyCommission.isPending}
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
-                            Mark Paid
+                            Verify Credit
                           </Button>
                         )}
                         {commission.is_paid && commission.paid_at && (

@@ -68,20 +68,20 @@ interface AppState {
   swapToPHP: (amount: number) => void;
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
-  // Default user state (mock)
-  userId: 'user-001',
-  userName: 'Jonathan Nangkil',
-  membershipTier: 'elite',
-  armyLevel: 'operative',
-  isKycVerified: true,
-  referralCode: 'JNTHN888',
+export const useAppStore = create<AppState>((set) => ({
+  // Default user state - will be overridden by real data from useProfile hook
+  userId: '',
+  userName: '',
+  membershipTier: 'basic',
+  armyLevel: 'cadet',
+  isKycVerified: false,
+  referralCode: '',
 
-  // Initial wallet balances (credits)
+  // Initial wallet balances - will be overridden by real data from useWallets hook
   wallets: [
-    { type: 'main', balance: 5420.50, label: 'Main Credits', description: 'Primary credit allocation' },
-    { type: 'task', balance: 1250.00, label: 'VPA Credits', description: 'Virtual Private Army earnings' },
-    { type: 'royalty', balance: 890.25, label: 'Referral Credits', description: 'Network participation credits (Elite only)' },
+    { type: 'main', balance: 0, label: 'Main Wallet', description: 'Primary wallet for transactions' },
+    { type: 'task', balance: 0, label: 'Task Wallet', description: 'Earnings from completed tasks' },
+    { type: 'royalty', balance: 0, label: 'Royalty Wallet', description: 'Referral commissions (Elite only)' },
   ],
 
   swapMode: 'cashin',
@@ -94,16 +94,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     ),
   })),
 
-  // These functions are disabled - credits cannot be converted
-  swapToAlpha: (amount) => {
-    // Disabled - credits are admin-controlled
-    console.log('Credit allocations are admin-controlled');
-  },
-
-  swapToPHP: (amount) => {
-    // Disabled - credits cannot be redeemed
-    console.log('Credits cannot be redeemed for cash');
-  },
+  // Swap functions are handled via edge functions, not client-side
+  swapToAlpha: () => {},
+  swapToPHP: () => {},
 }));
 
 // Mock tasks data

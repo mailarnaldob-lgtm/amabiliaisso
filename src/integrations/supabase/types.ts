@@ -537,6 +537,10 @@ export type Database = {
         }
         Returns: Json
       }
+      verify_commission_credited: {
+        Args: { p_admin_id: string; p_commission_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "member"
