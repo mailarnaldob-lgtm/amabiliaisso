@@ -202,9 +202,19 @@ export default function MemberDashboard() {
               </h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <Badge variant="outline" className="capitalize">
-                  {profile?.membership_tier || 'basic'} Member
+                  {profile?.membership_tier ? `${profile.membership_tier} Member` : 'Free Account'}
                 </Badge>
-                {(!profile?.membership_tier || profile?.membership_tier === 'basic') && (
+                {!profile?.membership_tier && (
+                  <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
+                    Activate membership to unlock features
+                  </Badge>
+                )}
+                {profile?.membership_tier === 'basic' && (
+                  <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
+                    Upgrade to unlock more features
+                  </Badge>
+                )}
+                {profile?.membership_tier && profile?.membership_tier !== 'elite' && profile?.membership_tier !== 'basic' && (
                   <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
                     Upgrade to unlock more features
                   </Badge>

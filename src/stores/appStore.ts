@@ -206,21 +206,22 @@ export const ARMY_LEVELS: Record<ArmyLevel, { name: string; minTasks: number; ic
   elite_operator: { name: 'VPA Elite Operator', minTasks: 500, icon: '👑' },
 };
 
-// Membership tier configuration
+// Membership tier configuration - accurate business logic
+// Note: null tier = FREE ACCOUNT (no payment), basic/pro/elite require payments
 export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: number; features: string[] }> = {
   basic: {
     name: 'Basic',
-    cost: 1000,
-    features: ['Referral Engine', 'VPA Daily Missions', 'Main + Task Wallet'],
+    cost: 1000, // ₱1,000
+    features: ['40% Referral Commission', 'Access to Community Platform'],
   },
   pro: {
     name: 'Pro',
-    cost: 2000,
-    features: ['All Basic Features', 'ALPHA P2P Credits', 'VPA Mission Feed', 'Training Access'],
+    cost: 2000, // ₱2,000
+    features: ['40% Referral Commission', 'Activity-Based Credits (VPA)', 'Training Access'],
   },
   elite: {
     name: 'Elite',
-    cost: 3000,
-    features: ['All Pro Features', '8% Team Override', 'Referral Credits Wallet', 'KYC Verification', 'Priority Support'],
+    cost: 3000, // ₱3,000
+    features: ['40% Referral Commission', 'Activity-Based Credits (VPA)', 'Credit Marketplace (P2P Lending)', '8% Team Override Royalties', 'KYC Verification', 'VIP Support'],
   },
 };
