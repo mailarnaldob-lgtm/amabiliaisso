@@ -1,16 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateWalletTransfer } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-interface TransferRequest {
-  from_wallet_type: 'task' | 'royalty' | 'main';
-  to_wallet_type: 'task' | 'royalty' | 'main';
-  amount: number;
-}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -35,20 +30,15 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { from_wallet_type, to_wallet_type, amount }: TransferRequest = await req.json();
-
-    // Validate inputs
-    if (!from_wallet_type || !to_wallet_type || !amount) {
-      throw new Error('Missing required fields');
+    // Validate input with strict schema
+    const rawInput = await req.json();
+    const validation = validateWalletTransfer(rawInput);
+    
+    if (!validation.success) {
+      throw new Error(validation.error);
     }
 
-    if (from_wallet_type === to_wallet_type) {
-      throw new Error('Cannot transfer to the same wallet');
-    }
-
-    if (amount <= 0) {
-      throw new Error('Amount must be positive');
-    }
+    const { from_wallet_type, to_wallet_type, amount } = validation.data!;
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -87,10 +77,11 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
-  } catch (error: any) {
-    console.error('Wallet transfer error:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Wallet transfer error:', errorMessage);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: errorMessage }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     );
   }

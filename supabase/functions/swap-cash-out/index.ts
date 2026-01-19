@@ -1,22 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateCashOut } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface CashOutRequest {
-  amount: number;
-  payment_method: string;
-  account_number: string;
-  account_name: string;
-}
-
 // Configurable fee structure
 const WITHDRAWAL_FEE_PERCENT = 2; // 2% fee
-const MINIMUM_WITHDRAWAL = 500; // ₳500 minimum
-const MAXIMUM_WITHDRAWAL = 100000; // ₳100,000 maximum
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -44,24 +36,15 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { amount, payment_method, account_number, account_name }: CashOutRequest = await req.json();
-
-    // Validate inputs
-    if (!amount || amount <= 0) {
-      throw new Error('Invalid amount');
+    // Validate input with strict schema
+    const rawInput = await req.json();
+    const validation = validateCashOut(rawInput);
+    
+    if (!validation.success) {
+      throw new Error(validation.error);
     }
 
-    if (amount < MINIMUM_WITHDRAWAL) {
-      throw new Error(`Minimum withdrawal is ₳${MINIMUM_WITHDRAWAL}`);
-    }
-
-    if (amount > MAXIMUM_WITHDRAWAL) {
-      throw new Error(`Maximum withdrawal is ₳${MAXIMUM_WITHDRAWAL}`);
-    }
-
-    if (!payment_method || !account_number || !account_name) {
-      throw new Error('Payment details are required');
-    }
+    const { amount, payment_method, account_number, account_name } = validation.data!;
 
     // Use service role for wallet operations
     const supabaseAdmin = createClient(
@@ -116,12 +99,13 @@ serve(async (req) => {
       }
     );
 
-  } catch (error: any) {
-    console.error('Swap cash-out error:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Swap cash-out error:', errorMessage);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: errorMessage 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
