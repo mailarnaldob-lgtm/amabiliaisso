@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlphaLayout } from '@/components/layouts/AlphaLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { EliteButton } from '@/components/ui/elite-button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Wallet, 
@@ -10,7 +10,6 @@ import {
   RefreshCw,
   History,
   QrCode,
-  AlertTriangle,
   Clock,
   CheckCircle2
 } from 'lucide-react';
@@ -18,6 +17,7 @@ import { formatAlpha } from '@/lib/utils';
 import { useAppStore } from '@/stores/appStore';
 import { ExchangerModal } from '@/components/alpha/ExchangerModal';
 import { UserStateIndicator, UserLifecycleFlow } from '@/components/alpha/UserStateIndicator';
+import { useOptimisticWallets } from '@/hooks/useOptimisticWallets';
 
 // Live transaction history - synced from Sovereign Ledger
 const recentTransactions = [
@@ -30,6 +30,7 @@ const recentTransactions = [
 export default function BankApp() {
   const wallets = useAppStore((state) => state.wallets);
   const [exchangerOpen, setExchangerOpen] = useState(false);
+  const { hasPendingTransactions, optimisticTransfer } = useOptimisticWallets();
   
   // Calculate total balance
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
@@ -38,6 +39,12 @@ export default function BankApp() {
   const mainWallet = wallets.find(w => w.type === 'main');
   const taskWallet = wallets.find(w => w.type === 'task');
   const royaltyWallet = wallets.find(w => w.type === 'royalty');
+
+  const handleTransferToMain = async () => {
+    if (taskWallet && taskWallet.balance >= 100) {
+      await optimisticTransfer('task', 'main', taskWallet.balance);
+    }
+  };
 
   return (
     <AlphaLayout 
@@ -78,28 +85,57 @@ export default function BankApp() {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
-        <QuickAction 
-          icon={ArrowDownLeft} 
-          label="Exchange" 
-          color="bg-emerald-500" 
+      {/* Quick Actions - Elite Buttons */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <EliteButton 
+          variant="success" 
+          size="sm"
+          className="flex-col gap-1 h-auto py-3"
           onClick={() => setExchangerOpen(true)}
-        />
-        <QuickAction icon={RefreshCw} label="Transfer" color="bg-blue-500" disabled />
-        <QuickAction icon={QrCode} label="QR Code" color="bg-purple-500" disabled />
-        <QuickAction icon={History} label="History" color="bg-secondary" disabled />
+          leftIcon={<ArrowDownLeft className="h-5 w-5" />}
+        >
+          <span className="text-[10px]">Exchange</span>
+        </EliteButton>
+        <EliteButton 
+          variant="alpha" 
+          size="sm"
+          className="flex-col gap-1 h-auto py-3"
+          loading={hasPendingTransactions}
+          onClick={handleTransferToMain}
+          leftIcon={<RefreshCw className="h-5 w-5" />}
+        >
+          <span className="text-[10px]">Transfer</span>
+        </EliteButton>
+        <EliteButton 
+          variant="vault" 
+          size="sm"
+          className="flex-col gap-1 h-auto py-3"
+          disabled
+          leftIcon={<QrCode className="h-5 w-5" />}
+        >
+          <span className="text-[10px]">QR Code</span>
+        </EliteButton>
+        <EliteButton 
+          variant="outline" 
+          size="sm"
+          className="flex-col gap-1 h-auto py-3"
+          disabled
+          leftIcon={<History className="h-5 w-5" />}
+        >
+          <span className="text-[10px]">History</span>
+        </EliteButton>
       </div>
 
       {/* Floating Exchanger Button */}
       <div className="fixed bottom-28 right-4 z-40">
-        <Button 
-          size="lg"
-          className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg hover:shadow-xl transition-all animate-pulse"
+        <EliteButton 
+          size="icon"
+          variant="alpha"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl animate-pulse"
           onClick={() => setExchangerOpen(true)}
         >
-          <span className="text-2xl font-bold text-white">₳</span>
-        </Button>
+          <span className="text-2xl font-bold">₳</span>
+        </EliteButton>
       </div>
 
       {/* Wallet Cards */}
@@ -199,32 +235,7 @@ export default function BankApp() {
   );
 }
 
-function QuickAction({ 
-  icon: Icon, 
-  label, 
-  color,
-  disabled,
-  onClick
-}: { 
-  icon: React.ElementType; 
-  label: string; 
-  color: string;
-  disabled?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <button 
-      className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted/50 cursor-pointer'}`}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      <div className={`p-2 rounded-full ${color} ${disabled ? '' : 'shadow-md'}`}>
-        <Icon className="h-4 w-4 text-white" />
-      </div>
-      <span className="text-[10px] text-muted-foreground font-medium">{label}</span>
-    </button>
-  );
-}
+// QuickAction component removed - replaced with EliteButton
 
 function WalletCard({ 
   name, 
