@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Users, Wallet, Shield } from 'lucide-react';
+import { Eye, EyeOff, Users, Wallet, Shield, Info, CreditCard } from 'lucide-react';
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -113,11 +114,21 @@ export default function Auth() {
           <div className="space-y-6">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-primary-foreground/20 rounded-lg">
+                <CreditCard className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">₱300 Activation</h3>
+                <p className="opacity-80">One-time fee to unlock all platform features</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary-foreground/20 rounded-lg">
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg">40% Referral Commission</h3>
-                <p className="opacity-80">Earn 40% on every membership you refer</p>
+                <h3 className="font-semibold text-lg">50% Referral Commission</h3>
+                <p className="opacity-80">Earn 50% on every membership you refer</p>
               </div>
             </div>
             
@@ -278,9 +289,22 @@ export default function Auth() {
                     />
                   </div>
                   
+                  {/* Activation Notice */}
+                  <Alert className="border-amber-500/30 bg-amber-500/10">
+                    <Info className="h-4 w-4 text-amber-500" />
+                    <AlertDescription className="text-xs text-muted-foreground">
+                      New accounts start as <span className="font-medium text-amber-600">inactive</span>. 
+                      Pay <span className="font-bold text-amber-600">₱300</span> after signup to activate and unlock all features.
+                    </AlertDescription>
+                  </Alert>
+                  
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Creating account...' : 'Create Account'}
+                    {isLoading ? 'Creating account...' : 'Create Free Account'}
                   </Button>
+                  
+                  <p className="text-xs text-center text-muted-foreground">
+                    You'll be able to activate your account after signing up
+                  </p>
                 </form>
               </TabsContent>
             </Tabs>
