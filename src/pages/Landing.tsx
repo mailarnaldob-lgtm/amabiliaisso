@@ -388,8 +388,8 @@ export default function Landing() {
                 <CardDescription>Network Growth</CardDescription>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
-                <p>• 40% referral commissions</p>
-                <p>• 8% team override royalties</p>
+                <p>• 50% referral commissions</p>
+                <p>• 90/10 task reward split</p>
                 <p>• Automated debt recovery via royalties</p>
               </CardContent>
             </Card>
