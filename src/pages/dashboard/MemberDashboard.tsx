@@ -190,6 +190,44 @@ export default function MemberDashboard() {
           </Alert>
         )}
 
+        {/* Activation Prompt for Inactive Accounts */}
+        {!profile?.membership_tier && (
+          <Card className="mb-6 border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/10 to-orange-500/10">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="h-8 w-8 text-amber-500" />
+                </div>
+                <div className="flex-1 text-center sm:text-left">
+                  <h2 className="text-lg sm:text-xl font-bold text-foreground mb-1">
+                    Your Account is Inactive
+                  </h2>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Activate your account with a one-time ₱300 payment to unlock all platform features including referral commissions, VPA missions, and more.
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center sm:justify-start text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Star className="h-3 w-3 text-amber-500" /> 50% referral commission
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Zap className="h-3 w-3 text-amber-500" /> Access to VPA missions
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3 w-3 text-amber-500" /> Community platform
+                    </span>
+                  </div>
+                </div>
+                <Link to="/dashboard/upgrade" className="flex-shrink-0">
+                  <Button size="lg" className="gap-2 bg-amber-500 hover:bg-amber-600 text-white">
+                    <CreditCard className="h-5 w-5" />
+                    Activate for ₱300
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
@@ -201,12 +239,12 @@ export default function MemberDashboard() {
                 Welcome, {profile?.full_name || 'Member'}!
               </h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
-                <Badge variant="outline" className="capitalize">
-                  {profile?.membership_tier ? `${profile.membership_tier} Member` : 'Free Account'}
+                <Badge variant="outline" className={`capitalize ${!profile?.membership_tier ? 'border-amber-500 text-amber-600' : ''}`}>
+                  {profile?.membership_tier ? `${profile.membership_tier} Member` : 'Inactive Account'}
                 </Badge>
                 {!profile?.membership_tier && (
-                  <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
-                    Activate membership to unlock features
+                  <Badge variant="secondary" className="text-xs hidden sm:inline-flex bg-amber-500/10 text-amber-600">
+                    Pay ₱300 to activate
                   </Badge>
                 )}
                 {profile?.membership_tier === 'basic' && (
