@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useAppStore } from '@/stores/appStore';
+import { useState, useEffect } from 'react';
 import { formatAlpha } from '@/lib/utils';
 import { useTierAccess } from '@/components/tier';
+import { useWallets } from '@/hooks/useWallets';
 import { EliteButton } from '@/components/ui/elite-button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,8 @@ import {
   RefreshCw,
   Crown,
   TrendingUp,
-  Zap
+  Zap,
+  Wifi
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -24,17 +25,35 @@ interface WalletEngineProps {
  * Responsive Triple-Balance Wallet Engine
  * Mobile-first design with vertical stacking on small screens
  * TradingView Terminal aesthetic with 3D titanium card effects
+ * Real-time balance updates via Supabase Realtime
  */
 export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEngineProps) {
-  const wallets = useAppStore((state) => state.wallets);
+  // Use real wallet data from Supabase with real-time updates
+  const { wallets, totalBalance, isFallback, isLoading, refetch } = useWallets();
   const { canAccessElite } = useTierAccess();
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
+  const [showRealtimeSync, setShowRealtimeSync] = useState(false);
   
-  const mainWallet = wallets.find(w => w.type === 'main');
-  const taskWallet = wallets.find(w => w.type === 'task');
-  const royaltyWallet = wallets.find(w => w.type === 'royalty');
-  
-  const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
+  // Get wallet balances - handle both wallet_type and type properties
+  const getWalletBalance = (type: string): number => {
+    const wallet = wallets.find(w => 
+      w.wallet_type === type || (w as any).type === type
+    );
+    return wallet?.balance || 0;
+  };
+
+  const mainBalance = getWalletBalance('main');
+  const taskBalance = getWalletBalance('task');
+  const royaltyBalance = getWalletBalance('royalty');
+
+  // Flash indicator when realtime data updates
+  useEffect(() => {
+    if (!isFallback && wallets.length > 0) {
+      setShowRealtimeSync(true);
+      const timer = setTimeout(() => setShowRealtimeSync(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [wallets, isFallback]);
 
   return (
     <div className="space-y-4">
@@ -69,16 +88,26 @@ export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEng
             <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 font-mono text-[10px]">
               SOVEREIGN LEDGER
             </Badge>
-            <div className="flex items-center gap-1 text-emerald-400 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              LIVE
+            <div className={cn(
+              "flex items-center gap-1 text-xs transition-colors",
+              showRealtimeSync ? "text-amber-400" : "text-emerald-400"
+            )}>
+              {showRealtimeSync ? (
+                <Wifi className="h-3 w-3 animate-pulse" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              )}
+              {showRealtimeSync ? "SYNCING" : "LIVE"}
             </div>
           </div>
           
           <p className="text-zinc-400 text-sm mb-1">Total ₳ Credits</p>
           <div className="flex items-baseline gap-2">
             <span className="text-amber-400 text-5xl md:text-6xl font-bold">₳</span>
-            <span className="text-white text-4xl md:text-5xl font-bold tracking-tight">
+            <span className={cn(
+              "text-white text-4xl md:text-5xl font-bold tracking-tight transition-all",
+              showRealtimeSync && "animate-pulse"
+            )}>
               {formatAlpha(totalBalance)}
             </span>
           </div>
@@ -103,31 +132,34 @@ export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEng
         <WalletTile
           name="Main Vault"
           icon={<Wallet className="h-5 w-5" />}
-          balance={mainWallet?.balance || 0}
+          balance={mainBalance}
           gradient="from-amber-500 to-orange-600"
           isSelected={selectedWallet === 'main'}
           onClick={() => setSelectedWallet(selectedWallet === 'main' ? null : 'main')}
+          isSyncing={showRealtimeSync}
         />
         
         {/* Task Wallet */}
         <WalletTile
           name="Activity Credits"
           icon={<Zap className="h-5 w-5" />}
-          balance={taskWallet?.balance || 0}
+          balance={taskBalance}
           gradient="from-emerald-500 to-teal-600"
           isSelected={selectedWallet === 'task'}
           onClick={() => setSelectedWallet(selectedWallet === 'task' ? null : 'task')}
+          isSyncing={showRealtimeSync}
         />
         
         {/* Royalty Wallet */}
         <WalletTile
           name="Referral Credits"
           icon={<Crown className="h-5 w-5" />}
-          balance={royaltyWallet?.balance || 0}
+          balance={royaltyBalance}
           gradient="from-purple-500 to-pink-600"
           isLocked={!canAccessElite}
           isSelected={selectedWallet === 'royalty'}
           onClick={() => canAccessElite && setSelectedWallet(selectedWallet === 'royalty' ? null : 'royalty')}
+          isSyncing={showRealtimeSync}
         />
       </div>
 
@@ -155,6 +187,8 @@ export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEng
           variant="outline"
           size="sm"
           leftIcon={<RefreshCw className="h-4 w-4" />}
+          onClick={() => refetch()}
+          loading={isLoading}
         >
           Refresh
         </EliteButton>
@@ -171,6 +205,7 @@ interface WalletTileProps {
   isLocked?: boolean;
   isSelected?: boolean;
   onClick?: () => void;
+  isSyncing?: boolean;
 }
 
 function WalletTile({
@@ -181,6 +216,7 @@ function WalletTile({
   isLocked,
   isSelected,
   onClick,
+  isSyncing,
 }: WalletTileProps) {
   return (
     <Card 
@@ -208,7 +244,10 @@ function WalletTile({
         <p className="text-xs text-muted-foreground mb-1">{name}</p>
         <div className="flex items-baseline gap-1">
           <span className="text-amber-500 text-xl font-bold">₳</span>
-          <span className="text-xl font-bold text-foreground">
+          <span className={cn(
+            "text-xl font-bold text-foreground transition-all",
+            isSyncing && "animate-pulse"
+          )}>
             {formatAlpha(balance)}
           </span>
         </div>

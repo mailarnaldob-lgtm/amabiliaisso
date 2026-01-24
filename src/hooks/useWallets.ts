@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 
 export interface Wallet {
   id: string;
@@ -29,8 +29,13 @@ function createDefaultWallets(userId: string): WalletsResult {
   };
 }
 
+/**
+ * Hook for wallet data with real-time updates via Supabase Realtime
+ * Listens for INSERT, UPDATE, DELETE on user's wallets for live balance sync
+ */
 export function useWallets() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ['wallets', user?.id],
@@ -81,6 +86,65 @@ export function useWallets() {
     staleTime: 30000,
     gcTime: 60000,
   });
+
+  // Real-time subscription for live wallet balance updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    console.log('[useWallets] Setting up realtime subscription for user:', user.id);
+
+    const channel = supabase
+      .channel(`wallets-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'wallets',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('[useWallets] Realtime update received:', payload.eventType);
+          
+          // Update the cache optimistically based on the event
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const updatedWallet = payload.new as Wallet;
+            
+            queryClient.setQueryData<WalletsResult>(
+              ['wallets', user.id],
+              (oldData) => {
+                if (!oldData) return oldData;
+                
+                return {
+                  ...oldData,
+                  wallets: oldData.wallets.map((w) =>
+                    w.id === updatedWallet.id
+                      ? {
+                          ...w,
+                          balance: Number(updatedWallet.balance) || 0,
+                          updated_at: updatedWallet.updated_at,
+                        }
+                      : w
+                  ),
+                };
+              }
+            );
+          } else {
+            // For INSERT/DELETE, refetch to ensure consistency
+            queryClient.invalidateQueries({ queryKey: ['wallets', user.id] });
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('[useWallets] Realtime subscription status:', status);
+      });
+
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('[useWallets] Cleaning up realtime subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   // Memoized helper to get balance by wallet type
   const getBalance = useCallback((type: 'task' | 'royalty' | 'main'): number => {
