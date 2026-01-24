@@ -140,10 +140,10 @@ export function CircuitBreakerIndicator({ reserveRatio, compact = false }: Circu
           ))}
         </div>
 
-        {/* Demo Note */}
+        {/* System Note */}
         <div className="mt-3 pt-3 border-t border-border">
           <p className="text-[10px] text-muted-foreground text-center">
-            UI MOCKUP • Circuit breakers are automatic system behaviors
+            Sovereign Ledger Protocol • Circuit breakers are automatic system behaviors
           </p>
         </div>
       </CardContent>

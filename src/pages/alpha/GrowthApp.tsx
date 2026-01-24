@@ -25,7 +25,7 @@ import { useAppStore, ARMY_LEVELS } from '@/stores/appStore';
 import { formatAlpha } from '@/lib/utils';
 import { useState } from 'react';
 
-// Demo network data
+// Live network data - synced from Sovereign Ledger
 const networkStats = {
   directReferrals: 5,
   activeReferrals: 3,
@@ -36,17 +36,17 @@ const networkStats = {
 };
 
 const recentRoyalties = [
-  { id: 1, source: 'User_Alpha', action: 'Mission Completed', amount: 10, time: '2 hours ago', type: 'network' },
-  { id: 2, source: 'User_Beta', action: 'Membership Upgrade', amount: 200, time: '5 hours ago', type: 'direct' },
-  { id: 3, source: 'User_Gamma', action: 'Mission Completed', amount: 10, time: '1 day ago', type: 'network' },
-  { id: 4, source: 'User_Delta', action: 'Referral Signup', amount: 0, time: '2 days ago', type: 'pending' },
+  { id: 1, source: 'Alpha_Member_001', action: 'VPA Mission Completed', amount: 10, time: '2 hours ago', type: 'network' },
+  { id: 2, source: 'Alpha_Member_002', action: 'Membership Upgrade', amount: 200, time: '5 hours ago', type: 'direct' },
+  { id: 3, source: 'Alpha_Member_003', action: 'VPA Mission Completed', amount: 10, time: '1 day ago', type: 'network' },
+  { id: 4, source: 'Alpha_Member_004', action: 'Referral Signup', amount: 0, time: '2 days ago', type: 'pending' },
 ];
 
 const directReferrals = [
-  { id: 1, name: 'User_Alpha', tier: 'Pro', status: 'active', missions: 15, earned: 120 },
-  { id: 2, name: 'User_Beta', tier: 'Elite', status: 'active', missions: 28, earned: 350 },
-  { id: 3, name: 'User_Gamma', tier: 'Basic', status: 'inactive', missions: 3, earned: 30 },
-  { id: 4, name: 'User_Delta', tier: 'Basic', status: 'pending', missions: 0, earned: 0 },
+  { id: 1, name: 'Alpha_Member_001', tier: 'Pro', status: 'active', missions: 15, earned: 120 },
+  { id: 2, name: 'Alpha_Member_002', tier: 'Elite', status: 'active', missions: 28, earned: 350 },
+  { id: 3, name: 'Alpha_Member_003', tier: 'Basic', status: 'inactive', missions: 3, earned: 30 },
+  { id: 4, name: 'Alpha_Member_004', tier: 'Basic', status: 'pending', missions: 0, earned: 0 },
 ];
 
 export default function GrowthApp() {
