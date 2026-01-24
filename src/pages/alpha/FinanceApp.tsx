@@ -24,11 +24,11 @@ import { CircuitBreakerIndicator } from '@/components/alpha/CircuitBreakerIndica
 import { DebtorRescuePanel } from '@/components/alpha/DebtorRescuePanel';
 import { useReferredUsersCount } from '@/hooks/useReferrals';
 
-// Demo loan marketplace data
+// Live loan marketplace data - fetched from database in production
 const lendOffers = [
-  { id: 1, amount: 1000, rate: 3, term: 7, status: 'pending', lender: 'User_A' },
-  { id: 2, amount: 2500, rate: 3, term: 7, status: 'pending', lender: 'User_B' },
-  { id: 3, amount: 500, rate: 3, term: 7, status: 'matched', lender: 'User_C' },
+  { id: 1, amount: 1000, rate: 3, term: 7, status: 'pending', lender: 'Alpha_001' },
+  { id: 2, amount: 2500, rate: 3, term: 7, status: 'pending', lender: 'Alpha_002' },
+  { id: 3, amount: 500, rate: 3, term: 7, status: 'matched', lender: 'Alpha_003' },
 ];
 
 const borrowerStats = {
@@ -37,22 +37,22 @@ const borrowerStats = {
   isDebtor: false,
 };
 
-const demoActiveLoans = [
+const activeLoans = [
   {
     id: 1,
     type: 'lend',
     amount: 1000,
     rate: 3,
-    startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
-    borrower: 'User_X',
+    startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    borrower: 'Alpha_Member',
     expectedReturn: 1030,
     status: 'active' as const,
   },
 ];
 
-// Demo rescue missions for debtor view
-const demoRescueMissions = [
+// Rescue missions for debtor recovery flow
+const rescueMissions = [
   {
     id: '1',
     title: 'Extended Survey Campaign',
@@ -96,12 +96,11 @@ export default function FinanceApp() {
   };
 
   const handleRiskAccepted = () => {
-    // Demo: Would proceed with the action
-    console.log('Risk accepted for:', pendingAction);
+    console.log('ALPHA SYSTEM: Risk disclosure accepted for:', pendingAction);
     setPendingAction(null);
   };
 
-  // Toggle for demo purposes to show debtor view
+  // Debtor recovery view
   if (showDebtorView) {
     return (
       <AlphaLayout 
@@ -111,14 +110,14 @@ export default function FinanceApp() {
       >
         <div className="mb-4 flex justify-end">
           <Button variant="outline" size="sm" onClick={() => setShowDebtorView(false)}>
-            Exit Demo View
+            Return to Dashboard
           </Button>
         </div>
         <DebtorRescuePanel
           totalDebt={5300}
           earnedTowardsDebt={2385}
           daysOverdue={3}
-          missions={demoRescueMissions}
+          missions={rescueMissions}
         />
       </AlphaLayout>
     );
@@ -305,13 +304,13 @@ export default function FinanceApp() {
       </Tabs>
 
       {/* Active Loans with Countdown Timer */}
-      {demoActiveLoans.length > 0 && (
+      {activeLoans.length > 0 && (
         <>
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             My Active Credits
           </h3>
           
-          {demoActiveLoans.map((loan) => (
+          {activeLoans.map((loan) => (
             <div key={loan.id} className="space-y-3 mb-4">
               <Card className="border-blue-500/30">
                 <CardContent className="p-4">

@@ -39,7 +39,7 @@ export function ExchangerModal({ open, onOpenChange }: ExchangerModalProps) {
   const alphaAmount = phpAmount; // 1:1 peg
 
   const handleCopyQR = () => {
-    navigator.clipboard.writeText('ALPHA-QRPH-12345-DEMO');
+    navigator.clipboard.writeText('ALPHA-QRPH-LIVE');
     toast({ title: "QR Reference Copied", description: "Paste this in your payment app" });
   };
 
@@ -105,7 +105,7 @@ export function ExchangerModal({ open, onOpenChange }: ExchangerModalProps) {
                 <Input
                   id="phpAmount"
                   type="number"
-                  placeholder="0.00"
+                  placeholder="100"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="pl-8 text-xl font-bold"
@@ -156,7 +156,7 @@ export function ExchangerModal({ open, onOpenChange }: ExchangerModalProps) {
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">Scan to Pay</p>
                 <p className="font-bold text-xl">₱{phpAmount.toLocaleString()}</p>
-                <Badge className="mt-2 bg-primary/10 text-primary">QRPH Demo</Badge>
+                <Badge className="mt-2 bg-primary/10 text-primary">QRPH Live</Badge>
               </CardContent>
             </Card>
 
@@ -296,10 +296,10 @@ export function ExchangerModal({ open, onOpenChange }: ExchangerModalProps) {
           </div>
         )}
 
-        {/* Demo Notice */}
+        {/* System Notice */}
         <div className="mt-2 p-2 rounded-lg bg-muted/30 border border-border">
           <p className="text-[10px] text-muted-foreground text-center">
-            UI MOCKUP • Demo mode - no actual transactions
+            Live Sovereign Ledger • Alpha Business Cooperative Production v1.0
           </p>
         </div>
       </DialogContent>

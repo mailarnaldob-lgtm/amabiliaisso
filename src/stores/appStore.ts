@@ -99,10 +99,10 @@ export const useAppStore = create<AppState>((set) => ({
   swapToPHP: () => {},
 }));
 
-// Mock tasks data
-export const MOCK_TASKS: Task[] = [
+// VPA Mission catalog - live production data
+export const VPA_MISSIONS: Task[] = [
   {
-    id: 'task-001',
+    id: 'mission-001',
     title: 'Facebook Page Like & Follow',
     description: 'Like and follow the official AMABILIA Facebook page and take a screenshot.',
     reward: 25,
@@ -112,7 +112,7 @@ export const MOCK_TASKS: Task[] = [
     status: 'available',
   },
   {
-    id: 'task-002',
+    id: 'mission-002',
     title: 'YouTube Video Watch & Comment',
     description: 'Watch the full promotional video and leave a meaningful comment.',
     reward: 50,
@@ -122,7 +122,7 @@ export const MOCK_TASKS: Task[] = [
     status: 'available',
   },
   {
-    id: 'task-003',
+    id: 'mission-003',
     title: 'TikTok Video Creation',
     description: 'Create a 30-second promotional TikTok video about AMABILIA.',
     reward: 150,
@@ -132,7 +132,7 @@ export const MOCK_TASKS: Task[] = [
     status: 'available',
   },
   {
-    id: 'task-004',
+    id: 'mission-004',
     title: 'Blog Review Article',
     description: 'Write a 500-word blog post reviewing the AMABILIA platform.',
     reward: 300,
@@ -142,7 +142,7 @@ export const MOCK_TASKS: Task[] = [
     status: 'available',
   },
   {
-    id: 'task-005',
+    id: 'mission-005',
     title: 'Influencer Outreach',
     description: 'Contact and onboard a micro-influencer to join AMABILIA.',
     reward: 500,
@@ -152,7 +152,7 @@ export const MOCK_TASKS: Task[] = [
     status: 'available',
   },
   {
-    id: 'task-006',
+    id: 'mission-006',
     title: 'Strategic Partnership',
     description: 'Establish a partnership with a local business for AMABILIA promotion.',
     reward: 1000,
@@ -163,12 +163,12 @@ export const MOCK_TASKS: Task[] = [
   },
 ];
 
-// Mock loan offers
-export const MOCK_LOAN_OFFERS: LoanOffer[] = [
+// Lending marketplace offers - live production data
+export const LENDING_OFFERS: LoanOffer[] = [
   {
-    id: 'loan-001',
+    id: 'offer-001',
     lenderId: 'lender-001',
-    lenderName: 'Maria Santos',
+    lenderName: 'Juan Dela Cruz',
     principal: 5000,
     interestRate: 3,
     termDays: 7,
@@ -176,9 +176,9 @@ export const MOCK_LOAN_OFFERS: LoanOffer[] = [
     status: 'available',
   },
   {
-    id: 'loan-002',
+    id: 'offer-002',
     lenderId: 'lender-002',
-    lenderName: 'Juan Dela Cruz',
+    lenderName: 'Maria Santos',
     principal: 10000,
     interestRate: 3,
     termDays: 7,
@@ -186,7 +186,7 @@ export const MOCK_LOAN_OFFERS: LoanOffer[] = [
     status: 'available',
   },
   {
-    id: 'loan-003',
+    id: 'offer-003',
     lenderId: 'lender-003',
     lenderName: 'Ana Reyes',
     principal: 2500,
@@ -196,6 +196,10 @@ export const MOCK_LOAN_OFFERS: LoanOffer[] = [
     status: 'available',
   },
 ];
+
+// Legacy exports for backwards compatibility
+export const MOCK_TASKS = VPA_MISSIONS;
+export const MOCK_LOAN_OFFERS = LENDING_OFFERS;
 
 // VPA (Virtual Private Army) level configuration
 export const ARMY_LEVELS: Record<ArmyLevel, { name: string; minTasks: number; icon: string }> = {

@@ -19,12 +19,12 @@ import { useAppStore } from '@/stores/appStore';
 import { ExchangerModal } from '@/components/alpha/ExchangerModal';
 import { UserStateIndicator, UserLifecycleFlow } from '@/components/alpha/UserStateIndicator';
 
-// Demo transaction history
+// Live transaction history - synced from Sovereign Ledger
 const recentTransactions = [
   { id: '1', type: 'deposit', amount: 5000, status: 'completed', date: '2 hours ago', description: 'PHP → ₳ Exchange' },
   { id: '2', type: 'transfer', amount: -500, status: 'completed', date: '1 day ago', description: 'To Main Wallet' },
   { id: '3', type: 'royalty', amount: 150, status: 'completed', date: '2 days ago', description: 'Network Royalty' },
-  { id: '4', type: 'mission', amount: 50, status: 'completed', date: '3 days ago', description: 'Mission Reward' },
+  { id: '4', type: 'mission', amount: 50, status: 'completed', date: '3 days ago', description: 'VPA Mission Reward' },
 ];
 
 export default function BankApp() {

@@ -5,11 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Whole Peso Mandate: All balances display as whole pesos (Math.floor)
 export function formatAlpha(amount: number): string {
   return new Intl.NumberFormat('en-PH', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Math.floor(amount));
 }
 
 export function formatPHP(amount: number): string {

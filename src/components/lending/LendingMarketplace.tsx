@@ -177,7 +177,7 @@ function CreateOfferModal({ isOpen, onClose, walletBalance, onSuccess }: CreateO
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg alpha-text">₳</span>
               <Input
                 type="number"
-                placeholder="0.00"
+                placeholder="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="pl-8 text-xl font-bold"
