@@ -211,17 +211,17 @@ export const ARMY_LEVELS: Record<ArmyLevel, { name: string; minTasks: number; ic
 export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: number; features: string[] }> = {
   basic: {
     name: 'Basic',
-    cost: 1000, // ₱1,000
-    features: ['40% Referral Commission', 'Access to Community Platform'],
+    cost: 300, // ₱300
+    features: ['50% Referral Commission', 'Access to Community Platform'],
   },
   pro: {
     name: 'Pro',
-    cost: 2000, // ₱2,000
-    features: ['40% Referral Commission', 'Activity-Based Credits (VPA)', 'Training Access'],
+    cost: 600, // ₱600
+    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Training Access'],
   },
   elite: {
     name: 'Elite',
-    cost: 3000, // ₱3,000
-    features: ['40% Referral Commission', 'Activity-Based Credits (VPA)', 'Credit Marketplace (P2P Lending)', '8% Team Override Royalties', 'KYC Verification', 'VIP Support'],
+    cost: 900, // ₱900
+    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Credit Marketplace (P2P Lending)', 'KYC Verification', 'VIP Support'],
   },
 };

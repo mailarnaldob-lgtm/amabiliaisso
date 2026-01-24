@@ -29,26 +29,26 @@ const MEMBERSHIP_TIERS = [
   {
     id: 'basic',
     name: 'Basic',
-    price: 1000, // ₱1,000
+    price: 300, // ₱300
     icon: Star,
     color: 'bg-secondary',
-    features: ['40% referral commission', 'Access to community platform'],
+    features: ['50% referral commission', 'Access to community platform'],
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: 2000, // ₱2,000
+    price: 600, // ₱600
     icon: Zap,
     color: 'bg-primary',
-    features: ['40% referral commission', 'Activity-based credits (VPA)', 'Training access'],
+    features: ['50% referral commission', 'Activity-based credits (VPA)', 'Training access'],
   },
   {
     id: 'elite',
     name: 'Elite',
-    price: 3000, // ₱3,000
+    price: 900, // ₱900
     icon: Crown,
     color: 'bg-accent-foreground',
-    features: ['40% referral commission', 'Activity-based credits (VPA)', 'Credit marketplace (P2P)', '8% team override', 'VIP support'],
+    features: ['50% referral commission', 'Activity-based credits (VPA)', 'Credit marketplace (P2P)', 'VIP support'],
   },
 ];
 

@@ -2,8 +2,8 @@
  * Tier Utilities
  * 
  * Manages tier-to-label mapping globally across the UI.
- * 'FREE ACCOUNT' is the default for users with no assigned membership tier (membership_tier: null).
- * 'BASIC' tier requires a ₱1,000 payment.
+ * 'INACTIVE ACCOUNT' is the default for users with no assigned membership tier (membership_tier: null).
+ * New signups start as inactive and need to pay ₱300 to become Basic.
  */
 
 export type MembershipTier = 'basic' | 'pro' | 'elite' | null;
@@ -21,8 +21,8 @@ export interface TierConfig {
 export const TIER_CONFIG: Record<string, TierConfig> = {
   free: {
     id: 'free',
-    label: 'FREE ACCOUNT',
-    displayName: 'Free',
+    label: 'INACTIVE ACCOUNT',
+    displayName: 'Inactive',
     price: 0,
     color: 'bg-muted',
     features: ['Basic platform access', 'Community browsing'],
@@ -31,31 +31,31 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
     id: 'basic',
     label: 'BASIC ACCOUNT',
     displayName: 'Basic',
-    price: 1000,
+    price: 300,
     color: 'bg-secondary',
-    features: ['Referral access program', '40% referral commission', 'Access to community platform'],
+    features: ['Referral access program', '50% referral commission', 'Access to community platform'],
   },
   pro: {
     id: 'pro',
     label: 'PRO ACCOUNT',
     displayName: 'Pro',
-    price: 2000,
+    price: 600,
     color: 'bg-primary',
-    features: ['Referral access program', '40% referral commission', 'Activity-based credits (VPA)', 'Training access'],
+    features: ['Referral access program', '50% referral commission', 'Activity-based credits (VPA)', 'Training access'],
   },
   elite: {
     id: 'elite',
     label: 'ELITE ACCOUNT',
     displayName: 'Elite',
-    price: 3000,
+    price: 900,
     color: 'bg-accent-foreground',
-    features: ['Referral access program', '40% referral commission', 'Activity-based credits (VPA)', 'Credit marketplace (P2P Lending)', '8% team override royalties', 'VIP support', 'KYC verification'],
+    features: ['Referral access program', '50% referral commission', 'Activity-based credits (VPA)', 'Credit marketplace (P2P Lending)', 'VIP support', 'KYC verification'],
   },
 };
 
 /**
  * Get the display label for a membership tier
- * Returns 'FREE ACCOUNT' for null/undefined tiers
+ * Returns 'INACTIVE ACCOUNT' for null/undefined tiers
  */
 export function getTierLabel(tier: MembershipTier): string {
   if (!tier) return TIER_CONFIG.free.label;
@@ -64,7 +64,7 @@ export function getTierLabel(tier: MembershipTier): string {
 
 /**
  * Get the short display name for a membership tier
- * Returns 'Free' for null/undefined tiers
+ * Returns 'Inactive' for null/undefined tiers
  */
 export function getTierDisplayName(tier: MembershipTier): string {
   if (!tier) return TIER_CONFIG.free.displayName;
@@ -106,12 +106,13 @@ export function isPaidTier(tier: MembershipTier): boolean {
  * Format the tier for badge display
  */
 export function formatTierBadge(tier: MembershipTier): string {
-  if (!tier) return 'Free';
+  if (!tier) return 'Inactive';
   return tier.charAt(0).toUpperCase() + tier.slice(1);
 }
 
 // Commission rates (for documentation and display)
 export const COMMISSION_RATES = {
-  referral: 40, // 40% direct referral commission
-  teamOverride: 8, // 8% team override (Elite only)
+  referral: 50, // 50% direct referral commission
+  taskWorkerSplit: 90, // 90% of task reward goes to worker
+  taskPlatformFee: 10, // 10% platform fee on tasks
 } as const;
