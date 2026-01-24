@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { usePaymentMethods, useUpdatePaymentMethods, useUploadQRCode, PaymentMethod } from '@/hooks/usePaymentMethods';
 import { TaskManagementPanel } from '@/components/admin/TaskManagementPanel';
+import { AdminNotificationCenter } from '@/components/admin/AdminNotificationCenter';
 import { 
   Users, 
   CreditCard, 
@@ -181,6 +182,9 @@ export default function AdminSettings() {
             <h2 className="text-2xl font-bold text-foreground">Settings</h2>
             <p className="text-muted-foreground">Manage platform settings and payment configuration</p>
           </div>
+
+          {/* Notification Center */}
+          <AdminNotificationCenter />
 
           {/* Payment Methods & QR Codes */}
           <Card className="border-primary/20">
