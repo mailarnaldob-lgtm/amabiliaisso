@@ -2,55 +2,66 @@ import { useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Wallet } from '@/hooks/useWallets';
 import { useToast } from '@/hooks/use-toast';
 
-type WalletType = 'main' | 'task' | 'royalty';
+// Wallet type alias for clarity
+type WalletType = 'task' | 'royalty' | 'main';
 
+/**
+ * Optimistic Transaction Interface
+ * Tracks pending transactions for zero-lag UI updates
+ */
 interface OptimisticTransaction {
   id: string;
-  type: 'transfer' | 'lend' | 'repay';
+  type: 'transfer' | 'deposit' | 'withdraw';
+  fromType?: WalletType;
+  toType?: WalletType;
   amount: number;
-  fromWallet?: WalletType;
-  toWallet?: WalletType;
-  status: 'pending' | 'success' | 'error';
+  status: 'pending' | 'confirmed' | 'failed';
   timestamp: number;
 }
 
 interface WalletBalances {
-  main: number;
   task: number;
   royalty: number;
+  main: number;
+}
+
+interface WalletsResult {
+  wallets: Wallet[];
+  isFallback: boolean;
 }
 
 /**
- * Optimistic UI hook for zero-lag wallet interactions
- * Implements immediate visual feedback while Sovereign Ledger processes transactions
+ * Sovereign Optimistic Wallet Hook
+ * Provides zero-lag UI updates while Sovereign Ledger clears transactions
+ * Implements debounce protection and intelligent cache management
  */
 export function useOptimisticWallets() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
-  // Optimistic state layer
   const [pendingTransactions, setPendingTransactions] = useState<OptimisticTransaction[]>([]);
   const [optimisticBalances, setOptimisticBalances] = useState<WalletBalances | null>(null);
   
-  // Debounce protection
+  // Debounce protection with extended timeout for stability
   const lastTransactionRef = useRef<number>(0);
-  const DEBOUNCE_MS = 500;
+  const DEBOUNCE_MS = 750; // Extended for Sovereign Ledger stability
 
   /**
-   * Get current cached balances from React Query
+   * Get current cached balances from React Query with local fallback
    */
   const getCachedBalances = useCallback((): WalletBalances => {
-    const walletsData = queryClient.getQueryData<{ wallets: Array<{ wallet_type: WalletType; balance: number }> }>(['wallets', user?.id]);
+    const walletsData = queryClient.getQueryData<WalletsResult>(['wallets', user?.id]);
     
     if (!walletsData?.wallets) {
       return { main: 0, task: 0, royalty: 0 };
     }
     
     return walletsData.wallets.reduce((acc, w) => {
-      acc[w.wallet_type] = Number(w.balance) || 0;
+      acc[w.wallet_type] = Math.floor(Number(w.balance) || 0);
       return acc;
     }, { main: 0, task: 0, royalty: 0 } as WalletBalances);
   }, [queryClient, user?.id]);
@@ -109,8 +120,8 @@ export function useOptimisticWallets() {
       id: txId,
       type: 'transfer',
       amount: wholeAmount,
-      fromWallet,
-      toWallet,
+      fromType: fromWallet,
+      toType: toWallet,
       status: 'pending',
       timestamp: now,
     };
@@ -148,9 +159,9 @@ export function useOptimisticWallets() {
         throw new Error(result.error || 'Transfer failed');
       }
       
-      // Mark transaction as success
+      // Mark transaction as confirmed
       setPendingTransactions(prev => 
-        prev.map(tx => tx.id === txId ? { ...tx, status: 'success' } : tx)
+        prev.map(tx => tx.id === txId ? { ...tx, status: 'confirmed' as const } : tx)
       );
       
       // Invalidate cache to sync with Sovereign Ledger
@@ -175,7 +186,7 @@ export function useOptimisticWallets() {
       // ROLLBACK: Revert optimistic update
       setOptimisticBalances(currentBalances);
       setPendingTransactions(prev => 
-        prev.map(tx => tx.id === txId ? { ...tx, status: 'error' } : tx)
+        prev.map(tx => tx.id === txId ? { ...tx, status: 'failed' as const } : tx)
       );
       
       toast({
@@ -195,6 +206,7 @@ export function useOptimisticWallets() {
 
   /**
    * Get the current display balance (optimistic or cached)
+   * Enforces Whole Peso Mandate with Math.floor()
    */
   const getDisplayBalance = useCallback((walletType: WalletType): number => {
     if (optimisticBalances) {

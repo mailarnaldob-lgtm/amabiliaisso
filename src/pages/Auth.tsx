@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,50 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Users, Wallet, Shield, Info, CreditCard } from 'lucide-react';
+import { Eye, EyeOff, Users, Wallet, Shield, Info, CreditCard, Check, X } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+
+// Password strength validation
+const PASSWORD_REQUIREMENTS = {
+  minLength: 8,
+  hasUppercase: /[A-Z]/,
+  hasLowercase: /[a-z]/,
+  hasNumber: /[0-9]/,
+};
+
+interface PasswordStrength {
+  score: number;
+  label: string;
+  color: string;
+  requirements: { met: boolean; label: string }[];
+}
+
+function validatePasswordStrength(password: string): PasswordStrength {
+  const requirements = [
+    { met: password.length >= PASSWORD_REQUIREMENTS.minLength, label: 'At least 8 characters' },
+    { met: PASSWORD_REQUIREMENTS.hasUppercase.test(password), label: 'One uppercase letter' },
+    { met: PASSWORD_REQUIREMENTS.hasLowercase.test(password), label: 'One lowercase letter' },
+    { met: PASSWORD_REQUIREMENTS.hasNumber.test(password), label: 'One number' },
+  ];
+
+  const metCount = requirements.filter(r => r.met).length;
+  const score = (metCount / requirements.length) * 100;
+
+  let label = 'Weak';
+  let color = 'text-destructive';
+  if (score >= 100) {
+    label = 'Strong';
+    color = 'text-success';
+  } else if (score >= 75) {
+    label = 'Good';
+    color = 'text-warning';
+  } else if (score >= 50) {
+    label = 'Fair';
+    color = 'text-warning';
+  }
+
+  return { score, label, color, requirements };
+}
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -32,9 +75,15 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Password strength indicator
+  const passwordStrength = useMemo(() => validatePasswordStrength(signupPassword), [signupPassword]);
+  const isPasswordValid = passwordStrength.score >= 100;
+
+  // Zero-latency redirect for authenticated users
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      // Immediate redirect to Sovereign Dashboard
+      navigate('/dashboard', { replace: true });
     }
   }, [user, navigate]);
 
@@ -57,7 +106,8 @@ export default function Auth() {
         title: 'Welcome back!',
         description: 'You have successfully logged in.',
       });
-      navigate('/dashboard');
+      // Zero-latency navigation to Sovereign Dashboard
+      navigate('/dashboard', { replace: true });
     }
     
     setIsLoading(false);
@@ -67,11 +117,12 @@ export default function Auth() {
     e.preventDefault();
     setIsLoading(true);
     
-    if (signupPassword.length < 6) {
+    // Strong password validation
+    if (!isPasswordValid) {
       toast({
         variant: 'destructive',
-        title: 'Password too short',
-        description: 'Password must be at least 6 characters.',
+        title: 'Password Too Weak',
+        description: 'Password must be at least 8 characters with uppercase, lowercase, and a number.',
       });
       setIsLoading(false);
       return;
@@ -94,7 +145,7 @@ export default function Auth() {
         title: 'Welcome to Amabilia!',
         description: 'Your account has been created successfully.',
       });
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
     
     setIsLoading(false);
@@ -264,7 +315,8 @@ export default function Auth() {
                         value={signupPassword}
                         onChange={(e) => setSignupPassword(e.target.value)}
                         required
-                        minLength={6}
+                        minLength={8}
+                        className={signupPassword && !isPasswordValid ? 'border-destructive' : ''}
                       />
                       <Button
                         type="button"
@@ -276,6 +328,32 @@ export default function Auth() {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
+                    
+                    {/* Password Strength Indicator */}
+                    {signupPassword && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Progress value={passwordStrength.score} className="h-1.5 flex-1" />
+                          <span className={`text-xs font-medium ${passwordStrength.score >= 100 ? 'text-success' : passwordStrength.score >= 50 ? 'text-warning' : 'text-destructive'}`}>
+                            {passwordStrength.label}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1">
+                          {passwordStrength.requirements.map((req, idx) => (
+                            <div key={idx} className="flex items-center gap-1 text-xs">
+                              {req.met ? (
+                                <Check className="h-3 w-3 text-success" />
+                              ) : (
+                                <X className="h-3 w-3 text-muted-foreground" />
+                              )}
+                              <span className={req.met ? 'text-success' : 'text-muted-foreground'}>
+                                {req.label}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
@@ -290,11 +368,11 @@ export default function Auth() {
                   </div>
                   
                   {/* Activation Notice */}
-                  <Alert className="border-amber-500/30 bg-amber-500/10">
-                    <Info className="h-4 w-4 text-amber-500" />
+                  <Alert className="border-warning/30 bg-warning/10">
+                    <Info className="h-4 w-4 text-warning" />
                     <AlertDescription className="text-xs text-muted-foreground">
-                      New accounts start as <span className="font-medium text-amber-600">inactive</span>. 
-                      Pay <span className="font-bold text-amber-600">₱300</span> after signup to activate and unlock all features.
+                      New accounts start as <span className="font-medium text-warning">inactive</span>. 
+                      Pay <span className="font-bold text-warning">₱300</span> after signup to activate and unlock all features.
                     </AlertDescription>
                   </Alert>
                   

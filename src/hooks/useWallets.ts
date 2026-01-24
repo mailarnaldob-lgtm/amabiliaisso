@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo, useEffect, useRef } from 'react';
 
 export interface Wallet {
   id: string;
@@ -30,29 +30,59 @@ function createDefaultWallets(userId: string): WalletsResult {
 }
 
 /**
- * Hook for wallet data with real-time updates via Supabase Realtime
- * Listens for INSERT, UPDATE, DELETE on user's wallets for live balance sync
+ * Sovereign Wallet Hook with Signal-Aware Fetching
+ * Implements AbortController pattern to prevent race conditions and AbortError loops
+ * Real-time updates via Supabase Realtime for live balance synchronization
  */
 export function useWallets() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  
+  // AbortController ref for signal-aware fetching
+  const abortControllerRef = useRef<AbortController | null>(null);
+  
+  // Debounce protection for rapid requests
+  const lastFetchRef = useRef<number>(0);
+  const FETCH_DEBOUNCE_MS = 300;
 
   const query = useQuery({
     queryKey: ['wallets', user?.id],
-    queryFn: async (): Promise<WalletsResult> => {
+    queryFn: async ({ signal }): Promise<WalletsResult> => {
       if (!user) return { wallets: [], isFallback: false };
       
+      // Debounce check to prevent rapid-fire requests
+      const now = Date.now();
+      if (now - lastFetchRef.current < FETCH_DEBOUNCE_MS) {
+        console.log('[useWallets] Debounced request, using cache');
+        const cached = queryClient.getQueryData<WalletsResult>(['wallets', user.id]);
+        if (cached) return cached;
+      }
+      lastFetchRef.current = now;
+      
       try {
-        console.log('[useWallets] Fetching wallets from Supabase');
+        console.log('[useWallets] Fetching wallets from Sovereign Ledger');
         
-        // Fetch wallets directly from Supabase
+        // Cancel any previous pending request
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+        abortControllerRef.current = new AbortController();
+        
+        // Fetch wallets directly from Supabase with abort signal awareness
         const { data: walletsData, error } = await supabase
           .from('wallets')
           .select('*')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .abortSignal(signal);
 
         if (error) {
-          console.warn('[useWallets] Supabase error, using defaults:', error.message);
+          // Handle abort gracefully without error logging
+          if (error.message?.includes('abort') || signal?.aborted) {
+            console.log('[useWallets] Request aborted, using cache');
+            const cached = queryClient.getQueryData<WalletsResult>(['wallets', user.id]);
+            return cached || createDefaultWallets(user.id);
+          }
+          console.warn('[useWallets] Ledger error, using defaults:', error.message);
           return createDefaultWallets(user.id);
         }
 
@@ -61,20 +91,27 @@ export function useWallets() {
           return createDefaultWallets(user.id);
         }
 
-        // Map wallet data with proper type handling
+        // Map wallet data with proper type handling (Whole Peso Mandate: Math.floor)
         const wallets: Wallet[] = walletsData.map((w) => ({
           id: w.id,
           user_id: w.user_id,
           wallet_type: w.wallet_type,
-          balance: Number(w.balance) || 0,
+          balance: Math.floor(Number(w.balance) || 0),
           created_at: w.created_at || null,
           updated_at: w.updated_at || null,
         }));
 
-        console.log('[useWallets] Loaded', wallets.length, 'wallets');
+        console.log('[useWallets] Loaded', wallets.length, 'wallets from Sovereign Ledger');
         return { wallets, isFallback: false };
 
       } catch (error) {
+        // Handle AbortError gracefully - this is expected during cleanup
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log('[useWallets] Request aborted during cleanup');
+          const cached = queryClient.getQueryData<WalletsResult>(['wallets', user.id]);
+          return cached || createDefaultWallets(user.id);
+        }
+        
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('[useWallets] Failed to fetch wallets:', errorMessage);
         return createDefaultWallets(user.id);
