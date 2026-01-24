@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { usePaymentMethods, useUpdatePaymentMethods, useUploadQRCode, PaymentMethod } from '@/hooks/usePaymentMethods';
+import { TaskManagementPanel } from '@/components/admin/TaskManagementPanel';
 import { 
   Users, 
   CreditCard, 
@@ -327,6 +328,9 @@ export default function AdminSettings() {
               )}
             </CardContent>
           </Card>
+
+          {/* Task Management */}
+          <TaskManagementPanel />
 
           {/* Platform Settings */}
           <Card>
