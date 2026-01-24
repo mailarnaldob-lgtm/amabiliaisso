@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
+import { usePaymentMethods } from '@/hooks/usePaymentMethods';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +19,8 @@ import {
   Copy,
   Info,
   Loader2,
-  Upload
+  Upload,
+  QrCode
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -52,15 +54,10 @@ const MEMBERSHIP_TIERS = [
   },
 ];
 
-const PAYMENT_METHODS = [
-  { id: 'gcash', name: 'GCash', number: '09171234567', accountName: 'Amabilia Network' },
-  { id: 'bpi', name: 'BPI', number: '1234567890', accountName: 'Amabilia Network Inc.' },
-  { id: 'bdo', name: 'BDO', number: '0987654321', accountName: 'Amabilia Network Inc.' },
-];
-
 export default function UpgradeMembership() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const { data: paymentMethods, isLoading: isLoadingMethods } = usePaymentMethods();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -70,12 +67,13 @@ export default function UpgradeMembership() {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [errors, setErrors] = useState<{ reference_number?: string }>({});
+  const [showQR, setShowQR] = useState(false);
 
   const currentTierIndex = MEMBERSHIP_TIERS.findIndex(t => t.id === profile?.membership_tier);
   const availableTiers = MEMBERSHIP_TIERS.filter((_, index) => index > currentTierIndex);
 
   const selectedTierData = MEMBERSHIP_TIERS.find(t => t.id === selectedTier);
-  const selectedPaymentData = PAYMENT_METHODS.find(p => p.id === paymentMethod);
+  const selectedPaymentData = paymentMethods?.find(p => p.id === paymentMethod);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -294,37 +292,74 @@ export default function UpgradeMembership() {
               <CardDescription>Send your registration fee to one of these accounts</CardDescription>
             </CardHeader>
             <CardContent>
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
-                {PAYMENT_METHODS.map((method) => (
-                  <div key={method.id} className="flex items-center space-x-4">
-                    <RadioGroupItem value={method.id} id={method.id} />
-                    <Label htmlFor={method.id} className="flex-1 cursor-pointer">
-                      <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                        <div>
-                          <p className="font-semibold">{method.name}</p>
-                          <p className="text-sm text-muted-foreground">{method.accountName}</p>
+              {isLoadingMethods ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <RadioGroup value={paymentMethod} onValueChange={(v) => { setPaymentMethod(v); setShowQR(false); }} className="space-y-4">
+                  {paymentMethods?.map((method) => (
+                    <div key={method.id} className="flex items-center space-x-4">
+                      <RadioGroupItem value={method.id} id={method.id} />
+                      <Label htmlFor={method.id} className="flex-1 cursor-pointer">
+                        <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                          <div>
+                            <p className="font-semibold">{method.name}</p>
+                            <p className="text-sm text-muted-foreground">{method.accountName}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="px-3 py-1 bg-muted rounded font-mono">{method.number}</code>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                copyToClipboard(method.number);
+                              }}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            {method.qrCodeUrl && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setPaymentMethod(method.id);
+                                  setShowQR(!showQR || paymentMethod !== method.id);
+                                }}
+                              >
+                                <QrCode className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <code className="px-3 py-1 bg-muted rounded font-mono">{method.number}</code>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              copyToClipboard(method.number);
-                            }}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
 
-              {selectedPaymentData && selectedTierData && (
+              {/* QR Code Display */}
+              {showQR && selectedPaymentData?.qrCodeUrl && (
+                <div className="mt-6 p-6 bg-card border border-primary/20 rounded-lg text-center">
+                  <p className="text-sm font-medium text-muted-foreground mb-4">
+                    Scan QR Code to pay via {selectedPaymentData.name}
+                  </p>
+                  <img 
+                    src={selectedPaymentData.qrCodeUrl} 
+                    alt={`${selectedPaymentData.name} QR Code`}
+                    className="w-48 h-48 mx-auto rounded-lg border-2 border-border"
+                  />
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Send exactly <span className="font-bold text-primary">₱{selectedTierData?.price.toLocaleString()}</span>
+                  </p>
+                </div>
+              )}
+
+              {selectedPaymentData && selectedTierData && !showQR && (
                 <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
                   <p className="text-sm font-medium">
                     Send exactly{' '}
@@ -333,6 +368,18 @@ export default function UpgradeMembership() {
                     </span>{' '}
                     to {selectedPaymentData.name}: {selectedPaymentData.number}
                   </p>
+                  {selectedPaymentData.qrCodeUrl && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-3"
+                      onClick={() => setShowQR(true)}
+                    >
+                      <QrCode className="h-4 w-4 mr-2" />
+                      Show QR Code
+                    </Button>
+                  )}
                 </div>
               )}
             </CardContent>
