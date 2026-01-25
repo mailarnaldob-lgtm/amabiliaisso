@@ -242,8 +242,8 @@ export default function MemberDashboard() {
                 })}</p>
               </div>
               <div className="text-left sm:text-right">
-                <p className="text-primary-foreground/60 text-xs">Internal Credits</p>
-                <p className="text-primary-foreground/80 text-sm">Non-redeemable</p>
+                <p className="text-primary-foreground/60 text-3xl">Internal Credits</p>
+                
               </div>
             </div>
           </CardContent>
