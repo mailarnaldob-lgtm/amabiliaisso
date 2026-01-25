@@ -3,62 +3,39 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
-import { 
-  Shield, 
-  ArrowRight, 
-  Lock, 
-  Eye, 
-  Fingerprint, 
-  Hexagon,
-  Zap,
-  Layers,
-  TrendingUp,
-  Users,
-  ChevronRight,
-  Star,
-  Award,
-  Clock,
-  Globe,
-  CheckCircle,
-  Sparkles,
-  Wallet,
-  BarChart3
-} from 'lucide-react';
+import { Shield, ArrowRight, Lock, Eye, Fingerprint, Hexagon, Zap, Layers, TrendingUp, Users, ChevronRight, Star, Award, Clock, Globe, CheckCircle, Sparkles, Wallet, BarChart3 } from 'lucide-react';
 
 // Countdown Timer Component with Enterprise Red Theme
-function CountdownTimer({ targetDate }: { targetDate: Date }) {
+function CountdownTimer({
+  targetDate
+}: {
+  targetDate: Date;
+}) {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0
   });
-
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date().getTime();
       const distance = targetDate.getTime() - now;
-
       if (distance < 0) {
         clearInterval(timer);
         return;
       }
-
       setTimeLeft({
         days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((distance % (1000 * 60)) / 1000)
+        hours: Math.floor(distance % (1000 * 60 * 60 * 24) / (1000 * 60 * 60)),
+        minutes: Math.floor(distance % (1000 * 60 * 60) / (1000 * 60)),
+        seconds: Math.floor(distance % (1000 * 60) / 1000)
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, [targetDate]);
-
-  return (
-    <div className="flex items-center justify-center gap-2 sm:gap-4">
-      {Object.entries(timeLeft).map(([unit, value]) => (
-        <div key={unit} className="text-center">
+  return <div className="flex items-center justify-center gap-2 sm:gap-4">
+      {Object.entries(timeLeft).map(([unit, value]) => <div key={unit} className="text-center">
           <div className="bg-card/80 backdrop-blur-sm border border-primary/30 rounded-lg px-3 sm:px-4 py-2 sm:py-3 min-w-[60px] sm:min-w-[80px] red-glow-sm">
             <span className="text-2xl sm:text-3xl md:text-4xl font-black text-primary font-mono tracking-widest">
               {String(value).padStart(2, '0')}
@@ -67,49 +44,38 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
           <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 block uppercase tracking-[0.15em] font-bold">
             {unit}
           </span>
-        </div>
-      ))}
-    </div>
-  );
+        </div>)}
+    </div>;
 }
 
 // Floating 3D Card Component
-function FloatingCard({ 
-  children, 
-  className = "", 
+function FloatingCard({
+  children,
+  className = "",
   delay = 0,
   rotation = "rotate-x-12 rotate-y-n6"
-}: { 
-  children: React.ReactNode; 
+}: {
+  children: React.ReactNode;
   className?: string;
   delay?: number;
   rotation?: string;
 }) {
-  return (
-    <div 
-      className={`perspective-1200 ${className}`}
-      style={{ animationDelay: `${delay}s` }}
-    >
-      <div 
-        className={`preserve-3d ${rotation} transition-all duration-500 hover:scale-105`}
-        style={{
-          background: 'radial-gradient(circle at center, hsl(0 93% 53% / 0.1) 0%, transparent 70%)',
-          boxShadow: '0 25px 50px hsl(0 0% 0% / 0.5), 0 0 50px hsl(0 93% 53% / 0.25)'
-        }}
-      >
+  return <div className={`perspective-1200 ${className}`} style={{
+    animationDelay: `${delay}s`
+  }}>
+      <div className={`preserve-3d ${rotation} transition-all duration-500 hover:scale-105`} style={{
+      background: 'radial-gradient(circle at center, hsl(0 93% 53% / 0.1) 0%, transparent 70%)',
+      boxShadow: '0 25px 50px hsl(0 0% 0% / 0.5), 0 0 50px hsl(0 93% 53% / 0.25)'
+    }}>
         {children}
       </div>
-    </div>
-  );
+    </div>;
 }
-
 export default function Landing() {
   // Founding Alpha window ends 30 days from now
   const foundingEndDate = new Date();
   foundingEndDate.setDate(foundingEndDate.getDate() + 30);
-
-  return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+  return <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Animated Background Atmosphere */}
       <div className="bg-atmosphere" />
       
@@ -117,10 +83,9 @@ export default function Landing() {
       <header className="enterprise-header border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
-            <div 
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg alpha-gradient flex items-center justify-center red-glow transition-all duration-300 group-hover:scale-110"
-              style={{ filter: 'drop-shadow(0 0 20px hsl(0 93% 53% / 0.5))' }}
-            >
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg alpha-gradient flex items-center justify-center red-glow transition-all duration-300 group-hover:scale-110" style={{
+            filter: 'drop-shadow(0 0 20px hsl(0 93% 53% / 0.5))'
+          }}>
               <Hexagon className="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="currentColor" />
             </div>
             <span className="text-xl sm:text-2xl font-black tracking-widest">
@@ -164,10 +129,7 @@ export default function Landing() {
             {/* Left Column - Content */}
             <div className="text-center lg:text-left">
               {/* Premium Feature Badge */}
-              <Badge 
-                className="badge-premium mb-6 sm:mb-8 px-4 py-2 text-xs sm:text-sm backdrop-blur-sm inline-flex items-center gap-2"
-                variant="outline"
-              >
+              <Badge className="badge-premium mb-6 sm:mb-8 px-4 py-2 text-xs sm:text-sm backdrop-blur-sm inline-flex items-center gap-2" variant="outline">
                 <Sparkles className="h-3 w-3" />
                 Enterprise Financial Platform • Next Generation
               </Badge>
@@ -175,7 +137,7 @@ export default function Landing() {
               {/* Main Headline with Red Gradient */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight tracking-tight">
                 <span className="text-foreground">Welcome to </span>
-                <span className="alpha-text">AMABILIA</span>
+                <span className="alpha-text bg-accent">AMABILIA</span>
               </h1>
               
               <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
@@ -207,11 +169,9 @@ export default function Landing() {
 
               {/* Primary CTA */}
               <Link to="/auth">
-                <Button 
-                  size="lg" 
-                  className="btn-enterprise gap-3 text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 font-black rounded-xl transition-all hover:scale-105"
-                  style={{ boxShadow: '0 20px 40px hsl(0 93% 53% / 0.3)' }}
-                >
+                <Button size="lg" className="btn-enterprise gap-3 text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 font-black rounded-xl transition-all hover:scale-105" style={{
+                boxShadow: '0 20px 40px hsl(0 93% 53% / 0.3)'
+              }}>
                   <Zap className="h-5 w-5" />
                   Enter the Founding Phase
                   <ArrowRight className="h-5 w-5" />
@@ -222,10 +182,7 @@ export default function Landing() {
             {/* Right Column - Floating 3D Cards */}
             <div className="hidden lg:block relative h-[500px]">
               {/* Card 1 - Main Vault */}
-              <FloatingCard 
-                className="absolute top-0 right-0 w-72 animate-float"
-                rotation="rotate-x-12"
-              >
+              <FloatingCard className="absolute top-0 right-0 w-72 animate-float" rotation="rotate-x-12">
                 <Card className="feature-card-premium p-6 backdrop-blur-xl">
                   <CardHeader className="p-0 pb-4">
                     <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-3">
@@ -246,11 +203,7 @@ export default function Landing() {
               </FloatingCard>
 
               {/* Card 2 - Market Stats */}
-              <FloatingCard 
-                className="absolute top-32 left-0 w-64 animate-float-delayed"
-                delay={2}
-                rotation="-rotate-6"
-              >
+              <FloatingCard className="absolute top-32 left-0 w-64 animate-float-delayed" delay={2} rotation="-rotate-6">
                 <Card className="feature-card-premium p-5 backdrop-blur-xl">
                   <CardHeader className="p-0 pb-3">
                     <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mb-2">
@@ -274,11 +227,7 @@ export default function Landing() {
               </FloatingCard>
 
               {/* Card 3 - Network Growth */}
-              <FloatingCard 
-                className="absolute bottom-16 right-12 w-60 animate-float-slow"
-                delay={4}
-                rotation="rotate-3"
-              >
+              <FloatingCard className="absolute bottom-16 right-12 w-60 animate-float-slow" delay={4} rotation="rotate-3">
                 <Card className="feature-card-premium p-5 backdrop-blur-xl">
                   <CardHeader className="p-0 pb-3">
                     <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mb-2">
@@ -337,23 +286,23 @@ export default function Landing() {
               </p>
               
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto">
-                {[
-                  { before: 'speculation', after: 'Security' },
-                  { before: 'incentives', after: 'Infrastructure' },
-                  { before: 'extraction', after: 'Ownership' },
-                  { before: 'central control', after: 'Community' }
-                ].map((item, index) => (
-                  <div 
-                    key={index} 
-                    className={`card-hover backdrop-blur-sm rounded-xl p-4 sm:p-5 ${
-                      index < 2 ? 'feature-card-premium' : 'feature-card-standard bg-card/50'
-                    }`}
-                  >
+                {[{
+                before: 'speculation',
+                after: 'Security'
+              }, {
+                before: 'incentives',
+                after: 'Infrastructure'
+              }, {
+                before: 'extraction',
+                after: 'Ownership'
+              }, {
+                before: 'central control',
+                after: 'Community'
+              }].map((item, index) => <div key={index} className={`card-hover backdrop-blur-sm rounded-xl p-4 sm:p-5 ${index < 2 ? 'feature-card-premium' : 'feature-card-standard bg-card/50'}`}>
                     <span className="text-primary font-black text-lg tracking-wide">{item.after}</span>
                     <span className="text-muted-foreground mx-2 font-medium">before</span>
                     <span className="text-muted-foreground/60 line-through">{item.before}</span>
-                  </div>
-                ))}
+                  </div>)}
               </div>
               
               <div className="pt-8 border-t border-border max-w-xl mx-auto">
@@ -387,69 +336,65 @@ export default function Landing() {
           
           {/* Feature Cards Grid - 3 columns */}
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: Layers, title: 'Protocol-Aligned', desc: 'Incentives that grow with the ecosystem, not against it. Your success is the protocol\'s success.', premium: true },
-              { icon: Award, title: 'Early Recognition', desc: 'Recognition for early belief and network leadership. Founding members carry permanent status.', premium: true },
-              { icon: Eye, title: 'Transparent Rewards', desc: 'A transparent reward system enforced by smart-logic, not promises. See everything on-chain.', premium: true },
-            ].map((item, index) => (
-              <Card 
-                key={index}
-                className={`card-hover backdrop-blur-sm ${
-                  item.premium 
-                    ? 'feature-card-premium' 
-                    : 'feature-card-standard bg-card/50'
-                }`}
-              >
+            {[{
+            icon: Layers,
+            title: 'Protocol-Aligned',
+            desc: 'Incentives that grow with the ecosystem, not against it. Your success is the protocol\'s success.',
+            premium: true
+          }, {
+            icon: Award,
+            title: 'Early Recognition',
+            desc: 'Recognition for early belief and network leadership. Founding members carry permanent status.',
+            premium: true
+          }, {
+            icon: Eye,
+            title: 'Transparent Rewards',
+            desc: 'A transparent reward system enforced by smart-logic, not promises. See everything on-chain.',
+            premium: true
+          }].map((item, index) => <Card key={index} className={`card-hover backdrop-blur-sm ${item.premium ? 'feature-card-premium' : 'feature-card-standard bg-card/50'}`}>
                 <CardHeader className="text-center pb-4">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all ${
-                    item.premium 
-                      ? 'bg-primary red-glow-sm' 
-                      : 'bg-card border border-border'
-                  }`}>
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all ${item.premium ? 'bg-primary red-glow-sm' : 'bg-card border border-border'}`}>
                     <item.icon className={`h-8 w-8 ${item.premium ? 'text-white' : 'text-muted-foreground'}`} />
                   </div>
                   <CardTitle className="text-foreground font-bold tracking-wide">{item.title}</CardTitle>
-                  {item.premium && (
-                    <span className="text-xs text-primary font-black tracking-widest mt-2 block">
+                  {item.premium && <span className="text-xs text-primary font-black tracking-widest mt-2 block">
                       PREMIUM FEATURE →
-                    </span>
-                  )}
+                    </span>}
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-center text-sm tracking-wide leading-relaxed">
                     {item.desc}
                   </p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
 
           {/* Stats Dashboard - 4 columns with conditional styling */}
           <div className="mt-12 cta-container rounded-2xl p-6 sm:p-8">
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { value: '50%', label: 'Referral Commission', sublabel: 'On all membership activations' },
-                { value: '90/10', label: 'Task Reward Split', sublabel: 'Workers keep 90% of all rewards' },
-                { value: '₳ 1M+', label: 'Total Volume', sublabel: 'Processed through protocol' },
-                { value: '24/7', label: 'Global Access', sublabel: 'Always-on infrastructure' }
-              ].map((stat, index) => (
-                <div 
-                  key={index} 
-                  className={`text-center p-6 rounded-xl transition-all ${
-                    index % 2 === 0 
-                      ? 'stats-card-highlighted' 
-                      : 'bg-background/50 border border-border'
-                  }`}
-                >
-                  <p className={`text-3xl sm:text-4xl font-black mb-2 tracking-tight ${
-                    index % 2 === 0 ? 'text-primary' : 'text-foreground'
-                  }`}>
+              {[{
+              value: '50%',
+              label: 'Referral Commission',
+              sublabel: 'On all membership activations'
+            }, {
+              value: '90/10',
+              label: 'Task Reward Split',
+              sublabel: 'Workers keep 90% of all rewards'
+            }, {
+              value: '₳ 1M+',
+              label: 'Total Volume',
+              sublabel: 'Processed through protocol'
+            }, {
+              value: '24/7',
+              label: 'Global Access',
+              sublabel: 'Always-on infrastructure'
+            }].map((stat, index) => <div key={index} className={`text-center p-6 rounded-xl transition-all ${index % 2 === 0 ? 'stats-card-highlighted' : 'bg-background/50 border border-border'}`}>
+                  <p className={`text-3xl sm:text-4xl font-black mb-2 tracking-tight ${index % 2 === 0 ? 'text-primary' : 'text-foreground'}`}>
                     {stat.value}
                   </p>
                   <p className="text-foreground font-bold tracking-wide">{stat.label}</p>
                   <p className="text-xs text-muted-foreground mt-1">{stat.sublabel}</p>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
         </div>
@@ -472,23 +417,29 @@ export default function Landing() {
           </div>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[
-              { icon: Lock, title: 'Vault-Grade Custody', desc: 'Enterprise-level asset protection' },
-              { icon: Fingerprint, title: 'Encrypted Auth', desc: 'Multi-layer authentication' },
-              { icon: Eye, title: 'Transparent Tracking', desc: 'On-chain activity visibility' },
-              { icon: Shield, title: 'No Dark Patterns', desc: 'Clean, honest mechanics' }
-            ].map((item, index) => (
-              <div 
-                key={index} 
-                className="card-hover bg-card/30 backdrop-blur-sm border border-border rounded-xl p-6 text-center hover:border-primary/30 transition-all group"
-              >
+            {[{
+            icon: Lock,
+            title: 'Vault-Grade Custody',
+            desc: 'Enterprise-level asset protection'
+          }, {
+            icon: Fingerprint,
+            title: 'Encrypted Auth',
+            desc: 'Multi-layer authentication'
+          }, {
+            icon: Eye,
+            title: 'Transparent Tracking',
+            desc: 'On-chain activity visibility'
+          }, {
+            icon: Shield,
+            title: 'No Dark Patterns',
+            desc: 'Clean, honest mechanics'
+          }].map((item, index) => <div key={index} className="card-hover bg-card/30 backdrop-blur-sm border border-border rounded-xl p-6 text-center hover:border-primary/30 transition-all group">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary group-hover:red-glow-sm transition-all">
                   <item.icon className="h-6 w-6 text-primary group-hover:text-white transition-colors" />
                 </div>
                 <h3 className="font-bold text-foreground mb-1 tracking-wide">{item.title}</h3>
                 <p className="text-sm text-muted-foreground">{item.desc}</p>
-              </div>
-            ))}
+              </div>)}
           </div>
 
           <div className="mt-12 text-center">
@@ -512,38 +463,27 @@ export default function Landing() {
           </div>
           
           <div className="space-y-6">
-            {[
-              {
-                step: 1,
-                title: 'Secure On-Chain Registration',
-                desc: 'A streamlined, compliant registration flow that respects privacy while maintaining protocol integrity.',
-                features: ['User sovereignty', 'Secure identity binding', 'Long-term ecosystem access']
-              },
-              {
-                step: 2,
-                title: 'Trusted Access Layer',
-                desc: 'Enter AMABILIA through a secure access gateway with biometric-inspired security.',
-                features: ['Encryption-first design', 'Vault-level protection', 'Confident transitions']
-              },
-              {
-                step: 3,
-                title: 'Guided Protocol Walkthrough',
-                desc: 'A refined 5-step animated tour introducing AMABILIA\'s core mechanics.',
-                features: ['Deposit → Vault → Marketplace → Transfer → Feed']
-              },
-              {
-                step: 4,
-                title: 'Founding Alpha Recognition',
-                desc: 'Completion triggers a prestige celebration moment with your permanent Founding Alpha Badge.',
-                features: ['Digital asset celebration', 'Founding Alpha Badge', 'Permanent recognition']
-              }
-            ].map((item, index) => (
-              <div 
-                key={index} 
-                className={`card-hover flex flex-col sm:flex-row gap-4 sm:gap-6 p-6 sm:p-8 rounded-2xl ${
-                  index < 2 ? 'feature-card-premium' : 'feature-card-standard bg-card/50'
-                }`}
-              >
+            {[{
+            step: 1,
+            title: 'Secure On-Chain Registration',
+            desc: 'A streamlined, compliant registration flow that respects privacy while maintaining protocol integrity.',
+            features: ['User sovereignty', 'Secure identity binding', 'Long-term ecosystem access']
+          }, {
+            step: 2,
+            title: 'Trusted Access Layer',
+            desc: 'Enter AMABILIA through a secure access gateway with biometric-inspired security.',
+            features: ['Encryption-first design', 'Vault-level protection', 'Confident transitions']
+          }, {
+            step: 3,
+            title: 'Guided Protocol Walkthrough',
+            desc: 'A refined 5-step animated tour introducing AMABILIA\'s core mechanics.',
+            features: ['Deposit → Vault → Marketplace → Transfer → Feed']
+          }, {
+            step: 4,
+            title: 'Founding Alpha Recognition',
+            desc: 'Completion triggers a prestige celebration moment with your permanent Founding Alpha Badge.',
+            features: ['Digital asset celebration', 'Founding Alpha Badge', 'Permanent recognition']
+          }].map((item, index) => <div key={index} className={`card-hover flex flex-col sm:flex-row gap-4 sm:gap-6 p-6 sm:p-8 rounded-2xl ${index < 2 ? 'feature-card-premium' : 'feature-card-standard bg-card/50'}`}>
                 <div className="flex-shrink-0">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl alpha-gradient flex items-center justify-center text-white font-black text-xl red-glow-sm">
                     {item.step}
@@ -553,18 +493,15 @@ export default function Landing() {
                   <h3 className="text-xl sm:text-2xl font-black text-foreground mb-2 tracking-wide">{item.title}</h3>
                   <p className="text-muted-foreground mb-4 tracking-wide">{item.desc}</p>
                   <div className="flex flex-wrap gap-2">
-                    {item.features.map((feature, i) => (
-                      <Badge key={i} variant="outline" className="badge-premium text-xs">
+                    {item.features.map((feature, i) => <Badge key={i} variant="outline" className="badge-premium text-xs">
                         {feature}
-                      </Badge>
-                    ))}
+                      </Badge>)}
                   </div>
                 </div>
                 <div className="hidden lg:flex items-center">
                   <ChevronRight className="h-6 w-6 text-primary/40" />
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
 
           {/* Final State */}
@@ -603,11 +540,9 @@ export default function Landing() {
           </p>
           
           <Link to="/auth">
-            <Button 
-              size="lg" 
-              className="btn-enterprise gap-3 text-lg px-10 py-7 font-black rounded-xl transition-all hover:scale-105"
-              style={{ boxShadow: '0 20px 40px hsl(0 93% 53% / 0.3)' }}
-            >
+            <Button size="lg" className="btn-enterprise gap-3 text-lg px-10 py-7 font-black rounded-xl transition-all hover:scale-105" style={{
+            boxShadow: '0 20px 40px hsl(0 93% 53% / 0.3)'
+          }}>
               Enter AMABILIA Now
               <ArrowRight className="h-5 w-5" />
             </Button>
@@ -690,6 +625,5 @@ export default function Landing() {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
