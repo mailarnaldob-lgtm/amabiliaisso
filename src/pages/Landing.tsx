@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
-import { Shield, ArrowRight, Lock, Eye, Fingerprint, Hexagon, Zap, Layers, TrendingUp, Users, ChevronRight, Star, Award, Clock, Globe, CheckCircle, Sparkles, Wallet, BarChart3, Chrome } from 'lucide-react';
+import { Shield, ArrowRight, Lock, Eye, Fingerprint, Zap, Layers, TrendingUp, Users, ChevronRight, Star, Award, Clock, Globe, CheckCircle, Sparkles, Wallet, BarChart3, Chrome } from 'lucide-react';
 
 // Countdown Timer Component with Enterprise Red Theme
 function CountdownTimer({
@@ -569,9 +569,9 @@ export default function Landing() {
             <div>
               <Link to="/" className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-lg alpha-gradient flex items-center justify-center red-glow-sm">
-                  <Hexagon className="h-4 w-4 text-white" fill="currentColor" />
+                  <Chrome className="h-4 w-4 text-[#940a0a]" fill="currentColor" />
                 </div>
-                <span className="text-xl font-black alpha-text tracking-widest">AMABILIA</span>
+                <span className="text-xl font-black alpha-text tracking-widest text-destructive bg-destructive">AMABILIA</span>
               </Link>
               <p className="text-sm text-muted-foreground tracking-wide">
                 The financial layer for the next generation. Built for stability, transparency, and intelligent participation.
