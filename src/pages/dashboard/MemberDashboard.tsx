@@ -411,7 +411,7 @@ export default function MemberDashboard() {
               </CardContent>
             </Card>
           </Link>
-          <Link to="/alpha/bank">
+          <Link to="/dashboard/bank">
             <Card className="border-border hover:border-primary transition-colors cursor-pointer h-full bg-gradient-to-br from-primary/5 to-primary/10">
               <CardContent className="p-4 sm:pt-6 text-center">
                 <Zap className="h-6 sm:h-8 w-6 sm:w-8 text-primary mx-auto mb-2" />

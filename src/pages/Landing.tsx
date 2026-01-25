@@ -646,10 +646,10 @@ export default function Landing() {
             <div>
               <h4 className="font-bold text-foreground mb-4 tracking-wide">Protocol</h4>
               <ul className="space-y-2 text-sm text-muted-foreground font-medium">
-                <li><Link to="/alpha/bank" className="link-underline hover:text-primary transition-colors">ALPHA Vault</Link></li>
-                <li><Link to="/alpha/market" className="link-underline hover:text-primary transition-colors">Marketplace</Link></li>
-                <li><Link to="/alpha/finance" className="link-underline hover:text-primary transition-colors">Smart Finance</Link></li>
-                <li><Link to="/alpha/growth" className="link-underline hover:text-primary transition-colors">Network</Link></li>
+                <li><Link to="/dashboard/bank" className="link-underline hover:text-primary transition-colors">ALPHA Vault</Link></li>
+                <li><Link to="/dashboard/market" className="link-underline hover:text-primary transition-colors">Marketplace</Link></li>
+                <li><Link to="/dashboard/finance" className="link-underline hover:text-primary transition-colors">Smart Finance</Link></li>
+                <li><Link to="/dashboard/growth" className="link-underline hover:text-primary transition-colors">Network</Link></li>
               </ul>
             </div>
             

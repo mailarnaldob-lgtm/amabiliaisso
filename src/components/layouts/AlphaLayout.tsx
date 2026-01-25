@@ -30,7 +30,7 @@ export function AlphaLayout({ children, title, subtitle, appColor = 'from-primar
               <button className="p-2 rounded-full hover:bg-muted/50 transition-colors">
                 <Bell className="h-5 w-5 text-muted-foreground" />
               </button>
-              <Link to="/alpha/settings" className="p-2 rounded-full hover:bg-muted/50 transition-colors">
+              <Link to="/dashboard/settings" className="p-2 rounded-full hover:bg-muted/50 transition-colors">
                 <Settings className="h-5 w-5 text-muted-foreground" />
               </Link>
             </div>
