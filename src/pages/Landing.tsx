@@ -89,7 +89,7 @@ export default function Landing() {
               <Chrome className="h-5 w-5 sm:h-6 sm:w-6 bg-primary text-[#560b0b]" fill="currentColor" />
             </div>
             <span className="text-xl sm:text-2xl font-black tracking-widest">
-              <span className="alpha-text text-destructive">AMABILIA</span>
+              
             </span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -327,7 +327,7 @@ export default function Landing() {
               FOUNDING INCENTIVES
             </Badge>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
-              Built for <span className="alpha-text text-[#a21a1a]">Leaders</span>
+              Built for Leaders 
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto tracking-wide">
               Founding Alpha members receive lifetime on-chain royalties on all verified direct downline activity.
@@ -409,7 +409,7 @@ export default function Landing() {
               TRUST BY DESIGN
             </Badge>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
-              Security as a <span className="alpha-text text-[#870d0d]">First-Class Feature</span>
+              Security as a First-Class Feature  
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto tracking-wide">
               AMABILIA's infrastructure is designed around asset protection, data integrity, and system resilience.
@@ -458,7 +458,7 @@ export default function Landing() {
               THE AMABILIA EXPERIENCE
             </Badge>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
-              Your Journey to <span className="alpha-text text-[#f04242] bg-[#091224]">ALPHA</span>
+              Your Journey to ALPHA  
             </h2>
           </div>
           
