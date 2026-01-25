@@ -16,27 +16,33 @@ const PASSWORD_REQUIREMENTS = {
   minLength: 8,
   hasUppercase: /[A-Z]/,
   hasLowercase: /[a-z]/,
-  hasNumber: /[0-9]/,
+  hasNumber: /[0-9]/
 };
-
 interface PasswordStrength {
   score: number;
   label: string;
   color: string;
-  requirements: { met: boolean; label: string }[];
+  requirements: {
+    met: boolean;
+    label: string;
+  }[];
 }
-
 function validatePasswordStrength(password: string): PasswordStrength {
-  const requirements = [
-    { met: password.length >= PASSWORD_REQUIREMENTS.minLength, label: 'At least 8 characters' },
-    { met: PASSWORD_REQUIREMENTS.hasUppercase.test(password), label: 'One uppercase letter' },
-    { met: PASSWORD_REQUIREMENTS.hasLowercase.test(password), label: 'One lowercase letter' },
-    { met: PASSWORD_REQUIREMENTS.hasNumber.test(password), label: 'One number' },
-  ];
-
+  const requirements = [{
+    met: password.length >= PASSWORD_REQUIREMENTS.minLength,
+    label: 'At least 8 characters'
+  }, {
+    met: PASSWORD_REQUIREMENTS.hasUppercase.test(password),
+    label: 'One uppercase letter'
+  }, {
+    met: PASSWORD_REQUIREMENTS.hasLowercase.test(password),
+    label: 'One lowercase letter'
+  }, {
+    met: PASSWORD_REQUIREMENTS.hasNumber.test(password),
+    label: 'One number'
+  }];
   const metCount = requirements.filter(r => r.met).length;
-  const score = (metCount / requirements.length) * 100;
-
+  const score = metCount / requirements.length * 100;
   let label = 'Weak';
   let color = 'text-destructive';
   if (score >= 100) {
@@ -49,31 +55,38 @@ function validatePasswordStrength(password: string): PasswordStrength {
     label = 'Fair';
     color = 'text-warning';
   }
-
-  return { score, label, color, requirements };
+  return {
+    score,
+    label,
+    color,
+    requirements
+  };
 }
-
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const referralCode = searchParams.get('ref') || '';
-  
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  
+
   // Signup form
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupFullName, setSignupFullName] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
   const [signupReferralCode, setSignupReferralCode] = useState(referralCode);
-  
-  const { signIn, signUp, user } = useAuth();
+  const {
+    signIn,
+    signUp,
+    user
+  } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
 
   // Password strength indicator
   const passwordStrength = useMemo(() => validatePasswordStrength(signupPassword), [signupPassword]);
@@ -83,53 +96,52 @@ export default function Auth() {
   useEffect(() => {
     if (user) {
       // Immediate redirect to Sovereign Dashboard
-      navigate('/dashboard', { replace: true });
+      navigate('/dashboard', {
+        replace: true
+      });
     }
   }, [user, navigate]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    const { error } = await signIn(loginEmail, loginPassword);
-    
+    const {
+      error
+    } = await signIn(loginEmail, loginPassword);
     if (error) {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message === 'Invalid login credentials' 
-          ? 'Invalid email or password. Please try again.' 
-          : error.message,
+        description: error.message === 'Invalid login credentials' ? 'Invalid email or password. Please try again.' : error.message
       });
     } else {
       toast({
         title: 'Welcome back!',
-        description: 'You have successfully logged in.',
+        description: 'You have successfully logged in.'
       });
       // Zero-latency navigation to Sovereign Dashboard
-      navigate('/dashboard', { replace: true });
+      navigate('/dashboard', {
+        replace: true
+      });
     }
-    
     setIsLoading(false);
   };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Strong password validation
     if (!isPasswordValid) {
       toast({
         variant: 'destructive',
         title: 'Password Too Weak',
-        description: 'Password must be at least 8 characters with uppercase, lowercase, and a number.',
+        description: 'Password must be at least 8 characters with uppercase, lowercase, and a number.'
       });
       setIsLoading(false);
       return;
     }
-    
-    const { error } = await signUp(signupEmail, signupPassword, signupFullName, signupPhone, signupReferralCode);
-    
+    const {
+      error
+    } = await signUp(signupEmail, signupPassword, signupFullName, signupPhone, signupReferralCode);
     if (error) {
       let message = error.message;
       if (message.includes('already registered')) {
@@ -138,27 +150,26 @@ export default function Auth() {
       toast({
         variant: 'destructive',
         title: 'Signup Failed',
-        description: message,
+        description: message
       });
     } else {
       toast({
         title: 'Welcome to Amabilia!',
-        description: 'Your account has been created successfully.',
+        description: 'Your account has been created successfully.'
       });
-      navigate('/dashboard', { replace: true });
+      navigate('/dashboard', {
+        replace: true
+      });
     }
-    
     setIsLoading(false);
   };
-
-  return (
-    <div className="min-h-screen bg-background flex">
+  return <div className="min-h-screen bg-background flex">
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        <div className="relative z-10 flex flex-col justify-center px-12 text-primary-foreground">
-          <h1 className="text-5xl font-bold mb-6">Amabilia Network</h1>
-          <p className="text-xl mb-12 opacity-90">
+        <div className="relative z-10 flex-col border-primary-foreground border-8 border-solid flex items-center justify-center text-[#6d0d0d] px-[4px] bg-muted rounded-xl">
+          <h1 className="text-5xl font-bold mb-6 text-destructive">Amabilia Network</h1>
+          <p className="text-xl mb-12 opacity-90 text-center text-secondary-foreground">
             Empowering Filipinos to earn daily through an ethical, sustainable, community-powered ecosystem.
           </p>
           
@@ -169,7 +180,7 @@ export default function Auth() {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">₱300 Activation</h3>
-                <p className="opacity-80">One-time fee to unlock all platform features</p>
+                <p className="opacity-80 text-secondary-foreground">One-time fee to unlock all platform features</p>
               </div>
             </div>
             
@@ -229,34 +240,14 @@ export default function Auth() {
                 <form onSubmit={handleLogin} className="space-y-4 mt-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      required
-                    />
+                    <Input id="login-email" type="email" placeholder="you@example.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Password</Label>
                     <div className="relative">
-                      <Input
-                        id="login-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
+                      <Input id="login-password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
+                      <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
@@ -272,66 +263,30 @@ export default function Auth() {
                 <form onSubmit={handleSignup} className="space-y-4 mt-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="Juan Dela Cruz"
-                      value={signupFullName}
-                      onChange={(e) => setSignupFullName(e.target.value)}
-                      required
-                    />
+                    <Input id="signup-name" type="text" placeholder="Juan Dela Cruz" value={signupFullName} onChange={e => setSignupFullName(e.target.value)} required />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={signupEmail}
-                      onChange={(e) => setSignupEmail(e.target.value)}
-                      required
-                    />
+                    <Input id="signup-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="signup-phone">Phone (Optional)</Label>
-                    <Input
-                      id="signup-phone"
-                      type="tel"
-                      placeholder="09171234567"
-                      value={signupPhone}
-                      onChange={(e) => setSignupPhone(e.target.value)}
-                    />
+                    <Input id="signup-phone" type="tel" placeholder="09171234567" value={signupPhone} onChange={e => setSignupPhone(e.target.value)} />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
                     <div className="relative">
-                      <Input
-                        id="signup-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        value={signupPassword}
-                        onChange={(e) => setSignupPassword(e.target.value)}
-                        required
-                        minLength={8}
-                        className={signupPassword && !isPasswordValid ? 'border-destructive' : ''}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
+                      <Input id="signup-password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} required minLength={8} className={signupPassword && !isPasswordValid ? 'border-destructive' : ''} />
+                      <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                     
                     {/* Password Strength Indicator */}
-                    {signupPassword && (
-                      <div className="space-y-2">
+                    {signupPassword && <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Progress value={passwordStrength.score} className="h-1.5 flex-1" />
                           <span className={`text-xs font-medium ${passwordStrength.score >= 100 ? 'text-success' : passwordStrength.score >= 50 ? 'text-warning' : 'text-destructive'}`}>
@@ -339,32 +294,19 @@ export default function Auth() {
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-1">
-                          {passwordStrength.requirements.map((req, idx) => (
-                            <div key={idx} className="flex items-center gap-1 text-xs">
-                              {req.met ? (
-                                <Check className="h-3 w-3 text-success" />
-                              ) : (
-                                <X className="h-3 w-3 text-muted-foreground" />
-                              )}
+                          {passwordStrength.requirements.map((req, idx) => <div key={idx} className="flex items-center gap-1 text-xs">
+                              {req.met ? <Check className="h-3 w-3 text-success" /> : <X className="h-3 w-3 text-muted-foreground" />}
                               <span className={req.met ? 'text-success' : 'text-muted-foreground'}>
                                 {req.label}
                               </span>
-                            </div>
-                          ))}
+                            </div>)}
                         </div>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="signup-referral">Referral Code (Optional)</Label>
-                    <Input
-                      id="signup-referral"
-                      type="text"
-                      placeholder="ABC12345"
-                      value={signupReferralCode}
-                      onChange={(e) => setSignupReferralCode(e.target.value.toUpperCase())}
-                    />
+                    <Input id="signup-referral" type="text" placeholder="ABC12345" value={signupReferralCode} onChange={e => setSignupReferralCode(e.target.value.toUpperCase())} />
                   </div>
                   
                   {/* Activation Notice */}
@@ -389,6 +331,5 @@ export default function Auth() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 }
