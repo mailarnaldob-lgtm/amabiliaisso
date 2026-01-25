@@ -83,10 +83,10 @@ export default function Landing() {
       <header className="enterprise-header border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg alpha-gradient flex items-center justify-center red-glow transition-all duration-300 group-hover:scale-110" style={{
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg alpha-gradient red-glow transition-all duration-300 group-hover:scale-110 items-center justify-center flex flex-row border-accent text-[#a49460]" style={{
             filter: 'drop-shadow(0 0 20px hsl(0 93% 53% / 0.5))'
           }}>
-              <Chrome className="h-5 w-5 sm:h-6 sm:w-6 bg-primary text-[#560b0b]" fill="currentColor" />
+              
             </div>
             <span className="text-xl sm:text-2xl font-black tracking-widest">
               
@@ -121,7 +121,7 @@ export default function Landing() {
         {/* Enhanced Background Effects */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(0,93%,53%,0.08),transparent_50%)] border-8 border-double" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-[100px] animate-float" />
+        <div className="absolute top-20 left-10 w-72 h-72 rounded-full blur-[100px] animate-float bg-primary-foreground" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-float-delayed" />
         
         <div className="container mx-auto max-w-7xl relative z-10">
