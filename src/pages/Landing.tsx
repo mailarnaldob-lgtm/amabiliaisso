@@ -564,14 +564,10 @@ export default function Landing() {
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div>
               <Link to="/" className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg alpha-gradient flex items-center justify-center red-glow-sm">
-                  <Chrome className="h-4 w-4 text-[#940a0a]" fill="currentColor" />
-                </div>
-                <span className="text-xl font-black alpha-text tracking-widest text-destructive bg-destructive">AMABILIA</span>
+                
+                
               </Link>
-              <p className="text-sm text-muted-foreground tracking-wide">
-                The financial layer for the next generation. Built for stability, transparency, and intelligent participation.
-              </p>
+              
             </div>
             
             <div>
@@ -613,7 +609,7 @@ export default function Landing() {
           </div>
           
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-            <p className="font-medium">© {new Date().getFullYear()} AMABILIA Network. All rights reserved.</p>
+            <p className="font-medium text-justify text-xl font-serif">© {new Date().getFullYear()} AMABILIA Network. All rights reserved.</p>
             <div className="flex items-center gap-4 text-xs">
               <a href="#" className="hover:text-primary transition-colors">Security</a>
               <a href="#" className="hover:text-primary transition-colors">Compliance</a>
