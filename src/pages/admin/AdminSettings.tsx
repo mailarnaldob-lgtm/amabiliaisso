@@ -186,147 +186,195 @@ export default function AdminSettings() {
           {/* Notification Center */}
           <AdminNotificationCenter />
 
-          {/* Payment Methods & QR Codes */}
-          <Card className="border-primary/20">
+          {/* Exchanger Payment & QR Codes Configuration */}
+          <Card className="border-primary/20 bg-gradient-to-br from-card to-primary/5">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <QrCode className="h-5 w-5 text-primary" />
-                Payment Methods & QR Codes
-              </CardTitle>
-              <CardDescription>
-                Configure payment receiver accounts and upload QR codes for easy payments
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <QrCode className="h-6 w-6 text-primary" />
+                    Exchanger Payment & QR Codes
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    Configure payment receiver accounts and upload QR codes for the PHP → Alpha exchanger system
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="border-primary text-primary">
+                  Exchanger Config
+                </Badge>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {isLoadingMethods ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center space-y-3">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                    <p className="text-sm text-muted-foreground">Loading payment methods...</p>
+                  </div>
                 </div>
               ) : (
                 <>
-                  {editedMethods.map((method, index) => (
-                    <div key={method.id} className="border border-border rounded-lg p-4 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="secondary" className="text-sm">
-                          {method.name}
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {/* Account Details */}
-                        <div className="space-y-3">
-                          <div className="space-y-2">
-                            <Label htmlFor={`name-${index}`}>Display Name</Label>
-                            <Input
-                              id={`name-${index}`}
-                              value={method.name}
-                              onChange={(e) => handleMethodChange(index, 'name', e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`number-${index}`}>Account Number</Label>
-                            <Input
-                              id={`number-${index}`}
-                              value={method.number}
-                              onChange={(e) => handleMethodChange(index, 'number', e.target.value)}
-                              placeholder="e.g., 09171234567"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`accountName-${index}`}>Account Name</Label>
-                            <Input
-                              id={`accountName-${index}`}
-                              value={method.accountName}
-                              onChange={(e) => handleMethodChange(index, 'accountName', e.target.value)}
-                              placeholder="e.g., Amabilia Network"
-                            />
-                          </div>
-                        </div>
+                  {/* Instructions */}
+                  <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-primary" />
+                      How to Configure Exchanger QR Codes
+                    </h4>
+                    <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                      <li>Enter your payment receiver account details (account number, name)</li>
+                      <li>Upload a clear QR code image for each payment method</li>
+                      <li>Users will see these QR codes when converting PHP to Alpha (₳)</li>
+                      <li>Click "Save Payment Methods" after making changes</li>
+                    </ol>
+                  </div>
 
-                        {/* QR Code */}
-                        <div className="space-y-3">
-                          <Label>QR Code</Label>
-                          <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-                            {method.qrCodeUrl ? (
-                              <div className="space-y-3">
-                                <img 
-                                  src={method.qrCodeUrl} 
-                                  alt={`${method.name} QR Code`}
-                                  className="w-32 h-32 mx-auto rounded-lg object-cover"
-                                />
-                                <div className="flex justify-center gap-2">
-                                  <label className="cursor-pointer">
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      className="hidden"
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) handleQRUpload(index, file);
-                                      }}
+                  {/* Payment Methods Grid */}
+                  <div className="grid gap-6">
+                    {editedMethods.map((method, index) => (
+                      <div key={method.id} className="border border-border rounded-xl p-6 bg-card hover:border-primary/30 transition-colors">
+                        <div className="flex items-center justify-between mb-4">
+                          <Badge className="bg-primary/10 text-primary border-primary/20 text-base px-3 py-1">
+                            {method.name}
+                          </Badge>
+                          {method.qrCodeUrl && (
+                            <Badge variant="outline" className="text-primary border-primary/30">
+                              QR Active
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {/* Account Details */}
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor={`name-${index}`} className="text-sm font-medium">Display Name</Label>
+                              <Input
+                                id={`name-${index}`}
+                                value={method.name}
+                                onChange={(e) => handleMethodChange(index, 'name', e.target.value)}
+                                className="bg-background"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`number-${index}`} className="text-sm font-medium">Account Number / Mobile</Label>
+                              <Input
+                                id={`number-${index}`}
+                                value={method.number}
+                                onChange={(e) => handleMethodChange(index, 'number', e.target.value)}
+                                placeholder="e.g., 09171234567"
+                                className="bg-background font-mono"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`accountName-${index}`} className="text-sm font-medium">Account Holder Name</Label>
+                              <Input
+                                id={`accountName-${index}`}
+                                value={method.accountName}
+                                onChange={(e) => handleMethodChange(index, 'accountName', e.target.value)}
+                                placeholder="e.g., Amabilia Network"
+                                className="bg-background"
+                              />
+                            </div>
+                          </div>
+
+                          {/* QR Code Upload */}
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium">QR Code Image</Label>
+                            <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors bg-muted/30">
+                              {method.qrCodeUrl ? (
+                                <div className="space-y-4">
+                                  <div className="relative inline-block">
+                                    <img 
+                                      src={method.qrCodeUrl} 
+                                      alt={`${method.name} QR Code`}
+                                      className="w-40 h-40 mx-auto rounded-xl object-cover border border-border shadow-lg"
                                     />
-                                    <Button variant="outline" size="sm" asChild>
-                                      <span>
-                                        <Upload className="h-4 w-4 mr-1" />
-                                        Replace
-                                      </span>
+                                    <div className="absolute -top-2 -right-2">
+                                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                        <span className="text-primary-foreground text-xs">✓</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-center gap-3">
+                                    <label className="cursor-pointer">
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) handleQRUpload(index, file);
+                                        }}
+                                      />
+                                      <Button variant="outline" size="sm" asChild>
+                                        <span>
+                                          <Upload className="h-4 w-4 mr-1" />
+                                          Replace
+                                        </span>
+                                      </Button>
+                                    </label>
+                                    <Button 
+                                      variant="destructive" 
+                                      size="sm"
+                                      onClick={() => handleRemoveQR(index)}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      Remove
                                     </Button>
-                                  </label>
-                                  <Button 
-                                    variant="destructive" 
-                                    size="sm"
-                                    onClick={() => handleRemoveQR(index)}
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-1" />
-                                    Remove
-                                  </Button>
+                                  </div>
                                 </div>
-                              </div>
-                            ) : (
-                              <label className="cursor-pointer block">
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) handleQRUpload(index, file);
-                                  }}
-                                />
-                                <div className="py-4">
-                                  {uploadingFor === method.id ? (
-                                    <Loader2 className="h-12 w-12 mx-auto text-muted-foreground animate-spin" />
-                                  ) : (
-                                    <>
-                                      <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                                      <p className="text-sm text-muted-foreground">
-                                        Click to upload QR code
-                                      </p>
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                        PNG, JPG up to 5MB
-                                      </p>
-                                    </>
-                                  )}
-                                </div>
-                              </label>
-                            )}
+                              ) : (
+                                <label className="cursor-pointer block">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) handleQRUpload(index, file);
+                                    }}
+                                  />
+                                  <div className="py-6">
+                                    {uploadingFor === method.id ? (
+                                      <div className="space-y-3">
+                                        <Loader2 className="h-14 w-14 mx-auto text-primary animate-spin" />
+                                        <p className="text-sm text-muted-foreground">Uploading...</p>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <div className="w-16 h-16 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                                          <ImageIcon className="h-8 w-8 text-primary" />
+                                        </div>
+                                        <p className="text-sm font-medium text-foreground">
+                                          Click to upload QR code
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                          PNG, JPG up to 5MB
+                                        </p>
+                                      </>
+                                    )}
+                                  </div>
+                                </label>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
 
+                  {/* Save Button */}
                   <Button 
                     onClick={handleSavePaymentMethods}
                     disabled={updatePaymentMethods.isPending}
-                    className="w-full"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg"
                   >
                     {updatePaymentMethods.isPending ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                     ) : (
-                      <Save className="h-4 w-4 mr-2" />
+                      <Save className="h-5 w-5 mr-2" />
                     )}
-                    Save Payment Methods
+                    Save Exchanger Payment Methods
                   </Button>
                 </>
               )}
