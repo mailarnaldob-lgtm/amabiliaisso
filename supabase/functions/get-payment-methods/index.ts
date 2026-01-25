@@ -24,19 +24,12 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
+        JSON.stringify({ error: "Unauthorized Sovereign Access" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Create admin client to bypass RLS
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
-
-    // Verify the user's JWT is valid
+    // Create client using user's JWT - RLS policies will apply
     const supabaseUser = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
@@ -46,26 +39,28 @@ Deno.serve(async (req) => {
       }
     );
 
+    // Verify the user's JWT is valid
     const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: "Invalid authentication" }),
+        JSON.stringify({ error: "Invalid Sovereign Credentials" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Fetch payment methods using admin client (bypasses RLS)
-    const { data, error } = await supabaseAdmin
+    // Fetch payment methods using user's JWT - RLS policy allows authenticated users
+    // Policy: "Authenticated users can view payment methods" (key = 'payment_methods')
+    const { data, error } = await supabaseUser
       .from("system_settings")
       .select("value")
       .eq("key", "payment_methods")
       .single();
 
     if (error) {
-      console.error("Error fetching payment methods:", error);
+      console.error("RLS access denied or data not found:", error);
       return new Response(
-        JSON.stringify({ error: "Failed to fetch payment methods" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Unauthorized Sovereign Access - Insufficient Clearance" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -79,7 +74,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("Unexpected error:", error);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: "Internal Sovereign System Error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
