@@ -137,7 +137,7 @@ export default function Landing() {
               {/* Main Headline with Red Gradient */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight tracking-tight">
                 <span className="text-foreground">Welcome to </span>
-                <span className="alpha-text bg-accent">AMABILIA</span>
+                <span className="alpha-text bg-accent text-[#bb3030]">AMABILIA</span>
               </h1>
               
               <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
@@ -327,7 +327,7 @@ export default function Landing() {
               FOUNDING INCENTIVES
             </Badge>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
-              Built for <span className="alpha-text">Leaders</span>
+              Built for <span className="alpha-text text-[#a21a1a]">Leaders</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto tracking-wide">
               Founding Alpha members receive lifetime on-chain royalties on all verified direct downline activity.
@@ -409,7 +409,7 @@ export default function Landing() {
               TRUST BY DESIGN
             </Badge>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
-              Security as a <span className="alpha-text">First-Class Feature</span>
+              Security as a <span className="alpha-text text-[#870d0d]">First-Class Feature</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto tracking-wide">
               AMABILIA's infrastructure is designed around asset protection, data integrity, and system resilience.
@@ -458,7 +458,7 @@ export default function Landing() {
               THE AMABILIA EXPERIENCE
             </Badge>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
-              Your Journey to <span className="alpha-text">ALPHA</span>
+              Your Journey to <span className="alpha-text text-[#f04242] bg-[#091224]">ALPHA</span>
             </h2>
           </div>
           
