@@ -96,14 +96,22 @@ export default {
 					transform: 'translateY(-20px)'
 				}
 			},
-			'pulse-glow': {
+		'pulse-glow': {
 				'0%, 100%': {
 					opacity: '1',
-					filter: 'drop-shadow(0 0 20px hsl(0 93% 53% / 0.5))'
+					filter: 'drop-shadow(0 0 20px hsl(135 100% 50% / 0.5))'
 				},
 				'50%': {
 					opacity: '0.8',
-					filter: 'drop-shadow(0 0 40px hsl(0 93% 53% / 0.8))'
+					filter: 'drop-shadow(0 0 40px hsl(135 100% 50% / 0.8))'
+				}
+			},
+			'neon-pulse': {
+				'0%, 100%': {
+					boxShadow: '0 0 10px hsl(135 100% 50% / 0.5), 0 4px 20px hsl(135 100% 50% / 0.3)'
+				},
+				'50%': {
+					boxShadow: '0 0 25px hsl(135 100% 50% / 0.8), 0 8px 40px hsl(135 100% 50% / 0.5)'
 				}
 			}
 		},
