@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
-import { Shield, ArrowRight, Lock, Eye, Fingerprint, Hexagon, Zap, Layers, TrendingUp, Users, ChevronRight, Star, Award, Clock, Globe, CheckCircle, Sparkles, Wallet, BarChart3 } from 'lucide-react';
+import { Shield, ArrowRight, Lock, Eye, Fingerprint, Hexagon, Zap, Layers, TrendingUp, Users, ChevronRight, Star, Award, Clock, Globe, CheckCircle, Sparkles, Wallet, BarChart3, Chrome } from 'lucide-react';
 
 // Countdown Timer Component with Enterprise Red Theme
 function CountdownTimer({
@@ -86,10 +86,10 @@ export default function Landing() {
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg alpha-gradient flex items-center justify-center red-glow transition-all duration-300 group-hover:scale-110" style={{
             filter: 'drop-shadow(0 0 20px hsl(0 93% 53% / 0.5))'
           }}>
-              <Hexagon className="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="currentColor" />
+              <Chrome className="h-5 w-5 sm:h-6 sm:w-6 bg-primary text-[#560b0b]" fill="currentColor" />
             </div>
             <span className="text-xl sm:text-2xl font-black tracking-widest">
-              <span className="alpha-text">AMABILIA</span>
+              <span className="alpha-text text-destructive">AMABILIA</span>
             </span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -120,7 +120,7 @@ export default function Landing() {
       <section className="relative py-16 sm:py-24 md:py-32 px-4 overflow-hidden">
         {/* Enhanced Background Effects */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(0,93%,53%,0.08),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(0,93%,53%,0.08),transparent_50%)] border-8 border-double" />
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-[100px] animate-float" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-float-delayed" />
         
