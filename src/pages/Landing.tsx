@@ -136,8 +136,8 @@ export default function Landing() {
               
               {/* Main Headline with Red Gradient */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight tracking-tight">
-                <span className="text-foreground">Welcome to </span>
-                <span className="alpha-text bg-accent text-[#bb3030]">AMABILIA</span>
+                <span className="text-foreground">Welcome to AMABILIA Network </span>
+                
               </h1>
               
               <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
