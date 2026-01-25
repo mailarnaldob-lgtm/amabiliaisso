@@ -330,64 +330,30 @@ export default function MemberDashboard() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Referral Section */}
-        <Card className="mb-8 border-border">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <Users className="h-5 w-5 text-primary" />
-              Your Referral Network
-            </CardTitle>
-            <CardDescription className="text-xs sm:text-sm">
-              Build your network by inviting new members
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-6">
-              <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
-                <p className="text-xl sm:text-3xl font-bold text-primary">{totalReferrals}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Members</p>
-              </div>
-              <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
-                <p className="text-xl sm:text-3xl font-bold text-primary">
-                  ₳{totalEarnings.toLocaleString('en-PH')}
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Received</p>
-              </div>
-              <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
-                <p className="text-xl sm:text-3xl font-bold text-primary">
-                  ₳{pendingEarnings.toLocaleString('en-PH')}
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Pending</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs sm:text-sm font-medium text-foreground">Your Referral Code</label>
-                <div className="flex gap-2 mt-1">
-                  <code className="flex-1 px-3 sm:px-4 py-2 bg-muted rounded-lg font-mono text-base sm:text-lg overflow-hidden">
-                    {profile?.referral_code || 'Loading...'}
-                  </code>
-                  <Button variant="outline" size="icon" onClick={copyReferralLink} className="flex-shrink-0">
-                    <Copy className="h-4 w-4" />
-                  </Button>
+        {/* Referral Quick Stats - Compact version, full details in My Network page */}
+        <Link to="/dashboard/referrals">
+          <Card className="mb-8 border-border hover:border-primary/50 transition-colors cursor-pointer group">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">My Network</p>
+                    <p className="text-xs text-muted-foreground">
+                      {totalReferrals} referrals • ₳{totalEarnings.toLocaleString('en-PH')} earned
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+                  <span className="text-xs hidden sm:inline">View Network</span>
+                  <TrendingUp className="h-4 w-4" />
                 </div>
               </div>
-              <div>
-                <label className="text-xs sm:text-sm font-medium text-foreground">Your Referral Link</label>
-                <div className="flex gap-2 mt-1">
-                  <code className="flex-1 px-3 sm:px-4 py-2 bg-muted rounded-lg text-xs sm:text-sm truncate overflow-hidden">
-                    {referralLink}
-                  </code>
-                  <Button variant="outline" size="icon" onClick={copyReferralLink} className="flex-shrink-0">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
 
         {/* Account Security & Notifications */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8" id="account-security">
