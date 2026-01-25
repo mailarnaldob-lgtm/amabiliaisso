@@ -21,21 +21,28 @@ export function usePaymentMethods() {
   return useQuery({
     queryKey: ['payment-methods'],
     queryFn: async (): Promise<PaymentMethod[]> => {
-      const { data, error } = await supabase
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'payment_methods')
-        .single();
+      // Use edge function to fetch payment methods securely
+      // This allows authenticated users to get payment details without direct table access
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.error('No active session for fetching payment methods');
+        return DEFAULT_PAYMENT_METHODS;
+      }
+
+      const { data, error } = await supabase.functions.invoke('get-payment-methods', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
       if (error) {
         console.error('Error fetching payment methods:', error);
         return DEFAULT_PAYMENT_METHODS;
       }
 
-      // Parse the JSON value
-      const value = data?.value;
-      if (Array.isArray(value)) {
-        return value as unknown as PaymentMethod[];
+      if (data?.success && Array.isArray(data.data)) {
+        return data.data as PaymentMethod[];
       }
       
       return DEFAULT_PAYMENT_METHODS;
@@ -44,6 +51,8 @@ export function usePaymentMethods() {
   });
 }
 
+// Admin-only: Direct table access for updating payment methods
+// Only admins have RLS access to modify system_settings
 export function useUpdatePaymentMethods() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
