@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AlphaLayout } from '@/components/layouts/AlphaLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EliteButton } from '@/components/ui/elite-button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -49,41 +49,43 @@ export default function BankApp() {
   return (
     <AlphaLayout 
       title="₳LPHA BANK" 
-      subtitle="Wallet & Exchanger"
+      subtitle="Sovereign Vault & Exchanger"
       appColor="from-amber-500 to-orange-600"
     >
 
       {/* User State Indicator */}
       <UserStateIndicator state="ACTIVE" fraudScore={15} />
 
-      {/* Total Balance Card */}
-      <Card className="my-6 overflow-hidden">
-        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 text-white">
-          <p className="text-sm opacity-80 mb-1">Total ₳ Credits</p>
+      {/* ═══════════════════════════════════════════════════════════════
+          SOVEREIGN VAULT - Total Balance Card with Obsidian Standard
+      ═══════════════════════════════════════════════════════════════ */}
+      <div className="titanium-card gold-corners my-6 overflow-hidden relative obsidian-grain">
+        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 text-white relative z-10">
+          <p className="text-sm opacity-80 mb-1 font-serif">Total ₳ Credits</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-bold">₳{formatAlpha(totalBalance)}</span>
+            <span className="text-4xl font-bold font-mono tabular-nums">₳{formatAlpha(totalBalance)}</span>
           </div>
           <p className="text-xs opacity-60 mt-2">
-            Internal system credits • Non-monetary • Admin-controlled
+            Sovereign Ledger Balance • Non-monetary • Admin-controlled
           </p>
         </div>
-        <CardContent className="p-4">
+        <CardContent className="p-4 bg-card relative z-10">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-xs text-muted-foreground">Main</p>
-              <p className="font-bold text-foreground">₳{formatAlpha(mainWallet?.balance || 0)}</p>
+              <p className="font-bold text-foreground font-mono tabular-nums">₳{formatAlpha(mainWallet?.balance || 0)}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Activity</p>
-              <p className="font-bold text-foreground">₳{formatAlpha(taskWallet?.balance || 0)}</p>
+              <p className="font-bold text-foreground font-mono tabular-nums">₳{formatAlpha(taskWallet?.balance || 0)}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Royalty</p>
-              <p className="font-bold text-foreground">₳{formatAlpha(royaltyWallet?.balance || 0)}</p>
+              <p className="font-bold text-foreground font-mono tabular-nums">₳{formatAlpha(royaltyWallet?.balance || 0)}</p>
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Quick Actions - Elite Buttons */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -138,9 +140,11 @@ export default function BankApp() {
         </EliteButton>
       </div>
 
-      {/* Wallet Cards */}
+      {/* ═══════════════════════════════════════════════════════════════
+          CREDIT ACCOUNTS - Wallet Cards with Titanium Standard
+      ═══════════════════════════════════════════════════════════════ */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-gold uppercase tracking-wide font-serif">
           Credit Accounts
         </h3>
         
@@ -166,14 +170,16 @@ export default function BankApp() {
         />
       </div>
 
-      {/* Recent Transactions */}
+      {/* ═══════════════════════════════════════════════════════════════
+          RECENT ACTIVITY - Transaction Ledger with Obsidian Table Style
+      ═══════════════════════════════════════════════════════════════ */}
       <div className="mt-6 space-y-3">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-gold uppercase tracking-wide font-serif">
           Recent Activity
         </h3>
         
         {recentTransactions.map((tx) => (
-          <Card key={tx.id}>
+          <div key={tx.id} className="titanium-card">
             <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -189,28 +195,28 @@ export default function BankApp() {
                     {tx.type === 'mission' && <CheckCircle2 className="h-4 w-4 text-blue-500" />}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{tx.description}</p>
+                    <p className="text-sm font-medium text-foreground">{tx.description}</p>
                     <p className="text-xs text-muted-foreground">{tx.date}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`font-bold ${tx.amount > 0 ? 'text-emerald-500' : 'text-foreground'}`}>
+                  <p className={`font-bold font-mono tabular-nums ${tx.amount > 0 ? 'text-success neon-glow' : 'text-foreground'}`}>
                     {tx.amount > 0 ? '+' : ''}₳{formatAlpha(Math.abs(tx.amount))}
                   </p>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-[10px] border-gold/30 text-gold">
                     {tx.status}
                   </Badge>
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </div>
         ))}
       </div>
 
       {/* User Lifecycle (Collapsible Info) */}
-      <Card className="mt-6">
+      <div className="titanium-card gold-corners mt-6 relative">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
+          <CardTitle className="text-sm flex items-center gap-2 font-serif text-gold">
             <Clock className="h-4 w-4" />
             Account Lifecycle
           </CardTitle>
@@ -218,10 +224,10 @@ export default function BankApp() {
         <CardContent>
           <UserLifecycleFlow />
         </CardContent>
-      </Card>
+      </div>
 
-      {/* Disclaimer */}
-      <div className="mt-8 p-4 rounded-xl bg-muted/30 border border-border">
+      {/* Disclaimer with Obsidian styling */}
+      <div className="mt-8 p-4 rounded-xl bg-muted/30 border border-border gold-corners relative">
         <p className="text-xs text-muted-foreground text-center">
           ₳ Credits are internal system units for platform participation only. 
           They do not represent money, stored value, or investment. 
@@ -249,7 +255,7 @@ function WalletCard({
   color: string;
 }) {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+    <div className="titanium-card overflow-hidden hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -262,11 +268,11 @@ function WalletCard({
             </div>
           </div>
           <div className="text-right">
-            <p className="font-bold text-foreground">₳{formatAlpha(balance)}</p>
-            <Badge variant="outline" className="text-[10px]">Active</Badge>
+            <p className="font-bold text-foreground font-mono tabular-nums">₳{formatAlpha(balance)}</p>
+            <Badge variant="outline" className="text-[10px] border-gold/30 text-gold">Active</Badge>
           </div>
         </div>
       </CardContent>
-    </Card>
+    </div>
   );
 }
