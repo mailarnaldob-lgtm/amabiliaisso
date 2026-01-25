@@ -166,9 +166,9 @@ export default function Auth() {
   return <div className="min-h-screen bg-background flex">
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        <div className="relative z-10 flex-col border-primary-foreground border-8 border-solid flex items-center justify-center text-[#6d0d0d] px-[4px] rounded-xl bg-[#030d20]">
-          <h1 className="text-5xl font-bold mb-6 text-destructive">Amabilia Network</h1>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80 opacity-100" />
+        <div className="relative z-10 flex-col border-primary-foreground flex items-center justify-center text-[#6d0d0d] border-none bg-primary-foreground px-[48px] border-0 rounded-none">
+          <h1 className="font-bold mb-6 text-destructive text-7xl">Amabilia Network</h1>
           <p className="text-xl mb-12 opacity-90 text-center text-secondary-foreground">
             Empowering Filipinos to earn daily through an ethical, sustainable, community-powered ecosystem.
           </p>
