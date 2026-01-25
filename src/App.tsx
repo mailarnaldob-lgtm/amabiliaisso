@@ -16,19 +16,14 @@ const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Alpha App Pages (New 4-App Architecture) - Lazy loaded
+// ₳LPHA SMART FINANCE - 4 App Architecture (now under /dashboard)
 const BankApp = lazy(() => import("./pages/alpha/BankApp"));
 const MarketApp = lazy(() => import("./pages/alpha/MarketApp"));
 const FinanceApp = lazy(() => import("./pages/alpha/FinanceApp"));
 const GrowthApp = lazy(() => import("./pages/alpha/GrowthApp"));
 const SettingsApp = lazy(() => import("./pages/alpha/SettingsApp"));
 
-// Legacy Member dashboard pages - Lazy loaded
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Tasks = lazy(() => import("./pages/Tasks"));
-const Marketplace = lazy(() => import("./pages/Marketplace"));
-const Swap = lazy(() => import("./pages/Swap"));
-const Profile = lazy(() => import("./pages/Profile"));
+// Member dashboard pages - Lazy loaded
 const MemberDashboard = lazy(() => import("./pages/dashboard/MemberDashboard"));
 const UpgradeMembership = lazy(() => import("./pages/dashboard/UpgradeMembership"));
 const MyReferrals = lazy(() => import("./pages/dashboard/MyReferrals"));
@@ -77,46 +72,53 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
                 
                 {/* ═══════════════════════════════════════════════════════════════
-                    ₳LPHA SMART FINANCE - 4 APP ARCHITECTURE
+                    ₳LPHA SMART FINANCE - UNIFIED DASHBOARD
+                    All apps now live under /dashboard/*
                     ═══════════════════════════════════════════════════════════════ */}
+                
+                {/* Dashboard Home - Member Overview */}
+                <Route path="/dashboard" element={<ProtectedRoute><MemberDashboard /></ProtectedRoute>} />
                 
                 {/* App #1: BANK - Wallet & Credits */}
-                <Route path="/alpha/bank" element={<ProtectedRoute><BankApp /></ProtectedRoute>} />
+                <Route path="/dashboard/bank" element={<ProtectedRoute><BankApp /></ProtectedRoute>} />
                 
                 {/* App #2: MARKET - VPA Missions */}
-                <Route path="/alpha/market" element={<ProtectedRoute><MarketApp /></ProtectedRoute>} />
+                <Route path="/dashboard/market" element={<ProtectedRoute><MarketApp /></ProtectedRoute>} />
                 
                 {/* App #3: FINANCE - P2P Lending */}
-                <Route path="/alpha/finance" element={<ProtectedRoute><FinanceApp /></ProtectedRoute>} />
+                <Route path="/dashboard/finance" element={<ProtectedRoute><FinanceApp /></ProtectedRoute>} />
                 
                 {/* App #4: GROWTH - Royalties & Network */}
-                <Route path="/alpha/growth" element={<ProtectedRoute><GrowthApp /></ProtectedRoute>} />
+                <Route path="/dashboard/growth" element={<ProtectedRoute><GrowthApp /></ProtectedRoute>} />
                 
                 {/* Settings */}
-                <Route path="/alpha/settings" element={<ProtectedRoute><SettingsApp /></ProtectedRoute>} />
+                <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsApp /></ProtectedRoute>} />
                 
-                {/* Alpha redirect - Default to Bank */}
-                <Route path="/alpha" element={<Navigate to="/alpha/bank" replace />} />
-                
-                {/* ═══════════════════════════════════════════════════════════════
-                    LEGACY ROUTES (Backwards Compatibility)
-                    ═══════════════════════════════════════════════════════════════ */}
-                
-                {/* Main App Routes (Legacy Member) */}
-                <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/app/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-                <Route path="/app/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-                <Route path="/app/swap" element={<ProtectedRoute><Swap /></ProtectedRoute>} />
-                <Route path="/app/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/app/settings" element={<ProtectedRoute><MemberSettings /></ProtectedRoute>} />
-                
-                {/* Legacy Member Dashboard Routes */}
-                <Route path="/dashboard" element={<ProtectedRoute><MemberDashboard /></ProtectedRoute>} />
+                {/* Member Dashboard Sub-Pages */}
                 <Route path="/dashboard/upgrade" element={<ProtectedRoute><UpgradeMembership /></ProtectedRoute>} />
                 <Route path="/dashboard/referrals" element={<ProtectedRoute><MyReferrals /></ProtectedRoute>} />
                 <Route path="/dashboard/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
                 <Route path="/dashboard/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
-                <Route path="/dashboard/settings" element={<ProtectedRoute><MemberSettings /></ProtectedRoute>} />
+                
+                {/* ═══════════════════════════════════════════════════════════════
+                    LEGACY REDIRECTS (Backwards Compatibility)
+                    ═══════════════════════════════════════════════════════════════ */}
+                
+                {/* Redirect old /alpha/* routes to /dashboard/* */}
+                <Route path="/alpha" element={<Navigate to="/dashboard/bank" replace />} />
+                <Route path="/alpha/bank" element={<Navigate to="/dashboard/bank" replace />} />
+                <Route path="/alpha/market" element={<Navigate to="/dashboard/market" replace />} />
+                <Route path="/alpha/finance" element={<Navigate to="/dashboard/finance" replace />} />
+                <Route path="/alpha/growth" element={<Navigate to="/dashboard/growth" replace />} />
+                <Route path="/alpha/settings" element={<Navigate to="/dashboard/settings" replace />} />
+                
+                {/* Redirect old /app/* routes to /dashboard/* */}
+                <Route path="/app" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/app/tasks" element={<Navigate to="/dashboard/market" replace />} />
+                <Route path="/app/marketplace" element={<Navigate to="/dashboard/bank" replace />} />
+                <Route path="/app/swap" element={<Navigate to="/dashboard/bank" replace />} />
+                <Route path="/app/profile" element={<Navigate to="/dashboard/profile" replace />} />
+                <Route path="/app/settings" element={<Navigate to="/dashboard/settings" replace />} />
                 
                 {/* ═══════════════════════════════════════════════════════════════
                     ADMIN ROUTES
