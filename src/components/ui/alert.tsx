@@ -16,9 +16,7 @@ const Alert = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEleme
   className,
   variant,
   ...props
-}, ref) => <div ref={ref} role="alert" className={cn(alertVariants({
-  variant
-}), className)} {...props} />);
+}, ref) => {});
 Alert.displayName = "Alert";
 const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(({
   className,

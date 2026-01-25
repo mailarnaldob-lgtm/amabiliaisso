@@ -10,93 +10,94 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AccountSecurityCard } from '@/components/dashboard/AccountSecurityCard';
 import { NotificationsCard } from '@/components/dashboard/NotificationsCard';
-import { 
-  Wallet, 
-  Users, 
-  TrendingUp, 
-  Copy, 
-  LogOut,
-  User,
-  CreditCard,
-  Crown,
-  Zap,
-  Star,
-  Info,
-  AlertTriangle,
-  RefreshCw,
-  Menu,
-  X
-} from 'lucide-react';
+import { Wallet, Users, TrendingUp, Copy, LogOut, User, CreditCard, Crown, Zap, Star, AlertTriangle, RefreshCw, Menu, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
 export default function MemberDashboard() {
-  const { user, signOut } = useAuth();
-  const { data: profile, isLoading: profileLoading, error: profileError, refetch: refetchProfile, isFetching: profileFetching } = useProfile();
-  const { wallets, isFallback, isLoading: walletsLoading, error: walletsError, refetch: refetchWallets, isFetching: walletsFetching, totalBalance, getBalance } = useWallets();
-  const { totalReferrals, totalEarnings, pendingEarnings } = useReferralStats();
-  const { toast } = useToast();
+  const {
+    user,
+    signOut
+  } = useAuth();
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    error: profileError,
+    refetch: refetchProfile,
+    isFetching: profileFetching
+  } = useProfile();
+  const {
+    wallets,
+    isFallback,
+    isLoading: walletsLoading,
+    error: walletsError,
+    refetch: refetchWallets,
+    isFetching: walletsFetching,
+    totalBalance,
+    getBalance
+  } = useWallets();
+  const {
+    totalReferrals,
+    totalEarnings,
+    pendingEarnings
+  } = useReferralStats();
+  const {
+    toast
+  } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
   const taskWallet = wallets.find(w => w.wallet_type === 'task');
   const royaltyWallet = wallets.find(w => w.wallet_type === 'royalty');
   const mainWallet = wallets.find(w => w.wallet_type === 'main');
-
   const totalCredits = totalBalance;
 
   // Check if we're using fallback data
   const isUsingFallback = isFallback;
-
   const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code || ''}`;
-
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([refetchProfile(), refetchWallets()]);
     setIsRefreshing(false);
     toast({
       title: 'Refreshed',
-      description: 'Dashboard data has been refreshed',
+      description: 'Dashboard data has been refreshed'
     });
   };
-
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralLink);
     toast({
       title: 'Copied!',
-      description: 'Referral link copied to clipboard',
+      description: 'Referral link copied to clipboard'
     });
   };
-
   const getTierIcon = (tier: string | null) => {
     switch (tier) {
-      case 'elite': return Crown;
-      case 'pro': return Zap;
-      default: return Star;
+      case 'elite':
+        return Crown;
+      case 'pro':
+        return Zap;
+      default:
+        return Star;
     }
   };
-
   const getTierColor = (tier: string | null) => {
     switch (tier) {
-      case 'elite': return 'bg-accent-foreground';
-      case 'pro': return 'bg-primary';
-      default: return 'bg-secondary';
+      case 'elite':
+        return 'bg-accent-foreground';
+      case 'pro':
+        return 'bg-primary';
+      default:
+        return 'bg-secondary';
     }
   };
-
   const TierIcon = getTierIcon(profile?.membership_tier || null);
 
   // Loading state
   if (profileLoading || walletsLoading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-4">
+    return <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
         <p className="text-muted-foreground text-center">Loading your dashboard...</p>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
@@ -106,26 +107,17 @@ export default function MemberDashboard() {
           
           {/* Desktop Navigation */}
           <div className="hidden sm:flex items-center gap-2 sm:gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              title="Refresh Data"
-            >
+            <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isRefreshing} title="Refresh Data">
               <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => {
-                const securitySection = document.getElementById('account-security');
-                if (securitySection) {
-                  securitySection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              title="Account Security"
-            >
+            <Button variant="ghost" size="icon" onClick={() => {
+            const securitySection = document.getElementById('account-security');
+            if (securitySection) {
+              securitySection.scrollIntoView({
+                behavior: 'smooth'
+              });
+            }
+          }} title="Account Security">
               <User className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => signOut()}>
@@ -135,38 +127,26 @@ export default function MemberDashboard() {
 
           {/* Mobile Menu Button */}
           <div className="flex sm:hidden items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-            >
+            <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
               <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
+            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
         
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-border bg-card px-4 py-3 space-y-2">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start gap-2"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                const securitySection = document.getElementById('account-security');
-                if (securitySection) {
-                  securitySection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-            >
+        {mobileMenuOpen && <div className="sm:hidden border-t border-border bg-card px-4 py-3 space-y-2">
+            <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => {
+          setMobileMenuOpen(false);
+          const securitySection = document.getElementById('account-security');
+          if (securitySection) {
+            securitySection.scrollIntoView({
+              behavior: 'smooth'
+            });
+          }
+        }}>
               <User className="h-4 w-4" />
               Account Security
             </Button>
@@ -174,25 +154,21 @@ export default function MemberDashboard() {
               <LogOut className="h-4 w-4" />
               Sign Out
             </Button>
-          </div>
-        )}
+          </div>}
       </header>
 
       <main className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl">
         {/* Backend Notice (when using fallback) */}
-        {isUsingFallback && (
-          <Alert className="mb-6 border-amber-500/50 bg-amber-500/10">
+        {isUsingFallback && <Alert className="mb-6 border-amber-500/50 bg-amber-500/10">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <AlertTitle className="text-amber-600 dark:text-amber-400 text-sm">Limited Mode</AlertTitle>
             <AlertDescription className="text-xs text-muted-foreground">
               Some backend services are temporarily unavailable. Your data will sync when the connection is restored.
             </AlertDescription>
-          </Alert>
-        )}
+          </Alert>}
 
         {/* Activation Prompt for Inactive Accounts */}
-        {!profile?.membership_tier && (
-          <Card className="mb-6 border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/10 to-orange-500/10">
+        {!profile?.membership_tier && <Card className="mb-6 border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/10 to-orange-500/10">
             <CardContent className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
@@ -225,8 +201,7 @@ export default function MemberDashboard() {
                 </Link>
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8">
@@ -242,21 +217,15 @@ export default function MemberDashboard() {
                 <Badge variant="outline" className={`capitalize ${!profile?.membership_tier ? 'border-amber-500 text-amber-600' : ''}`}>
                   {profile?.membership_tier ? `${profile.membership_tier} Member` : 'Inactive Account'}
                 </Badge>
-                {!profile?.membership_tier && (
-                  <Badge variant="secondary" className="text-xs hidden sm:inline-flex bg-amber-500/10 text-amber-600">
+                {!profile?.membership_tier && <Badge variant="secondary" className="text-xs hidden sm:inline-flex bg-amber-500/10 text-amber-600">
                     Pay ₱300 to activate
-                  </Badge>
-                )}
-                {profile?.membership_tier === 'basic' && (
-                  <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
+                  </Badge>}
+                {profile?.membership_tier === 'basic' && <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
                     Upgrade to unlock more features
-                  </Badge>
-                )}
-                {profile?.membership_tier && profile?.membership_tier !== 'elite' && profile?.membership_tier !== 'basic' && (
-                  <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
+                  </Badge>}
+                {profile?.membership_tier && profile?.membership_tier !== 'elite' && profile?.membership_tier !== 'basic' && <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
                     Upgrade to unlock more features
-                  </Badge>
-                )}
+                  </Badge>}
               </div>
             </div>
           </div>
@@ -268,7 +237,9 @@ export default function MemberDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <p className="text-primary-foreground/80 text-sm mb-1">Total System Credits</p>
-                <p className="text-3xl sm:text-4xl font-bold">₳{totalCredits.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                <p className="text-3xl sm:text-4xl font-bold">₳{totalCredits.toLocaleString('en-PH', {
+                  minimumFractionDigits: 2
+                })}</p>
               </div>
               <div className="text-left sm:text-right">
                 <p className="text-primary-foreground/60 text-xs">Internal Credits</p>
@@ -280,7 +251,7 @@ export default function MemberDashboard() {
 
         {/* Credit Notice */}
         <Alert className="mb-6 border-muted bg-muted/30">
-          <Info className="h-4 w-4" />
+          
           <AlertDescription className="text-xs">
             ₳ Credits are internal system units for tracking participation. They are not redeemable for cash or monetary value.
           </AlertDescription>
@@ -296,7 +267,9 @@ export default function MemberDashboard() {
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <p className="text-xl sm:text-2xl font-bold">
-                ₳{(taskWallet?.balance || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                ₳{(taskWallet?.balance || 0).toLocaleString('en-PH', {
+                minimumFractionDigits: 2
+              })}
               </p>
               <p className="text-xs text-muted-foreground mt-1">From approved activities</p>
             </CardContent>
@@ -310,7 +283,9 @@ export default function MemberDashboard() {
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <p className="text-xl sm:text-2xl font-bold">
-                ₳{(royaltyWallet?.balance || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                ₳{(royaltyWallet?.balance || 0).toLocaleString('en-PH', {
+                minimumFractionDigits: 2
+              })}
               </p>
               <p className="text-xs text-muted-foreground mt-1">Network participation credits</p>
             </CardContent>
@@ -324,7 +299,9 @@ export default function MemberDashboard() {
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <p className="text-xl sm:text-2xl font-bold">
-                ₳{(mainWallet?.balance || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                ₳{(mainWallet?.balance || 0).toLocaleString('en-PH', {
+                minimumFractionDigits: 2
+              })}
               </p>
               <p className="text-xs text-muted-foreground mt-1">Primary allocation</p>
             </CardContent>
@@ -362,8 +339,7 @@ export default function MemberDashboard() {
         </div>
 
         {/* Upgrade CTA (if not Elite) */}
-        {profile?.membership_tier !== 'elite' && (
-          <Card className="mb-6 sm:mb-8 border-primary border-2 bg-primary/5">
+        {profile?.membership_tier !== 'elite' && <Card className="mb-6 sm:mb-8 border-primary border-2 bg-primary/5">
             <CardContent className="p-4 sm:pt-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
                 <div>
@@ -382,8 +358,7 @@ export default function MemberDashboard() {
                 </Link>
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
@@ -421,6 +396,5 @@ export default function MemberDashboard() {
           </Link>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 }
