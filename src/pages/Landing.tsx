@@ -56,15 +56,21 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
   }, [targetDate]);
 
   return (
-    <div className="flex items-center justify-center gap-2 sm:gap-4">
-      {Object.entries(timeLeft).map(([unit, value]) => (
-        <div key={unit} className="text-center">
-          <div className="bg-card/80 backdrop-blur-sm border border-primary/30 rounded-lg px-3 sm:px-4 py-2 sm:py-3 min-w-[60px] sm:min-w-[80px] red-glow-sm">
-            <span className="text-2xl sm:text-3xl md:text-4xl font-black text-primary font-mono tracking-widest">
+    <div className="flex items-center justify-center gap-3 sm:gap-5">
+      {Object.entries(timeLeft).map(([unit, value], index) => (
+        <div key={unit} className="text-center group">
+          <div className="relative bg-card/90 backdrop-blur-md border border-primary/40 rounded-xl px-4 sm:px-5 py-3 sm:py-4 min-w-[65px] sm:min-w-[85px] transition-all duration-300 group-hover:scale-105 group-hover:border-primary/60"
+            style={{ 
+              boxShadow: '0 0 20px hsl(var(--primary) / 0.2), inset 0 1px 0 hsl(var(--primary) / 0.1)',
+              animationDelay: `${index * 0.1}s`
+            }}
+          >
+            <span className="text-2xl sm:text-3xl md:text-4xl font-black text-primary font-mono tracking-widest drop-shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
               {String(value).padStart(2, '0')}
             </span>
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
           </div>
-          <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 block uppercase tracking-[0.15em] font-bold">
+          <span className="text-[10px] sm:text-xs text-muted-foreground mt-2 block uppercase tracking-[0.2em] font-bold">
             {unit}
           </span>
         </div>
@@ -165,44 +171,46 @@ export default function Landing() {
             <div className="text-center lg:text-left">
               {/* Premium Feature Badge */}
               <Badge 
-                className="badge-premium mb-6 sm:mb-8 px-4 py-2 text-xs sm:text-sm backdrop-blur-sm inline-flex items-center gap-2"
+                className="badge-premium mb-6 sm:mb-8 px-5 py-2.5 text-xs sm:text-sm backdrop-blur-md inline-flex items-center gap-2 animate-fade-in"
                 variant="outline"
+                style={{ animationDelay: '0.1s' }}
               >
-                <Sparkles className="h-3 w-3" />
-                Enterprise Financial Platform • Next Generation
+                <Sparkles className="h-3 w-3 animate-pulse" />
+                <span className="tracking-wider">Enterprise Financial Platform</span>
+                <span className="text-primary">•</span>
+                <span className="text-primary font-bold">Next Generation</span>
               </Badge>
               
               {/* Main Headline with Red Gradient */}
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight tracking-tight">
-                <span className="text-foreground">Welcome to </span>
-                <span className="alpha-text">AMABILIA</span>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-[1.1] tracking-tight animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <span className="text-foreground">Welcome to</span>
+                <br className="hidden sm:block" />
+                <span className="alpha-text drop-shadow-[0_0_30px_hsl(var(--primary)/0.4)]">AMABILIA</span>
               </h1>
               
-              <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-6 max-w-2xl mx-auto lg:mx-0 leading-relaxed animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 A next-generation financial ecosystem engineered for 
-                <span className="text-primary font-bold"> stability</span>,
-                <span className="text-primary font-bold"> transparency</span>, and
-                <span className="text-primary font-bold"> intelligent participation</span>.
+                <span className="text-primary font-semibold"> stability</span>,
+                <span className="text-primary font-semibold"> transparency</span>, and
+                <span className="text-primary font-semibold"> intelligent participation</span>.
               </p>
 
-              <p className="text-base sm:text-lg text-muted-foreground/80 mb-10 max-w-xl mx-auto lg:mx-0 tracking-wide">
+              <p className="text-base sm:text-lg text-muted-foreground/70 mb-10 max-w-xl mx-auto lg:mx-0 tracking-wide animate-fade-in" style={{ animationDelay: '0.4s' }}>
                 Designed for those who move early, think long-term, and build systems—not hype.
               </p>
 
               {/* Trust Badges Grid */}
-              <div className="grid grid-cols-3 gap-4 mb-10 max-w-md mx-auto lg:mx-0">
-                <div className="text-center">
-                  <p className="text-2xl sm:text-3xl font-black text-primary">50%</p>
-                  <p className="text-xs text-muted-foreground font-medium tracking-wide">Commission</p>
-                </div>
-                <div className="text-center border-x border-border">
-                  <p className="text-2xl sm:text-3xl font-black text-primary">90/10</p>
-                  <p className="text-xs text-muted-foreground font-medium tracking-wide">Task Split</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl sm:text-3xl font-black text-primary">24/7</p>
-                  <p className="text-xs text-muted-foreground font-medium tracking-wide">Support</p>
-                </div>
+              <div className="grid grid-cols-3 gap-4 mb-10 max-w-md mx-auto lg:mx-0 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                {[
+                  { value: '50%', label: 'Commission' },
+                  { value: '90/10', label: 'Task Split' },
+                  { value: '24/7', label: 'Support' }
+                ].map((item, index) => (
+                  <div key={index} className={`text-center py-3 rounded-lg transition-all duration-300 hover:bg-primary/5 ${index === 1 ? 'border-x border-border' : ''}`}>
+                    <p className="text-2xl sm:text-3xl font-black text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.3)]">{item.value}</p>
+                    <p className="text-xs text-muted-foreground font-medium tracking-wide">{item.label}</p>
+                  </div>
+                ))}
               </div>
 
               {/* Primary CTA */}
@@ -390,7 +398,7 @@ export default function Landing() {
             {[
               { icon: Layers, title: 'Protocol-Aligned', desc: 'Incentives that grow with the ecosystem, not against it. Your success is the protocol\'s success.', premium: true },
               { icon: Award, title: 'Early Recognition', desc: 'Recognition for early belief and network leadership. Founding members carry permanent status.', premium: true },
-              { icon: Eye, title: 'Transparent Rewards', desc: 'A transparent reward system enforced by smart-logic, not promises. See everything on-chain.', premium: true },
+              { icon: TrendingUp, title: 'Royalty Engine', desc: 'Lifetime on-chain royalties on all verified direct downline activity. Passive income by design.', premium: true },
             ].map((item, index) => (
               <Card 
                 key={index}
@@ -424,29 +432,31 @@ export default function Landing() {
             ))}
           </div>
 
-          {/* Stats Dashboard - 4 columns with conditional styling */}
+          {/* Stats Dashboard - 4 columns with enhanced hover effects */}
           <div className="mt-12 cta-container rounded-2xl p-6 sm:p-8">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {[
-                { value: '50%', label: 'Referral Commission', sublabel: 'On all membership activations' },
-                { value: '90/10', label: 'Task Reward Split', sublabel: 'Workers keep 90% of all rewards' },
-                { value: '₳ 1M+', label: 'Total Volume', sublabel: 'Processed through protocol' },
-                { value: '24/7', label: 'Global Access', sublabel: 'Always-on infrastructure' }
+                { value: '50%', label: 'Referral Commission', sublabel: 'On all membership activations', highlight: true },
+                { value: '90/10', label: 'Task Reward Split', sublabel: 'Workers keep 90% of all rewards', highlight: false },
+                { value: '₳ 1M+', label: 'Total Volume', sublabel: 'Processed through protocol', highlight: true },
+                { value: '24/7', label: 'Global Access', sublabel: 'Always-on infrastructure', highlight: false }
               ].map((stat, index) => (
                 <div 
                   key={index} 
-                  className={`text-center p-6 rounded-xl transition-all ${
-                    index % 2 === 0 
-                      ? 'stats-card-highlighted' 
-                      : 'bg-background/50 border border-border'
+                  className={`text-center p-5 sm:p-6 rounded-xl transition-all duration-300 cursor-default group hover:scale-[1.02] ${
+                    stat.highlight 
+                      ? 'stats-card-highlighted hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)]' 
+                      : 'bg-background/50 border border-border hover:border-primary/30'
                   }`}
                 >
-                  <p className={`text-3xl sm:text-4xl font-black mb-2 tracking-tight ${
-                    index % 2 === 0 ? 'text-primary' : 'text-foreground'
+                  <p className={`text-3xl sm:text-4xl font-black mb-2 tracking-tight transition-all duration-300 ${
+                    stat.highlight 
+                      ? 'text-primary group-hover:drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]' 
+                      : 'text-foreground group-hover:text-primary'
                   }`}>
                     {stat.value}
                   </p>
-                  <p className="text-foreground font-bold tracking-wide">{stat.label}</p>
+                  <p className="text-foreground font-bold tracking-wide text-sm sm:text-base">{stat.label}</p>
                   <p className="text-xs text-muted-foreground mt-1">{stat.sublabel}</p>
                 </div>
               ))}
@@ -480,13 +490,14 @@ export default function Landing() {
             ].map((item, index) => (
               <div 
                 key={index} 
-                className="card-hover bg-card/30 backdrop-blur-sm border border-border rounded-xl p-6 text-center hover:border-primary/30 transition-all group"
+                className="card-hover bg-card/40 backdrop-blur-md border border-border rounded-xl p-6 text-center hover:border-primary/40 transition-all duration-300 group hover:scale-[1.02]"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary group-hover:red-glow-sm transition-all">
-                  <item.icon className="h-6 w-6 text-primary group-hover:text-white transition-colors" />
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary transition-all duration-300 group-hover:shadow-[0_0_25px_hsl(var(--primary)/0.4)]">
+                  <item.icon className="h-6 w-6 text-primary group-hover:text-white transition-colors duration-300" />
                 </div>
-                <h3 className="font-bold text-foreground mb-1 tracking-wide">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
+                <h3 className="font-bold text-foreground mb-2 tracking-wide">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -583,31 +594,36 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Section Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+
       {/* Final CTA */}
       <section className="py-24 sm:py-32 px-4 relative overflow-hidden">
         {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/15 via-primary/5 to-transparent" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-primary/15 rounded-full blur-[180px] animate-pulse" />
+        <div className="absolute top-20 right-10 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[100px]" />
         
         <div className="container mx-auto max-w-3xl text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-primary text-sm font-black tracking-widest">THE PROTOCOL IS LIVE</span>
+          <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/30 mb-8 backdrop-blur-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_10px_hsl(var(--primary))]" />
+            <span className="text-primary text-sm font-black tracking-[0.2em]">THE PROTOCOL IS LIVE</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-6 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-6 tracking-tight leading-[1.1]">
             The Future is Being Written.
           </h2>
           <p className="text-xl sm:text-2xl text-muted-foreground mb-10 tracking-wide">
-            The only question is: <span className="text-primary font-black">Are you founding it?</span>
+            The only question is: <span className="text-primary font-black drop-shadow-[0_0_15px_hsl(var(--primary)/0.5)]">Are you founding it?</span>
           </p>
           
           <Link to="/auth">
             <Button 
               size="lg" 
-              className="btn-enterprise gap-3 text-lg px-10 py-7 font-black rounded-xl transition-all hover:scale-105"
-              style={{ boxShadow: '0 20px 40px hsl(0 93% 53% / 0.3)' }}
+              className="btn-enterprise gap-3 text-lg px-10 py-7 font-black rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_25px_50px_hsl(var(--primary)/0.4)]"
+              style={{ boxShadow: '0 20px 40px hsl(var(--primary) / 0.35)' }}
             >
+              <Zap className="h-5 w-5" />
               Enter AMABILIA Now
               <ArrowRight className="h-5 w-5" />
             </Button>
