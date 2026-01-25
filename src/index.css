@@ -683,6 +683,143 @@
   }
 }
 
+  /* ═══════════════════════════════════════════════════════════════════════
+     OBSIDIAN STANDARD - INSTITUTIONAL DATA TABLES
+     Brushed Obsidian headers with Gold-leaf text
+  ═══════════════════════════════════════════════════════════════════════ */
+
+  .obsidian-table {
+    @apply w-full;
+    font-family: var(--font-mono);
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .obsidian-table thead {
+    background: hsl(215 30% 7%);
+  }
+
+  .obsidian-table thead th {
+    @apply px-4 py-3 text-left font-semibold tracking-wide;
+    color: hsl(46 69% 52%);
+    font-family: var(--font-serif);
+    border-bottom: 2px solid hsl(46 69% 52% / 0.3);
+    text-shadow: 0 0 8px hsl(46 69% 52% / 0.3);
+  }
+
+  .obsidian-table tbody tr {
+    border-bottom: 1px solid hsl(0 0% 8%);
+    transition: background 0.2s ease;
+  }
+
+  .obsidian-table tbody tr:hover {
+    background: hsl(135 100% 50% / 0.03);
+  }
+
+  .obsidian-table tbody td {
+    @apply px-4 py-3;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .obsidian-table tbody td[data-amount] {
+    color: hsl(135 100% 50%);
+    text-shadow: 0 0 6px hsl(135 100% 50% / 0.4);
+  }
+
+  .obsidian-table tbody td[data-negative] {
+    color: hsl(0 100% 60%);
+    text-shadow: 0 0 6px hsl(0 100% 60% / 0.4);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     BLACK TITANIUM FEATURE CARDS (15° 3D Hover Tilt)
+  ═══════════════════════════════════════════════════════════════════════ */
+
+  .titanium-card {
+    @apply rounded-xl overflow-hidden;
+    background: linear-gradient(145deg, hsl(215 30% 9%) 0%, hsl(215 30% 6%) 100%);
+    border: 1px solid hsl(0 0% 10%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+    transform-style: preserve-3d;
+  }
+
+  .titanium-card:hover {
+    transform: perspective(1000px) rotateX(-3deg) rotateY(5deg) translateY(-8px);
+    box-shadow: 
+      0 20px 40px hsl(0 0% 0% / 0.5),
+      0 0 30px hsl(135 100% 50% / 0.1),
+      inset 0 1px 0 hsl(46 69% 52% / 0.15);
+    border-color: hsl(46 69% 52% / 0.3);
+  }
+
+  .titanium-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, hsl(46 69% 52%), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .titanium-card:hover::before {
+    opacity: 1;
+  }
+
+  /* Gold corner accents for containers */
+  .gold-corners {
+    position: relative;
+  }
+
+  .gold-corners::before,
+  .gold-corners::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid hsl(46 69% 52%);
+    opacity: 0.6;
+  }
+
+  .gold-corners::before {
+    top: -1px;
+    left: -1px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .gold-corners::after {
+    bottom: -1px;
+    right: -1px;
+    border-left: none;
+    border-top: none;
+  }
+
+  /* HIGH CONTRAST GREEN - Text on green bg must be deep black */
+  .bg-primary .text-primary-foreground,
+  .alpha-gradient .text-primary-foreground,
+  [class*="bg-primary"] [class*="text-primary-foreground"] {
+    color: hsl(220 30% 3%) !important;
+    text-shadow: none !important;
+  }
+
+  /* Obsidian grain texture overlay */
+  .obsidian-grain {
+    position: relative;
+  }
+
+  .obsidian-grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.02;
+    mix-blend-mode: overlay;
+  }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    GLOBAL UTILITIES
 ═══════════════════════════════════════════════════════════════════════════ */
