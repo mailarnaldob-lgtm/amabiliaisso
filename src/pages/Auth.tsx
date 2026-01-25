@@ -175,42 +175,42 @@ export default function Auth() {
           
           <div className="space-y-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-foreground/20 rounded-lg">
+              <div className="p-3 bg-primary-foreground/20 rounded-lg text-accent">
                 <CreditCard className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg">₱300 Activation</h3>
+                <h3 className="font-semibold text-lg text-accent">₱300 Activation</h3>
                 <p className="opacity-80 text-secondary-foreground">One-time fee to unlock all platform features</p>
               </div>
             </div>
             
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-foreground/20 rounded-lg">
+              <div className="p-3 bg-primary-foreground/20 rounded-lg text-accent">
                 <Users className="h-6 w-6" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg">50% Referral Commission</h3>
-                <p className="opacity-80">Earn 50% on every membership you refer</p>
+                <p className="opacity-80 text-secondary-foreground">Earn 50% on every membership you refer</p>
               </div>
             </div>
             
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-foreground/20 rounded-lg">
+              <div className="p-3 bg-primary-foreground/20 rounded-lg text-accent">
                 <Wallet className="h-6 w-6" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg">3 Wallet System</h3>
-                <p className="opacity-80">Task, Royalty, and Main wallets for organized earnings</p>
+                <p className="opacity-80 text-secondary-foreground">Task, Royalty, and Main wallets for organized earnings</p>
               </div>
             </div>
             
             <div className="flex items-start gap-4">
               <div className="p-3 bg-primary-foreground/20 rounded-lg">
-                <Shield className="h-6 w-6" />
+                <Shield className="h-6 w-6 text-orange-200" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Secure & Verified</h3>
-                <p className="opacity-80">KYC verified members for a trusted community</p>
+                <p className="opacity-80 text-secondary-foreground">KYC verified members for a trusted community</p>
               </div>
             </div>
           </div>
