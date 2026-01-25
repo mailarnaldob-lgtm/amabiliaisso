@@ -3,6 +3,7 @@ import { AlphaLayout } from '@/components/layouts/AlphaLayout';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EliteButton } from '@/components/ui/elite-button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Wallet, 
   ArrowUpRight, 
@@ -11,26 +12,89 @@ import {
   History,
   QrCode,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Coins,
+  CreditCard,
+  Banknote,
+  AlertCircle
 } from 'lucide-react';
 import { formatAlpha } from '@/lib/utils';
 import { useAppStore } from '@/stores/appStore';
 import { ExchangerModal } from '@/components/alpha/ExchangerModal';
 import { UserStateIndicator, UserLifecycleFlow } from '@/components/alpha/UserStateIndicator';
 import { useOptimisticWallets } from '@/hooks/useOptimisticWallets';
+import { useWalletTransactions, WalletTransaction } from '@/hooks/useWalletTransactions';
+import { formatDistanceToNow } from 'date-fns';
 
-// Live transaction history - synced from Sovereign Ledger
-const recentTransactions = [
-  { id: '1', type: 'deposit', amount: 5000, status: 'completed', date: '2 hours ago', description: 'PHP → ₳ Exchange' },
-  { id: '2', type: 'transfer', amount: -500, status: 'completed', date: '1 day ago', description: 'To Main Wallet' },
-  { id: '3', type: 'royalty', amount: 150, status: 'completed', date: '2 days ago', description: 'Network Royalty' },
-  { id: '4', type: 'mission', amount: 50, status: 'completed', date: '3 days ago', description: 'VPA Mission Reward' },
-];
+// Transaction type to icon/color mapping
+function getTransactionDisplay(tx: WalletTransaction) {
+  const type = tx.transaction_type;
+  
+  if (type.includes('cash_in') || type.includes('deposit')) {
+    return { 
+      icon: <ArrowDownLeft className="h-4 w-4 text-emerald-500" />, 
+      bg: 'bg-emerald-500/10',
+      label: 'Deposit'
+    };
+  }
+  if (type.includes('cash_out') || type.includes('withdrawal')) {
+    return { 
+      icon: <ArrowUpRight className="h-4 w-4 text-destructive" />, 
+      bg: 'bg-destructive/10',
+      label: 'Withdrawal'
+    };
+  }
+  if (type.includes('transfer')) {
+    return { 
+      icon: <RefreshCw className="h-4 w-4 text-muted-foreground" />, 
+      bg: 'bg-muted',
+      label: 'Transfer'
+    };
+  }
+  if (type.includes('referral') || type.includes('commission') || type.includes('royalty')) {
+    return { 
+      icon: <Coins className="h-4 w-4 text-purple-500" />, 
+      bg: 'bg-purple-500/10',
+      label: 'Royalty'
+    };
+  }
+  if (type.includes('task') || type.includes('reward') || type.includes('mission')) {
+    return { 
+      icon: <CheckCircle2 className="h-4 w-4 text-blue-500" />, 
+      bg: 'bg-blue-500/10',
+      label: 'Mission'
+    };
+  }
+  if (type.includes('loan') || type.includes('lending')) {
+    return { 
+      icon: <Banknote className="h-4 w-4 text-amber-500" />, 
+      bg: 'bg-amber-500/10',
+      label: 'Lending'
+    };
+  }
+  if (type.includes('fee')) {
+    return { 
+      icon: <CreditCard className="h-4 w-4 text-muted-foreground" />, 
+      bg: 'bg-muted',
+      label: 'Fee'
+    };
+  }
+  
+  // Default
+  return { 
+    icon: <Coins className="h-4 w-4 text-muted-foreground" />, 
+    bg: 'bg-muted',
+    label: 'Transaction'
+  };
+}
 
 export default function BankApp() {
   const wallets = useAppStore((state) => state.wallets);
   const [exchangerOpen, setExchangerOpen] = useState(false);
   const { hasPendingTransactions, optimisticTransfer } = useOptimisticWallets();
+  
+  // Fetch real transactions from Sovereign Ledger
+  const { data: transactions, isLoading: txLoading } = useWalletTransactions(10);
   
   // Calculate total balance
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
@@ -171,46 +235,85 @@ export default function BankApp() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════
-          RECENT ACTIVITY - Transaction Ledger with Obsidian Table Style
+          RECENT ACTIVITY - Live Transaction Ledger from Sovereign Ledger
       ═══════════════════════════════════════════════════════════════ */}
       <div className="mt-6 space-y-3">
         <h3 className="text-sm font-semibold text-gold uppercase tracking-wide font-serif">
           Recent Activity
         </h3>
         
-        {recentTransactions.map((tx) => (
-          <div key={tx.id} className="titanium-card">
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-1.5 rounded-lg ${
-                    tx.type === 'deposit' ? 'bg-emerald-500/10' :
-                    tx.type === 'royalty' ? 'bg-purple-500/10' :
-                    tx.type === 'mission' ? 'bg-blue-500/10' :
-                    'bg-muted'
-                  }`}>
-                    {tx.type === 'deposit' && <ArrowDownLeft className="h-4 w-4 text-emerald-500" />}
-                    {tx.type === 'transfer' && <RefreshCw className="h-4 w-4 text-muted-foreground" />}
-                    {tx.type === 'royalty' && <ArrowUpRight className="h-4 w-4 text-purple-500" />}
-                    {tx.type === 'mission' && <CheckCircle2 className="h-4 w-4 text-blue-500" />}
+        {txLoading ? (
+          // Loading skeletons
+          <>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="titanium-card">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                    <div className="text-right space-y-1">
+                      <Skeleton className="h-4 w-16 ml-auto" />
+                      <Skeleton className="h-5 w-12 ml-auto" />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{tx.description}</p>
-                    <p className="text-xs text-muted-foreground">{tx.date}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`font-bold font-mono tabular-nums ${tx.amount > 0 ? 'text-success neon-glow' : 'text-foreground'}`}>
-                    {tx.amount > 0 ? '+' : ''}₳{formatAlpha(Math.abs(tx.amount))}
-                  </p>
-                  <Badge variant="outline" className="text-[10px] border-gold/30 text-gold">
-                    {tx.status}
-                  </Badge>
-                </div>
+                </CardContent>
               </div>
+            ))}
+          </>
+        ) : transactions && transactions.length > 0 ? (
+          // Real transactions from database
+          transactions.map((tx) => {
+            const display = getTransactionDisplay(tx);
+            const isPositive = tx.amount > 0;
+            const timeAgo = tx.created_at 
+              ? formatDistanceToNow(new Date(tx.created_at), { addSuffix: true })
+              : 'Unknown';
+            
+            return (
+              <div key={tx.id} className="titanium-card">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-1.5 rounded-lg ${display.bg}`}>
+                        {display.icon}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {tx.description || display.label}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{timeAgo}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-bold font-mono tabular-nums ${isPositive ? 'text-success neon-glow' : 'text-foreground'}`}>
+                        {isPositive ? '+' : ''}₳{formatAlpha(Math.abs(tx.amount))}
+                      </p>
+                      <Badge variant="outline" className="text-[10px] border-gold/30 text-gold">
+                        {display.label}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </div>
+            );
+          })
+        ) : (
+          // Empty state
+          <div className="titanium-card">
+            <CardContent className="p-6 text-center">
+              <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No transactions yet</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Your activity will appear here
+              </p>
             </CardContent>
           </div>
-        ))}
+        )}
       </div>
 
       {/* User Lifecycle (Collapsible Info) */}
@@ -241,8 +344,7 @@ export default function BankApp() {
   );
 }
 
-// QuickAction component removed - replaced with EliteButton
-
+// Wallet Card with Titanium styling
 function WalletCard({ 
   name, 
   balance, 
