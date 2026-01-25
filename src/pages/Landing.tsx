@@ -600,21 +600,9 @@ export default function Landing() {
           </div>
           
           {/* Global Disclaimer */}
-          <div className="pt-8 border-t border-border text-center text-xs text-muted-foreground/60 max-w-3xl mx-auto tracking-wide">
-            <p>
-              ₳ credits are internal system units and do not represent money, stored value, or investment. 
-              No financial services are offered on this site. All membership fees are one-time activation payments 
-              subject to verification. Credits cannot be redeemed for cash.
-            </p>
-          </div>
           
-          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-            <p className="font-medium text-xl font-serif text-center text-accent">© {new Date().getFullYear()} AMABILIA Network. All rights reserved.</p>
-            <div className="flex items-center gap-4 text-xs">
-              <a href="#" className="hover:text-primary transition-colors">Security</a>
-              <a href="#" className="hover:text-primary transition-colors">Compliance</a>
-            </div>
-          </div>
+          
+          
         </div>
       </footer>
     </div>;
