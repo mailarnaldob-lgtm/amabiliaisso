@@ -83,16 +83,12 @@ export default function Landing() {
       <header className="enterprise-header border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg alpha-gradient red-glow transition-all duration-300 group-hover:scale-110 items-center justify-center flex flex-row border-accent text-[#a49460]" style={{
-            filter: 'drop-shadow(0 0 20px hsl(0 93% 53% / 0.5))'
-          }}>
-              
-            </div>
+            
             <span className="text-xl sm:text-2xl font-black tracking-widest">
               
             </span>
           </Link>
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="gap-2 sm:gap-4 flex-row flex items-start justify-center">
             <a href="#manifesto" className="nav-pill text-muted-foreground hidden lg:block text-sm font-medium">
               Manifesto
             </a>
@@ -136,7 +132,7 @@ export default function Landing() {
               
               {/* Main Headline with Red Gradient */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight tracking-tight">
-                <span className="text-foreground">Welcome to AMABILIA Network </span>
+                <span className="text-foreground py-0 text-right text-6xl">Welcome to AMABILIA Network </span>
                 
               </h1>
               
