@@ -236,7 +236,7 @@ export default function MemberDashboard() {
           <CardContent className="p-4 sm:pt-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <p className="text-primary-foreground/80 mb-1 text-2xl">Total System Credits</p>
+                <p className="text-primary-foreground/80 mb-1 text-2xl">​ACCOUNT BALANCE   </p>
                 <p className="text-3xl py-[19px] px-0 my-[13px] font-extrabold sm:text-7xl text-center">₳{totalCredits.toLocaleString('en-PH', {
                   minimumFractionDigits: 2
                 })}</p>
