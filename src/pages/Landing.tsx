@@ -133,11 +133,9 @@ export default function Landing() {
             <span className="text-primary text-sm font-black tracking-widest">THE PROTOCOL IS LIVE</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-6 tracking-tight">
-            The Future is Being Written.
-          </h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-6 tracking-tight">The Blueprint for Next-Generation Finance is Open</h2>
           <p className="text-xl sm:text-2xl text-muted-foreground mb-10 tracking-wide">
-            The only question is: <span className="text-primary font-black">Are you founding it?</span>
+            The only question is: <span className="text-primary font-black bg-[#e11414]">Are You Part of the Foundation?</span>
           </p>
           
           <Link to="/auth">
