@@ -124,7 +124,7 @@ export default function Landing() {
       {/* Final CTA */}
       <section className="py-24 sm:py-32 px-4 relative overflow-hidden">
         {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent rounded-full opacity-5" />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent rounded-full opacity-65" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]" />
         
         <div className="container mx-auto max-w-3xl text-center relative z-10 opacity-100 px-[22px]">
