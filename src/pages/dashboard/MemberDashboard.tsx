@@ -236,8 +236,8 @@ export default function MemberDashboard() {
           <CardContent className="p-4 sm:pt-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <p className="text-primary-foreground/80 mb-1 text-2xl font-serif my-0 px-[31px]">​ACCOUNT BALANCE   </p>
-                <p className="text-3xl my-[13px] text-center font-serif font-bold sm:text-6xl px-[7px] py-[17px]">₳{totalCredits.toLocaleString('en-PH', {
+                <p className="text-primary-foreground/80 mb-1 text-2xl font-serif my-0 px-[31px]">​AVAILABLE BALANCE</p>
+                <p className="text-3xl my-[13px] font-serif font-bold px-[7px] py-[17px] text-left sm:text-7xl">₳{totalCredits.toLocaleString('en-PH', {
                   minimumFractionDigits: 2
                 })}</p>
               </div>
