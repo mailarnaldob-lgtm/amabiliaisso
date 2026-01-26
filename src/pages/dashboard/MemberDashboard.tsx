@@ -242,7 +242,7 @@ export default function MemberDashboard() {
                 })}</p>
               </div>
               <div className="text-left sm:text-right">
-                
+                <p className="text-primary-foreground/60 text-3xl">Internal Credits</p>
                 
               </div>
             </div>
@@ -333,7 +333,10 @@ export default function MemberDashboard() {
         </Link>
 
         {/* Account Security & Notifications */}
-        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8" id="account-security">
+          <AccountSecurityCard />
+          <NotificationsCard />
+        </div>
 
         {/* Upgrade CTA (if not Elite) */}
         {profile?.membership_tier !== 'elite' && <Card className="mb-6 sm:mb-8 border-primary border-2 bg-primary/5">
