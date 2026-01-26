@@ -165,7 +165,7 @@ export default function Auth() {
   };
   return <div className="min-h-screen bg-background flex">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
+      <div className="hidden lg:w-1/2 relative overflow-hidden lg:flex items-center justify-center bg-primary-foreground">
         <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80 opacity-100 border-0 my-0 px-0 mx-[53px] bg-primary-foreground" />
         <div className="relative z-10 flex-col border-primary-foreground text-[#6d0d0d] border-none bg-primary-foreground px-[48px] border-0 rounded-none flex items-start justify-center opacity-100">
           <h1 className="font-bold mb-6 text-7xl text-primary">Amabilia Network</h1>
@@ -218,7 +218,7 @@ export default function Auth() {
       </div>
       
       {/* Right side - Auth forms */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 p-8 flex items-start justify-center gap-[53px]">
         <Card className="w-full max-w-md border-border shadow-lg">
           <CardHeader className="text-center">
             <div className="lg:hidden mb-4">
