@@ -179,7 +179,7 @@ export default function Auth() {
                 <CreditCard className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg text-accent">₱300 Activation</h3>
+                <h3 className="font-semibold text-lg text-accent">₱600 Activation</h3>
                 <p className="opacity-80 text-secondary-foreground">One-time fee to unlock all platform features</p>
               </div>
             </div>
