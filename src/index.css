@@ -1,6 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700;800&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,7 +11,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    ALPHA BUSINESS COOPERATIVE - SOVEREIGN TERMINAL DESIGN SYSTEM
    Obsidian & Neon Theme | Production v1.0
-   
+
    COLOR PALETTE:
    - Background: #05070A (Midnight Black / 220 30% 3%)
    - Card Surface: #0D1117 (Brushed Obsidian / 215 30% 7%)
@@ -21,70 +24,117 @@
 @layer base {
   :root {
     /* Light Mode - Enterprise Corporate (rarely used) */
-    --background: 220 30% 98%;
-    --foreground: 220 30% 8%;
+    --background: 
+      220 30% 98%;
+    --foreground: 
+      220 30% 8%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 30% 8%;
+    --card: 
+      0 0% 100%;
+    --card-foreground: 
+      220 30% 8%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 8%;
+    --popover: 
+      0 0% 100%;
+    --popover-foreground: 
+      220 30% 8%;
 
     /* Primary: Neon Green (#00FF41) */
-    --primary: 135 100% 50%;
-    --primary-foreground: 220 30% 3%;
+    --primary: 
+      135 100% 50%;
+    --primary-foreground: 
+      220 30% 3%;
 
-    --secondary: 215 16% 47%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 
+      215 16% 47%;
+    --secondary-foreground: 
+      0 0% 98%;
 
-    --muted: 215 20% 65%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 
+      215 20% 65%;
+    --muted-foreground: 
+      215 16% 47%;
 
     /* Accent: Polished Gold (#D4AF37) */
-    --accent: 46 69% 52%;
-    --accent-foreground: 220 30% 3%;
+    --accent: 
+      46 69% 52%;
+    --accent-foreground: 
+      220 30% 3%;
 
-    --destructive: 0 100% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 
+      0 100% 60%;
+    --destructive-foreground: 
+      0 0% 100%;
 
-    --border: 0 0% 10%;
-    --input: 215 20% 65%;
-    --ring: 135 100% 50%;
+    --border: 
+      0 0% 10%;
+    --input: 
+      215 20% 65%;
+    --ring: 
+      135 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 
+      0.5rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 30% 8%;
-    --sidebar-primary: 135 100% 50%;
-    --sidebar-primary-foreground: 220 30% 3%;
-    --sidebar-accent: 46 69% 52%;
-    --sidebar-accent-foreground: 220 30% 3%;
-    --sidebar-border: 0 0% 10%;
-    --sidebar-ring: 135 100% 50%;
+    --sidebar-background: 
+      0 0% 100%;
+    --sidebar-foreground: 
+      220 30% 8%;
+    --sidebar-primary: 
+      135 100% 50%;
+    --sidebar-primary-foreground: 
+      220 30% 3%;
+    --sidebar-accent: 
+      46 69% 52%;
+    --sidebar-accent-foreground: 
+      220 30% 3%;
+    --sidebar-border: 
+      0 0% 10%;
+    --sidebar-ring: 
+      135 100% 50%;
 
-    --chart-1: 135 100% 50%;
-    --chart-2: 46 69% 52%;
-    --chart-3: 135 80% 40%;
-    --chart-4: 46 80% 45%;
-    --chart-5: 215 16% 47%;
+    --chart-1: 
+      135 100% 50%;
+    --chart-2: 
+      46 69% 52%;
+    --chart-3: 
+      135 80% 40%;
+    --chart-4: 
+      46 80% 45%;
+    --chart-5: 
+      215 16% 47%;
 
-    --sidebar: 0 0% 100%;
+    --sidebar: 
+      0 0% 100%;
 
-    --font-sans: 'Roboto', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-    --font-serif: "EB Garamond", ui-serif, Georgia, Cambria, Times New Roman, Times, serif;
-    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+    --font-sans: 
+      'Roboto', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    --font-serif: 
+      "EB Garamond", ui-serif, Georgia, Cambria, Times New Roman, Times, serif;
+    --font-mono: 
+      "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
 
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0 2px 8px 0px hsl(135 100% 50% / 0.08);
-    --shadow: 0 4px 16px 0px hsl(135 100% 50% / 0.12);
-    --shadow-md: 0 8px 32px 0px hsl(135 100% 50% / 0.15);
-    --shadow-lg: 0 16px 48px 0px hsl(135 100% 50% / 0.18);
-    --shadow-xl: 0 24px 64px 0px hsl(135 100% 50% / 0.20);
-    --shadow-2xl: 0 32px 80px 0px hsl(135 100% 50% / 0.25);
+    --shadow-2xs: 
+      0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 
+      0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 
+      0px 4px 13.25px 0px hsla(135, 100%, 50%, 0.48);
+    --shadow: 
+      0px 4px 26.5px 0px hsla(135, 100%, 50%, 0.48);
+    --shadow-md: 
+      0px 4px 39.75px 0px hsla(135, 100%, 50%, 0.48);
+    --shadow-lg: 
+      0px 4px 66.25px 0px hsla(135, 100%, 50%, 0.48);
+    --shadow-xl: 
+      0 24px 64px 0px hsl(135 100% 50% / 0.20);
+    --shadow-2xl: 
+      0 32px 80px 0px hsl(135 100% 50% / 0.25);
 
-    --tracking-normal: 0em;
-    --spacing: 0.25rem;
+    --tracking-normal: 
+      0em;
+    --spacing: 
+      0.25rem;
   }
 
   .dark {
@@ -92,73 +142,117 @@
        SOVEREIGN TERMINAL - OBSIDIAN DARK MODE
        Primary: Midnight Black | Accent: Neon Green | Status: Polished Gold
     ═══════════════════════════════════════════════════════════════════════ */
-    
+
     /* Background: #05070A (Midnight Black) */
-    --background: 220 30% 3%;
-    --foreground: 210 40% 96%;
+    --background: 
+      220 30% 3%;
+    --foreground: 
+      210 40% 96%;
 
     /* Card surfaces: #0D1117 (Brushed Obsidian) */
-    --card: 215 30% 7%;
-    --card-foreground: 210 40% 96%;
+    --card: 
+      215 30% 7%;
+    --card-foreground: 
+      210 40% 96%;
 
-    --popover: 215 30% 9%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 
+      215 30% 9%;
+    --popover-foreground: 
+      210 40% 96%;
 
     /* Primary: Neon Green (#00FF41 = 135 100% 50%) */
-    --primary: 135 100% 50%;
-    --primary-foreground: 220 30% 3%;
+    --primary: 
+      135 100% 50%;
+    --primary-foreground: 
+      220 30% 3%;
 
     /* Secondary grays */
-    --secondary: 215 19% 25%;
-    --secondary-foreground: 210 40% 96%;
+    --secondary: 
+      215 19% 25%;
+    --secondary-foreground: 
+      210 40% 96%;
 
     /* Muted text */
-    --muted: 215 19% 25%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 
+      215 19% 25%;
+    --muted-foreground: 
+      215 20% 55%;
 
     /* Accent: Polished Gold (#D4AF37 = 46 69% 52%) */
-    --accent: 46 69% 52%;
-    --accent-foreground: 220 30% 3%;
+    --accent: 
+      46 69% 52%;
+    --accent-foreground: 
+      220 30% 3%;
 
     /* Danger: Neon Red (#FF3131) */
-    --destructive: 0 100% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 
+      0 100% 60%;
+    --destructive-foreground: 
+      0 0% 100%;
 
     /* Borders: Carbon (#1A1A1A) */
-    --border: 0 0% 10%;
-    --input: 215 19% 25%;
-    --ring: 135 100% 50%;
+    --border: 
+      0 0% 10%;
+    --input: 
+      215 19% 25%;
+    --ring: 
+      135 100% 50%;
 
-    --sidebar-background: 215 30% 5%;
-    --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 135 100% 50%;
-    --sidebar-primary-foreground: 220 30% 3%;
-    --sidebar-accent: 46 69% 52%;
-    --sidebar-accent-foreground: 220 30% 3%;
-    --sidebar-border: 0 0% 10%;
-    --sidebar-ring: 135 100% 50%;
+    --sidebar-background: 
+      215 30% 5%;
+    --sidebar-foreground: 
+      210 40% 96%;
+    --sidebar-primary: 
+      135 100% 50%;
+    --sidebar-primary-foreground: 
+      220 30% 3%;
+    --sidebar-accent: 
+      46 69% 52%;
+    --sidebar-accent-foreground: 
+      220 30% 3%;
+    --sidebar-border: 
+      0 0% 10%;
+    --sidebar-ring: 
+      135 100% 50%;
 
-    --chart-1: 135 100% 50%;
-    --chart-2: 46 69% 52%;
-    --chart-3: 135 80% 40%;
-    --chart-4: 46 80% 45%;
-    --chart-5: 215 16% 47%;
+    --chart-1: 
+      135 100% 50%;
+    --chart-2: 
+      46 69% 52%;
+    --chart-3: 
+      135 80% 40%;
+    --chart-4: 
+      46 80% 45%;
+    --chart-5: 
+      215 16% 47%;
 
-    --sidebar: 215 30% 5%;
+    --sidebar: 
+      215 30% 5%;
 
     /* Neon glow shadows */
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.5);
-    --shadow-xs: 0 2px 4px 0px hsl(0 0% 0% / 0.6);
-    --shadow-sm: 0 4px 12px 0px hsl(0 0% 0% / 0.7), 0 0 20px 0px hsl(135 100% 50% / 0.08);
-    --shadow: 0 8px 24px 0px hsl(0 0% 0% / 0.75), 0 0 30px 0px hsl(135 100% 50% / 0.10);
-    --shadow-md: 0 12px 32px 0px hsl(0 0% 0% / 0.8), 0 0 40px 0px hsl(135 100% 50% / 0.12);
-    --shadow-lg: 0 16px 48px 0px hsl(0 0% 0% / 0.85), 0 0 50px 0px hsl(135 100% 50% / 0.15);
-    --shadow-xl: 0 24px 64px 0px hsl(0 0% 0% / 0.9), 0 0 60px 0px hsl(135 100% 50% / 0.18);
-    --shadow-2xl: 0 32px 80px 0px hsl(0 0% 0% / 0.95), 0 0 80px 0px hsl(135 100% 50% / 0.20);
+    --shadow-2xs: 
+      0 1px 3px 0px hsl(0 0% 0% / 0.5);
+    --shadow-xs: 
+      0 2px 4px 0px hsl(0 0% 0% / 0.6);
+    --shadow-sm: 
+      0px 4px 13.25px 0px hsla(135, 100%, 50%, 0.48);
+    --shadow: 
+      0px 4px 26.5px 0px hsla(135, 100%, 50%, 0.48);
+    --shadow-md: 
+      0px 4px 39.75px 0px hsla(135, 100%, 50%, 0.48);
+    --shadow-lg: 
+      0px 4px 66.25px 0px hsla(135, 100%, 50%, 0.48);
+    --shadow-xl: 
+      0 24px 64px 0px hsl(0 0% 0% / 0.9), 0 0 60px 0px hsl(135 100% 50% / 0.18);
+    --shadow-2xl: 
+      0 32px 80px 0px hsl(0 0% 0% / 0.95), 0 0 80px 0px hsl(135 100% 50% / 0.20);
 
-    --radius: 0.5rem;
-    --font-serif: "EB Garamond", ui-serif, Georgia, Cambria, Times New Roman, Times, serif;
-    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+    --radius: 
+      0.5rem;
+    --font-serif: 
+      "EB Garamond", ui-serif, Georgia, Cambria, Times New Roman, Times, serif;
+    --font-mono: 
+      "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   }
 }
 
@@ -423,7 +517,7 @@
   /* ═══════════════════════════════════════════════════════════════════════
      SYSTEM STATS TICKER
   ═══════════════════════════════════════════════════════════════════════ */
-  
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
