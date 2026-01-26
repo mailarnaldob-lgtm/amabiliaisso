@@ -559,51 +559,6 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 px-4 bg-card/50 border-t border-border">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <Link to="/" className="flex items-center gap-2 mb-4">
-                
-                
-              </Link>
-              
-            </div>
-            
-            <div>
-              <h4 className="font-bold text-foreground mb-4 tracking-wide">Protocol</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground font-medium">
-                <li><Link to="/dashboard/bank" className="link-underline hover:text-primary transition-colors">ALPHA Vault</Link></li>
-                <li><Link to="/dashboard/market" className="link-underline hover:text-primary transition-colors">Marketplace</Link></li>
-                <li><Link to="/dashboard/finance" className="link-underline hover:text-primary transition-colors">Smart Finance</Link></li>
-                <li><Link to="/dashboard/growth" className="link-underline hover:text-primary transition-colors">Network</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-bold text-foreground mb-4 tracking-wide">Resources</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground font-medium">
-                <li><Link to="/contact" className="link-underline hover:text-primary transition-colors">Contact</Link></li>
-                <li><Link to="/about" className="link-underline hover:text-primary transition-colors">About</Link></li>
-                <li><a href="#" className="link-underline hover:text-primary transition-colors">Documentation</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-bold text-foreground mb-4 tracking-wide">Legal</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground font-medium">
-                <li><a href="#" className="link-underline hover:text-primary transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="link-underline hover:text-primary transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="link-underline hover:text-primary transition-colors">Risk Disclosure</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          {/* Global Disclaimer */}
-          
-          
-          
-        </div>
-      </footer>
+      
     </div>;
 }
