@@ -237,7 +237,7 @@ export default function MemberDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <p className="text-primary-foreground/80 text-sm mb-1">Total System Credits</p>
-                <p className="text-3xl sm:text-4xl font-bold text-center py-[19px] px-0 my-[13px]">₳{totalCredits.toLocaleString('en-PH', {
+                <p className="text-3xl py-[19px] px-0 my-[13px] font-extrabold sm:text-7xl text-center">₳{totalCredits.toLocaleString('en-PH', {
                   minimumFractionDigits: 2
                 })}</p>
               </div>
