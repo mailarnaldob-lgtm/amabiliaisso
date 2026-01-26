@@ -166,7 +166,7 @@ export default function Auth() {
   return <div className="min-h-screen bg-background flex">
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80 opacity-100" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80 opacity-100 border-0 my-0 px-0 mx-[53px] bg-primary-foreground" />
         <div className="relative z-10 flex-col border-primary-foreground text-[#6d0d0d] border-none bg-primary-foreground px-[48px] border-0 rounded-none flex items-start justify-center opacity-100">
           <h1 className="font-bold mb-6 text-7xl text-primary">Amabilia Network</h1>
           <p className="text-xl mb-12 opacity-90 text-center text-secondary-foreground">
