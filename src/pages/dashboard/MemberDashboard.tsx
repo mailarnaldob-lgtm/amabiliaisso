@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AccountSecurityCard } from '@/components/dashboard/AccountSecurityCard';
 import { NotificationsCard } from '@/components/dashboard/NotificationsCard';
-import { Wallet, Users, TrendingUp, Copy, LogOut, User, CreditCard, Crown, Zap, Star, AlertTriangle, RefreshCw, Menu, X } from 'lucide-react';
+import { Wallet, Users, TrendingUp, Copy, LogOut, User, CreditCard, Crown, Zap, Star, AlertTriangle, RefreshCw, Menu, X, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 export default function MemberDashboard() {
   const {
@@ -97,11 +97,11 @@ export default function MemberDashboard() {
         <p className="text-muted-foreground text-center">Loading your dashboard...</p>
       </div>;
   }
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background py-px">
       {/* Header */}
       <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
-          <Link to="/dashboard" className="text-lg sm:text-xl font-bold text-primary">
+          <Link to="/dashboard" className="text-lg font-bold text-primary sm:text-3xl">
             Amabilia Network
           </Link>
           
@@ -121,7 +121,7 @@ export default function MemberDashboard() {
               <User className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => signOut()}>
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-5 w-[47px]" />
             </Button>
           </div>
 
@@ -207,7 +207,7 @@ export default function MemberDashboard() {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
             <div className={`w-12 h-12 rounded-full ${getTierColor(profile?.membership_tier || null)} flex items-center justify-center flex-shrink-0`}>
-              <TierIcon className="h-6 w-6 text-primary-foreground" />
+              <Check className="h-6 text-primary-foreground w-[39px] rounded-xl border-muted-foreground border" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground sm:text-4xl">
