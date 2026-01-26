@@ -210,7 +210,7 @@ export default function MemberDashboard() {
               <TierIcon className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              <h1 className="text-xl font-bold text-foreground sm:text-4xl">
                 Welcome, {profile?.full_name || 'Member'}!
               </h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
