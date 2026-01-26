@@ -218,7 +218,7 @@ export default function Auth() {
       </div>
       
       {/* Right side - Auth forms */}
-      <div className="w-full lg:w-1/2 p-8 flex items-start justify-center gap-[53px]">
+      <div className="w-full lg:w-1/2 p-8 gap-[53px] flex-col flex items-center justify-center">
         <Card className="w-full max-w-md border-border shadow-lg">
           <CardHeader className="text-center">
             <div className="lg:hidden mb-4">
