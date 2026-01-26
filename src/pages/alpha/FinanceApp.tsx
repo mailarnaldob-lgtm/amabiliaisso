@@ -5,18 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  TrendingUp, 
-  TrendingDown,
-  Clock,
-  Shield,
-  AlertTriangle,
-  Users,
-  Percent,
-  Calendar,
-  Lock,
-  CheckCircle2
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, Clock, Shield, AlertTriangle, Users, Percent, Calendar, Lock, CheckCircle2 } from 'lucide-react';
 import { formatAlpha } from '@/lib/utils';
 import { RiskDisclosureModal } from '@/components/alpha/RiskDisclosureModal';
 import { LoanCountdownTimer } from '@/components/alpha/LoanCountdownTimer';
@@ -25,76 +14,93 @@ import { DebtorRescuePanel } from '@/components/alpha/DebtorRescuePanel';
 import { useReferredUsersCount } from '@/hooks/useReferrals';
 
 // Live loan marketplace data - fetched from database in production
-const lendOffers = [
-  { id: 1, amount: 1000, rate: 3, term: 7, status: 'pending', lender: 'Alpha_001' },
-  { id: 2, amount: 2500, rate: 3, term: 7, status: 'pending', lender: 'Alpha_002' },
-  { id: 3, amount: 500, rate: 3, term: 7, status: 'matched', lender: 'Alpha_003' },
-];
-
+const lendOffers = [{
+  id: 1,
+  amount: 1000,
+  rate: 3,
+  term: 7,
+  status: 'pending',
+  lender: 'Alpha_001'
+}, {
+  id: 2,
+  amount: 2500,
+  rate: 3,
+  term: 7,
+  status: 'pending',
+  lender: 'Alpha_002'
+}, {
+  id: 3,
+  amount: 500,
+  rate: 3,
+  term: 7,
+  status: 'matched',
+  lender: 'Alpha_003'
+}];
 const borrowerStats = {
   debtLimit: 5000,
   currentDebt: 0,
-  isDebtor: false,
+  isDebtor: false
 };
-
-const activeLoans = [
-  {
-    id: 1,
-    type: 'lend',
-    amount: 1000,
-    rate: 3,
-    startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-    borrower: 'Alpha_Member',
-    expectedReturn: 1030,
-    status: 'active' as const,
-  },
-];
+const activeLoans = [{
+  id: 1,
+  type: 'lend',
+  amount: 1000,
+  rate: 3,
+  startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+  dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+  borrower: 'Alpha_Member',
+  expectedReturn: 1030,
+  status: 'active' as const
+}];
 
 // Rescue missions for debtor recovery flow
-const rescueMissions = [
-  {
-    id: '1',
-    title: 'Extended Survey Campaign',
-    description: 'Complete 10 detailed user research surveys',
-    reward: 500,
-    difficulty: 'Hard' as const,
-    timeLimit: '48 hours',
-    status: 'in_progress' as const,
-    progress: 40,
-  },
-  {
-    id: '2',
-    title: 'Community Outreach Marathon',
-    description: 'Onboard and verify 5 new platform participants',
-    reward: 1000,
-    difficulty: 'Extreme' as const,
-    timeLimit: '7 days',
-    status: 'available' as const,
-  },
-];
-
+const rescueMissions = [{
+  id: '1',
+  title: 'Extended Survey Campaign',
+  description: 'Complete 10 detailed user research surveys',
+  reward: 500,
+  difficulty: 'Hard' as const,
+  timeLimit: '48 hours',
+  status: 'in_progress' as const,
+  progress: 40
+}, {
+  id: '2',
+  title: 'Community Outreach Marathon',
+  description: 'Onboard and verify 5 new platform participants',
+  reward: 1000,
+  difficulty: 'Extreme' as const,
+  timeLimit: '7 days',
+  status: 'available' as const
+}];
 const REQUIRED_REFERRALS = 3;
-
 export default function FinanceApp() {
   const [riskModalOpen, setRiskModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<{ type: 'lend' | 'borrow'; amount: number } | null>(null);
+  const [pendingAction, setPendingAction] = useState<{
+    type: 'lend' | 'borrow';
+    amount: number;
+  } | null>(null);
   const [showDebtorView, setShowDebtorView] = useState(false);
-  
+
   // Real qualification check: user needs 3+ referred users
-  const { data: referralCount = 0, isLoading: isLoadingReferrals } = useReferredUsersCount();
+  const {
+    data: referralCount = 0,
+    isLoading: isLoadingReferrals
+  } = useReferredUsersCount();
   const qualificationMet = referralCount >= REQUIRED_REFERRALS;
-
   const handleLendClick = (amount: number) => {
-    setPendingAction({ type: 'lend', amount });
+    setPendingAction({
+      type: 'lend',
+      amount
+    });
     setRiskModalOpen(true);
   };
-
   const handleBorrowClick = (amount: number) => {
-    setPendingAction({ type: 'borrow', amount });
+    setPendingAction({
+      type: 'borrow',
+      amount
+    });
     setRiskModalOpen(true);
   };
-
   const handleRiskAccepted = () => {
     console.log('ALPHA SYSTEM: Risk disclosure accepted for:', pendingAction);
     setPendingAction(null);
@@ -102,33 +108,16 @@ export default function FinanceApp() {
 
   // Debtor recovery view
   if (showDebtorView) {
-    return (
-      <AlphaLayout 
-        title="₳LPHA FINANCE" 
-        subtitle="P2P Smart Credit"
-        appColor="from-blue-500 to-indigo-600"
-      >
+    return <AlphaLayout title="₳LPHA FINANCE" subtitle="P2P Smart Credit" appColor="from-blue-500 to-indigo-600">
         <div className="mb-4 flex justify-end">
           <Button variant="outline" size="sm" onClick={() => setShowDebtorView(false)}>
             Return to Dashboard
           </Button>
         </div>
-        <DebtorRescuePanel
-          totalDebt={5300}
-          earnedTowardsDebt={2385}
-          daysOverdue={3}
-          missions={rescueMissions}
-        />
-      </AlphaLayout>
-    );
+        <DebtorRescuePanel totalDebt={5300} earnedTowardsDebt={2385} daysOverdue={3} missions={rescueMissions} />
+      </AlphaLayout>;
   }
-
-  return (
-    <AlphaLayout 
-      title="₳LPHA FINANCE" 
-      subtitle="P2P Smart Credit"
-      appColor="from-blue-500 to-indigo-600"
-    >
+  return <AlphaLayout title="₳LPHA FINANCE" subtitle="P2P Smart Credit" appColor="from-blue-500 to-indigo-600">
 
       {/* Circuit Breaker Status */}
       <CircuitBreakerIndicator reserveRatio={115} />
@@ -138,27 +127,17 @@ export default function FinanceApp() {
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-full ${qualificationMet ? 'bg-emerald-500/10' : 'bg-amber-500/10'}`}>
-              {qualificationMet ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              ) : (
-                <Shield className="h-5 w-5 text-amber-500" />
-              )}
+              {qualificationMet ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Shield className="h-5 w-5 text-amber-500" />}
             </div>
             <div className="flex-1">
               <p className="font-medium text-foreground">
                 {qualificationMet ? 'Qualified for P2P Credit' : 'Qualification Required'}
               </p>
               <p className="text-xs text-muted-foreground">
-                {qualificationMet 
-                  ? 'You meet the requirements for lending and borrowing'
-                  : 'Invite 3 active participants to unlock lending features'
-                }
+                {qualificationMet ? 'You meet the requirements for lending and borrowing' : 'Invite 3 active participants to unlock lending features'}
               </p>
             </div>
-            <Badge 
-              variant="outline" 
-              className={qualificationMet ? 'border-emerald-500/30 text-emerald-600' : 'border-amber-500/30 text-amber-600'}
-            >
+            <Badge variant="outline" className={qualificationMet ? 'border-emerald-500/30 text-emerald-600' : 'border-amber-500/30 text-amber-600'}>
               {referralCount}/3
             </Badge>
           </div>
@@ -209,8 +188,7 @@ export default function FinanceApp() {
             Credit Marketplace
           </h3>
           
-          {lendOffers.map((offer) => (
-            <Card key={offer.id} className="mb-3">
+          {lendOffers.map(offer => <Card key={offer.id} className="mb-3">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -224,31 +202,21 @@ export default function FinanceApp() {
                       </p>
                     </div>
                   </div>
-                  <Badge 
-                    variant={offer.status === 'matched' ? 'default' : 'outline'}
-                    className={offer.status === 'matched' ? 'bg-emerald-500' : ''}
-                  >
+                  <Badge variant={offer.status === 'matched' ? 'default' : 'outline'} className={offer.status === 'matched' ? 'bg-emerald-500' : ''}>
                     {offer.status === 'matched' ? 'Matched' : 'Available'}
                   </Badge>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
 
-          <Button 
-            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 mt-4" 
-            disabled={!qualificationMet}
-            onClick={() => handleLendClick(1000)}
-          >
+          <Button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 mt-4" disabled={!qualificationMet} onClick={() => handleLendClick(1000)}>
             <TrendingUp className="h-4 w-4 mr-2" />
             Post Lending Offer
           </Button>
           
-          {!qualificationMet && (
-            <p className="text-xs text-center text-muted-foreground mt-2">
+          {!qualificationMet && <p className="text-xs text-center text-muted-foreground mt-2">
               Complete qualification to unlock lending
-            </p>
-          )}
+            </p>}
         </TabsContent>
 
         <TabsContent value="borrow">
@@ -275,8 +243,7 @@ export default function FinanceApp() {
             Available Credit Offers
           </h3>
           
-          {lendOffers.filter(o => o.status === 'pending').map((offer) => (
-            <Card key={offer.id} className="mb-3">
+          {lendOffers.filter(o => o.status === 'pending').map(offer => <Card key={offer.id} className="mb-3">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -288,30 +255,22 @@ export default function FinanceApp() {
                       + ₳10 origination + 1% fee
                     </p>
                   </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    disabled={!qualificationMet}
-                    onClick={() => handleBorrowClick(offer.amount)}
-                  >
+                  <Button size="sm" variant="outline" disabled={!qualificationMet} onClick={() => handleBorrowClick(offer.amount)}>
                     Accept
                   </Button>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </TabsContent>
       </Tabs>
 
       {/* Active Loans with Countdown Timer */}
-      {activeLoans.length > 0 && (
-        <>
+      {activeLoans.length > 0 && <>
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             My Active Credits
           </h3>
           
-          {activeLoans.map((loan) => (
-            <div key={loan.id} className="space-y-3 mb-4">
+          {activeLoans.map(loan => <div key={loan.id} className="space-y-3 mb-4">
               <Card className="border-blue-500/30">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -330,35 +289,14 @@ export default function FinanceApp() {
                   </div>
                 </CardContent>
               </Card>
-              <LoanCountdownTimer 
-                startDate={loan.startDate} 
-                dueDate={loan.dueDate} 
-                status={loan.status}
-              />
-            </div>
-          ))}
-        </>
-      )}
+              <LoanCountdownTimer startDate={loan.startDate} dueDate={loan.dueDate} status={loan.status} />
+            </div>)}
+        </>}
 
       {/* Disclaimer */}
-      <div className="mt-8 p-4 rounded-xl bg-muted/30 border border-border">
-        <p className="text-xs text-muted-foreground text-center">
-          P2P Smart Credit is an internal credit allocation system. 
-          All rates are variable and not guaranteed. Credits are non-monetary platform units only.
-          Ledger records obligation, not promise. All transactions are immutable.
-        </p>
-      </div>
+      
 
       {/* Risk Disclosure Modal */}
-      {pendingAction && (
-        <RiskDisclosureModal
-          open={riskModalOpen}
-          onOpenChange={setRiskModalOpen}
-          onAccept={handleRiskAccepted}
-          cycleType={pendingAction.type}
-          amount={pendingAction.amount}
-        />
-      )}
-    </AlphaLayout>
-  );
+      {pendingAction && <RiskDisclosureModal open={riskModalOpen} onOpenChange={setRiskModalOpen} onAccept={handleRiskAccepted} cycleType={pendingAction.type} amount={pendingAction.amount} />}
+    </AlphaLayout>;
 }
