@@ -11,9 +11,8 @@ interface TickerItem {
 }
 
 /**
- * Sticky Trading Floor Ticker
- * Mobile-optimized bottom bar showing live market activity
- * TradingView Terminal aesthetic with real-time feel
+ * 2026 Sticky Trading Ticker
+ * Obsidian/Cyan design with JetBrains Mono
  */
 export function StickyTradingTicker() {
   const [tickerData, setTickerData] = useState<TickerItem[]>([
@@ -25,14 +24,12 @@ export function StickyTradingTicker() {
 
   const [isScrolling, setIsScrolling] = useState(true);
 
-  // Simulate slight market movements for visual effect
   useEffect(() => {
     const interval = setInterval(() => {
       setTickerData(prev => prev.map(item => ({
         ...item,
-        // Small random fluctuations (within stable range)
         price: item.symbol === '₳/PHP' 
-          ? 1.00 // Keep peg stable
+          ? 1.00
           : item.price + (Math.random() - 0.5) * 0.1,
       })));
     }, 5000);
@@ -44,17 +41,17 @@ export function StickyTradingTicker() {
     <div 
       className={cn(
         "fixed bottom-20 left-0 right-0 z-30",
-        "bg-zinc-900/95 backdrop-blur-xl",
-        "border-t border-zinc-800",
+        "bg-card/95 backdrop-blur-xl",
+        "border-t border-border",
         "py-2 px-4",
-        "md:hidden" // Only show on mobile
+        "md:hidden"
       )}
     >
       <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide">
         {/* Live Indicator */}
         <div className="flex items-center gap-1 shrink-0">
-          <Activity className="h-3 w-3 text-emerald-400 animate-pulse" />
-          <span className="text-[10px] text-zinc-400 font-mono">LIVE</span>
+          <Activity className="h-3 w-3 text-primary animate-pulse" />
+          <span className="text-[10px] text-muted-foreground font-mono">LIVE</span>
         </div>
         
         {/* Ticker Items */}
@@ -68,7 +65,6 @@ export function StickyTradingTicker() {
             <TickerItemDisplay key={item.id} item={item} />
           ))}
           
-          {/* Duplicate for seamless scroll */}
           {tickerData.map((item) => (
             <TickerItemDisplay key={`dup-${item.id}`} item={item} />
           ))}
@@ -77,8 +73,8 @@ export function StickyTradingTicker() {
       
       {/* Trading Floor Label */}
       <div className="absolute right-2 top-1/2 -translate-y-1/2">
-        <span className="text-[8px] text-zinc-600 font-mono tracking-widest">
-          TRADING FLOOR
+        <span className="text-[8px] text-muted-foreground font-mono tracking-widest uppercase">
+          Trading Floor
         </span>
       </div>
     </div>
@@ -91,21 +87,21 @@ function TickerItemDisplay({ item }: { item: TickerItem }) {
   
   return (
     <div className="flex items-center gap-2 shrink-0">
-      <span className="text-xs font-bold text-white">{item.symbol}</span>
-      <span className="text-xs text-zinc-300 font-mono">
+      <span className="text-xs font-semibold text-foreground">{item.symbol}</span>
+      <span className="text-xs text-muted-foreground font-mono">
         {item.price.toFixed(2)}%
       </span>
       <div className={cn(
         "flex items-center gap-0.5 text-[10px]",
-        isPositive && "text-emerald-400",
-        !isPositive && !isNeutral && "text-red-400",
-        isNeutral && "text-zinc-500"
+        isPositive && "text-primary",
+        !isPositive && !isNeutral && "text-destructive",
+        isNeutral && "text-muted-foreground"
       )}>
         {isPositive && <TrendingUp className="h-3 w-3" />}
         {!isPositive && !isNeutral && <TrendingDown className="h-3 w-3" />}
         <span>{isNeutral ? '0.00' : (isPositive ? '+' : '') + item.change.toFixed(2)}%</span>
       </div>
-      <span className="text-[10px] text-zinc-600">{item.volume}</span>
+      <span className="text-[10px] text-muted-foreground">{item.volume}</span>
     </div>
   );
 }

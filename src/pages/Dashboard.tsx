@@ -21,15 +21,15 @@ export default function Dashboard() {
 
   return (
     <MemberLayout title="Dashboard">
-      {/* Welcome Card - Responsive */}
-      <div className="glass-card rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
+      {/* Welcome Card - 2026 Obsidian Theme */}
+      <div className="terminal-card rounded p-4 sm:p-5 mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <p className="text-xs sm:text-sm text-muted-foreground">Welcome back,</p>
-            <h2 className="text-lg sm:text-xl font-bold text-foreground">{userName}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">{userName}</h2>
           </div>
-          <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-0">
-            <Badge className="alpha-gradient text-alpha-foreground text-xs">
+          <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1">
+            <Badge className="bg-primary text-primary-foreground text-xs font-medium">
               {tierInfo.name}
             </Badge>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -37,39 +37,39 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
-        <div className="mt-3 p-2 rounded-lg bg-secondary/50 flex items-center justify-between">
+        <div className="mt-3 p-3 rounded bg-muted/30 border border-border flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Referral Code</span>
-          <span className="font-mono font-bold text-alpha text-sm">{referralCode}</span>
+          <span className="font-mono font-bold text-primary text-sm text-glow-cyan">{referralCode}</span>
         </div>
       </div>
 
       {/* Pending Transaction Indicator */}
       {hasPendingTransactions && (
-        <Alert className="mb-4 border-amber-500/30 bg-amber-500/10">
-          <Shield className="h-4 w-4 text-amber-500" />
-          <AlertDescription className="text-xs text-amber-600">
+        <Alert className="mb-4 border-primary/30 bg-primary/10">
+          <Shield className="h-4 w-4 text-primary" />
+          <AlertDescription className="text-xs text-muted-foreground">
             Transaction processing... Ledger synchronizing.
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Tier-Based Analytics Cards - Responsive Grid */}
+      {/* Tier-Based Analytics Cards - 2026 Style */}
       {canAccessPro && (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          {/* ALPHA P2P Credits Stats - PRO+ */}
-          <div className="glass-card rounded-xl p-3 sm:p-4">
+          {/* P2P Credits Stats */}
+          <div className="terminal-card rounded p-3 sm:p-4 widget-hover">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-alpha" />
+              <TrendingUp className="h-4 w-4 text-primary" />
               <span className="text-[10px] sm:text-xs text-muted-foreground">P2P Credits</span>
             </div>
             <p className="text-base sm:text-lg font-bold text-foreground">Active</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground">3% weekly yield</p>
           </div>
           
-          {/* Referral Stats - PRO+ */}
-          <div className="glass-card rounded-xl p-3 sm:p-4">
+          {/* Referral Stats */}
+          <div className="terminal-card rounded p-3 sm:p-4 widget-hover">
             <div className="flex items-center gap-2 mb-2">
-              <Users className="h-4 w-4 text-success" />
+              <Users className="h-4 w-4 text-primary" />
               <span className="text-[10px] sm:text-xs text-muted-foreground">Referrals</span>
             </div>
             <p className="text-base sm:text-lg font-bold text-foreground">3</p>
@@ -78,29 +78,29 @@ export default function Dashboard() {
         </div>
       )}
       
-      {/* Elite-Only Analytics - Responsive */}
+      {/* Elite-Only Analytics */}
       {canAccessElite && (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          {/* 8% Team Override - ELITE */}
-          <div className="glass-card rounded-xl p-3 sm:p-4 border border-alpha/20">
+          {/* Team Override */}
+          <div className="terminal-card rounded p-3 sm:p-4 border border-primary/20 widget-hover">
             <div className="flex items-center gap-2 mb-2">
-              <Crown className="h-4 w-4 text-alpha" />
+              <Crown className="h-4 w-4 text-primary" />
               <span className="text-[10px] sm:text-xs text-muted-foreground">Team Override</span>
             </div>
-            <p className="text-base sm:text-lg font-bold text-alpha">8%</p>
+            <p className="text-base sm:text-lg font-bold text-primary text-glow-cyan">8%</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground">Active rate</p>
           </div>
           
-          {/* Royalty Income - ELITE */}
-          <div className="glass-card rounded-xl p-3 sm:p-4 border border-alpha/20">
+          {/* Royalty Income */}
+          <div className="terminal-card rounded p-3 sm:p-4 border border-primary/20 widget-hover">
             <div className="flex items-center gap-2 mb-2">
-              <Crown className="h-4 w-4 text-alpha" />
+              <Crown className="h-4 w-4 text-primary" />
               <span className="text-[10px] sm:text-xs text-muted-foreground">Referral Credits</span>
             </div>
             <p className="text-base sm:text-lg font-bold text-foreground">
               ₳{formatAlpha(royaltyWallet?.balance || 0)}
             </p>
-            <p className="text-[10px] sm:text-xs text-success">+₳{formatAlpha((royaltyWallet?.balance || 0) * 0.08)} this week</p>
+            <p className="text-[10px] sm:text-xs text-primary">+₳{formatAlpha((royaltyWallet?.balance || 0) * 0.08)} this week</p>
           </div>
         </div>
       )}
@@ -108,7 +108,7 @@ export default function Dashboard() {
       {/* Responsive Triple-Balance Wallet Engine */}
       <ResponsiveWalletEngine />
 
-      {/* Mobile Trading Ticker (sticky bottom bar) */}
+      {/* Mobile Trading Ticker */}
       <StickyTradingTicker />
     </MemberLayout>
   );

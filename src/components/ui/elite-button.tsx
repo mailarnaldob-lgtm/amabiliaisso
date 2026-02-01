@@ -4,40 +4,36 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * Elite Button Component
- * Features haptic-style CSS transitions for zero-lag tactile response
- * Implements TradingView Terminal aesthetic with premium interactions
+ * 2026 Elite Button Component
+ * Features haptic-style CSS transitions with Cyan accent
  */
 
 const eliteButtonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg",
-    "text-sm font-semibold tracking-wide uppercase",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded",
+    "text-sm font-semibold tracking-wide",
     "ring-offset-background transition-all duration-150",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     "disabled:pointer-events-none disabled:opacity-50",
-    // Haptic-style transitions
     "transform-gpu will-change-transform",
-    "active:scale-[0.97] active:brightness-90",
-    "hover:brightness-110 hover:shadow-lg",
-    // Fast response animation
+    "active:scale-[0.98] active:brightness-90",
+    "hover:brightness-110",
     "transition-[transform,filter,box-shadow]",
   ].join(" "),
   {
     variants: {
       variant: {
         default: [
-          "bg-gradient-to-r from-primary to-primary/80",
+          "bg-gradient-to-r from-primary to-primary/90",
           "text-primary-foreground",
           "shadow-md shadow-primary/20",
           "hover:shadow-primary/40",
         ].join(" "),
         alpha: [
-          "bg-gradient-to-r from-amber-500 to-orange-600",
-          "text-white",
-          "shadow-md shadow-amber-500/30",
-          "hover:shadow-amber-500/50",
-          "active:from-amber-600 active:to-orange-700",
+          "bg-gradient-to-r from-primary to-primary/90",
+          "text-primary-foreground",
+          "shadow-md shadow-primary/30",
+          "hover:shadow-primary/50",
         ].join(" "),
         success: [
           "bg-gradient-to-r from-emerald-500 to-teal-600",
@@ -52,7 +48,7 @@ const eliteButtonVariants = cva(
           "hover:shadow-purple-500/50",
         ].join(" "),
         outline: [
-          "border-2 border-primary/50",
+          "border border-primary/50",
           "bg-transparent",
           "text-primary",
           "hover:bg-primary/10",
