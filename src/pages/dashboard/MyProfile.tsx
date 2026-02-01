@@ -30,7 +30,6 @@ export default function MyProfile() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ full_name?: string; phone?: string }>({});
 
-  // Update form when profile loads
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name);
@@ -97,41 +96,38 @@ export default function MyProfile() {
 
   const TierIcon = getTierIcon(profile?.membership_tier || null);
 
-  // Quick access functions with navigation
+  // Quick access navigation - 2026 theme
   const quickFunctions = [
     { 
       icon: Landmark, 
       label: 'Bank', 
-      description: 'Manage your credits',
-      path: '/dashboard/bank',
-      color: 'from-amber-500 to-orange-600'
+      description: 'Manage credits',
+      path: '/dashboard/bank'
     },
     { 
       icon: Target, 
       label: 'Market', 
       description: 'P2P marketplace',
-      path: '/dashboard/market',
-      color: 'from-blue-500 to-cyan-600'
+      path: '/dashboard/market'
     },
     { 
       icon: TrendingUp, 
       label: 'Finance', 
-      description: 'Lending & borrowing',
-      path: '/dashboard/finance',
-      color: 'from-purple-500 to-pink-600'
+      description: 'Lending',
+      path: '/dashboard/finance'
     },
     { 
       icon: Sprout, 
       label: 'Growth', 
-      description: 'Tasks & activities',
-      path: '/dashboard/growth',
-      color: 'from-emerald-500 to-teal-600'
+      description: 'Tasks',
+      path: '/dashboard/growth'
     },
   ];
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="bg-atmosphere" />
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
@@ -139,53 +135,55 @@ export default function MyProfile() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="border-b border-border bg-card">
+      {/* 2026 Background Atmosphere */}
+      <div className="bg-atmosphere" />
+      
+      {/* Header - 2026 Style */}
+      <header className="border-b border-border bg-card/95 backdrop-blur-xl sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
-          <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+          <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />
-            Back to Dashboard
+            <span className="text-sm">Back to Dashboard</span>
           </Link>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 max-w-2xl space-y-6">
-        {/* Profile Header */}
-        <div className="text-center py-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 mx-auto mb-4 flex items-center justify-center">
-            <TierIcon className="h-8 w-8 text-white" />
+      <main className="container mx-auto px-4 py-6 max-w-2xl space-y-6 relative z-10">
+        {/* Profile Header - 2026 Theme */}
+        <div className="text-center py-6">
+          <div className="w-20 h-20 rounded bg-primary/10 border border-primary/30 mx-auto mb-4 flex items-center justify-center cyan-glow">
+            <TierIcon className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">{profile?.full_name || 'Member'}</h2>
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <Badge className="capitalize bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+          <h2 className="text-xl font-bold text-foreground tracking-tight">{profile?.full_name || 'Member'}</h2>
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <Badge className="capitalize bg-primary text-primary-foreground">
               {profile?.membership_tier || 'basic'} Member
             </Badge>
             {profile?.is_kyc_verified && (
-              <Badge variant="outline" className="border-success text-success">
-                <Shield className="w-3 h-3 mr-1" /> KYC Verified
+              <Badge variant="outline" className="border-primary/50 text-primary">
+                <Shield className="w-3 h-3 mr-1" /> Verified
               </Badge>
             )}
           </div>
         </div>
 
-        {/* Referral Card */}
-        <Card className="border-border">
+        {/* Referral Card - 2026 Style */}
+        <Card className="border-border bg-card">
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground mb-2">Your Referral Code</p>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
-              <span className="font-mono text-2xl font-bold text-primary">{profile?.referral_code || '------'}</span>
-              <Button size="sm" variant="outline" onClick={copyReferralCode}>
+            <div className="flex items-center justify-between p-3 rounded bg-muted/30 border border-border">
+              <span className="font-mono text-2xl font-bold text-primary text-glow-cyan">{profile?.referral_code || '------'}</span>
+              <Button size="sm" variant="outline" onClick={copyReferralCode} className="haptic-press">
                 <Copy className="h-4 w-4 mr-1" /> Copy
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Earn 40% commission on every referral!</p>
+            <p className="text-xs text-muted-foreground mt-2">Earn 50% commission on every referral!</p>
           </CardContent>
         </Card>
 
-        {/* ═══════════════════════════════════════════════════════════════
-            QUICK ACCESS FUNCTIONS - Bank, Market, Finance, Growth
-        ═══════════════════════════════════════════════════════════════ */}
+        {/* Quick Access Grid - 2026 Theme */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Quick Access
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -193,10 +191,10 @@ export default function MyProfile() {
               <button
                 key={fn.path}
                 onClick={() => navigate(fn.path)}
-                className="titanium-card p-4 text-left hover:border-primary/50 transition-all group"
+                className="terminal-card p-4 text-left widget-hover transition-all group rounded"
               >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${fn.color} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
-                  <fn.icon className="h-6 w-6 text-white" />
+                <div className="w-12 h-12 rounded bg-primary/10 border border-primary/20 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <fn.icon className="h-6 w-6 text-primary" />
                 </div>
                 <p className="font-medium text-foreground">{fn.label}</p>
                 <p className="text-xs text-muted-foreground">{fn.description}</p>
@@ -205,11 +203,11 @@ export default function MyProfile() {
           </div>
         </div>
 
-        {/* Collapsible Profile Form */}
-        <Card className="border-border">
+        {/* Profile Form - 2026 Style */}
+        <Card className="border-border bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <User className="h-4 w-4" />
+              <User className="h-4 w-4 text-primary" />
               Personal Information
             </CardTitle>
             <CardDescription className="text-xs">Update your profile details</CardDescription>
@@ -225,7 +223,7 @@ export default function MyProfile() {
                     type="email"
                     value={user?.email || ''}
                     disabled
-                    className="bg-muted text-sm"
+                    className="bg-muted/30 text-sm"
                   />
                 </div>
               </div>
@@ -257,34 +255,34 @@ export default function MyProfile() {
                 {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
               </div>
 
-              <Button type="submit" size="sm" disabled={isSubmitting} className="w-full">
+              <Button type="submit" size="sm" disabled={isSubmitting} className="w-full haptic-press">
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* Upgrade CTA */}
+        {/* Upgrade CTA - 2026 Style */}
         {profile?.membership_tier !== 'elite' && (
           <Link to="/dashboard/upgrade">
             <Card className="border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer">
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-foreground">Upgrade Your Access Level</p>
-                  <p className="text-sm text-muted-foreground">Unlock more participation opportunities</p>
+                  <p className="text-sm text-muted-foreground">Unlock more opportunities</p>
                 </div>
-                <EliteButton variant="success" size="sm">
-                  <Zap className="h-4 w-4 mr-1" /> Upgrade Now
+                <EliteButton variant="default" size="sm" className="haptic-press">
+                  <Zap className="h-4 w-4 mr-1" /> Upgrade
                 </EliteButton>
               </CardContent>
             </Card>
           </Link>
         )}
 
-        {/* Sign Out */}
+        {/* Sign Out - 2026 Style */}
         <Button 
           variant="outline" 
-          className="w-full text-destructive border-destructive/50 hover:bg-destructive/10"
+          className="w-full text-destructive border-destructive/50 hover:bg-destructive/10 haptic-press"
           onClick={() => signOut()}
         >
           <LogOut className="w-4 h-4 mr-2" /> Sign Out
