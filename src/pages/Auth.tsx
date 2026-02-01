@@ -164,69 +164,87 @@ export default function Auth() {
     setIsLoading(false);
   };
   return <div className="min-h-screen bg-background flex">
-      {/* Left side - Branding */}
-      <div className="hidden lg:w-1/2 relative overflow-hidden lg:flex items-center justify-center bg-primary-foreground">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80 opacity-100 border-0 my-0 px-0 mx-[53px] bg-primary-foreground" />
-        <div className="relative z-10 flex-col border-primary-foreground text-[#6d0d0d] border-none bg-primary-foreground border-0 rounded-none opacity-100 flex items-center justify-center px-0 py-[188px]">
-          <h1 className="font-bold mb-6 text-7xl text-primary">Amabilia Network</h1>
-          <p className="text-xl mb-12 opacity-90 text-center text-secondary-foreground px-[120px]">
-            Empowering Filipinos to earn daily through an ethical, sustainable, community-powered ecosystem.
+      {/* 2026 Background Atmosphere */}
+      <div className="bg-atmosphere" />
+      
+      {/* Left side - 2026 Branding with Obsidian Theme */}
+      <div className="hidden lg:w-1/2 relative overflow-hidden lg:flex items-center justify-center bg-card">
+        {/* Cyan circuit glow overlay */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[150px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-primary/8 rounded-full blur-[120px]" />
+        </div>
+        
+        <div className="relative z-10 flex flex-col items-center justify-center px-12 py-16 max-w-lg">
+          {/* Logo mark */}
+          <div className="w-16 h-16 rounded bg-primary/10 border border-primary/30 flex items-center justify-center cyan-glow mb-8">
+            <span className="text-primary font-bold text-2xl">A</span>
+          </div>
+          
+          <h1 className="font-bold mb-4 text-4xl text-foreground tracking-tight text-center">
+            Amabilia Network
+          </h1>
+          <p className="text-lg mb-12 text-muted-foreground text-center leading-relaxed">
+            Next-generation financial infrastructure for the global individual.
           </p>
           
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-foreground/20 rounded-lg text-accent">
-                <CreditCard className="h-6 w-6" />
+          <div className="space-y-5 w-full">
+            <div className="flex items-start gap-4 p-4 rounded bg-card/50 border border-border widget-hover">
+              <div className="p-2.5 rounded bg-primary/10 border border-primary/20">
+                <CreditCard className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg text-accent">₱600 Activation</h3>
-                <p className="opacity-80 text-secondary-foreground">One-time fee to unlock all platform features</p>
+                <h3 className="font-semibold text-foreground">₱600 Activation</h3>
+                <p className="text-sm text-muted-foreground">One-time fee to unlock all features</p>
               </div>
             </div>
             
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-foreground/20 rounded-lg text-accent">
-                <Users className="h-6 w-6" />
+            <div className="flex items-start gap-4 p-4 rounded bg-card/50 border border-border widget-hover">
+              <div className="p-2.5 rounded bg-primary/10 border border-primary/20">
+                <Users className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg">50% Referral Commission</h3>
-                <p className="opacity-80 text-secondary-foreground">Earn 50% on every membership you refer</p>
+                <h3 className="font-semibold text-foreground">50% Commission</h3>
+                <p className="text-sm text-muted-foreground">Earn on every membership referral</p>
               </div>
             </div>
             
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-foreground/20 rounded-lg text-accent">
-                <Wallet className="h-6 w-6" />
+            <div className="flex items-start gap-4 p-4 rounded bg-card/50 border border-border widget-hover">
+              <div className="p-2.5 rounded bg-primary/10 border border-primary/20">
+                <Wallet className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg">3 Wallet System</h3>
-                <p className="opacity-80 text-secondary-foreground">Task, Royalty, and Main wallets for organized earnings</p>
+                <h3 className="font-semibold text-foreground">Triple Wallet System</h3>
+                <p className="text-sm text-muted-foreground">Task, Royalty, and Main wallets</p>
               </div>
             </div>
             
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-foreground/20 rounded-lg">
-                <Shield className="h-6 w-6 text-orange-200" />
+            <div className="flex items-start gap-4 p-4 rounded bg-card/50 border border-border widget-hover">
+              <div className="p-2.5 rounded bg-primary/10 border border-primary/20">
+                <Shield className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg">Secure & Verified</h3>
-                <p className="opacity-80 text-secondary-foreground">KYC verified members for a trusted community</p>
+                <h3 className="font-semibold text-foreground">Enterprise Security</h3>
+                <p className="text-sm text-muted-foreground">Bank-grade encryption & verification</p>
               </div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Right side - Auth forms */}
-      <div className="w-full lg:w-1/2 p-8 gap-[53px] flex-col flex items-center justify-center">
-        <Card className="w-full max-w-md border-border shadow-lg">
-          <CardHeader className="text-center">
-            <div className="lg:hidden mb-4">
-              <h1 className="text-3xl font-bold text-primary">Amabilia Network</h1>
+      {/* Right side - 2026 Auth forms with sharp corners */}
+      <div className="w-full lg:w-1/2 p-8 flex flex-col items-center justify-center relative">
+        <Card className="w-full max-w-md border-border shadow-xl bg-card">
+          <CardHeader className="text-center pb-2">
+            <div className="lg:hidden mb-6 flex flex-col items-center">
+              <div className="w-12 h-12 rounded bg-primary/10 border border-primary/30 flex items-center justify-center cyan-glow-sm mb-4">
+                <span className="text-primary font-bold text-xl">A</span>
+              </div>
+              <h1 className="text-2xl font-bold text-foreground">Amabilia Network</h1>
             </div>
-            <CardTitle className="text-2xl">Welcome</CardTitle>
-            <CardDescription>
-              Sign in to your account or create a new one
+            <CardTitle className="text-xl font-semibold">Welcome</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Sign in or create your account
             </CardDescription>
           </CardHeader>
           <CardContent>
