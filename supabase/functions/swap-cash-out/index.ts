@@ -57,6 +57,26 @@ serve(async (req) => {
       throw new Error(`Minimum withdrawal is ₳${feeAmount + 1} (after ₳${feeAmount} fee)`);
     }
 
+    // SOVEREIGN V9.4: Rate limiting - 2 withdrawals per hour
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: rateLimitResult, error: rateLimitError } = await supabaseAdmin.rpc('enforce_rate_limit', {
+      p_user_id: user.id,
+      p_endpoint: 'swap-cash-out',
+      p_limit: 2,
+      p_window_minutes: 60
+    });
+
+    if (rateLimitError) {
+      console.error('[CASH-OUT] Rate limit check error:', rateLimitError);
+    } else if (rateLimitResult) {
+      console.warn(`[CASH-OUT] Rate limit exceeded for user ${user.id}`);
+      throw new Error('Too many withdrawal requests. Please wait 1 hour.');
+    }
+
     // SOVEREIGN V9.4: Create pending cash-out request instead of direct deduction
     // The request will be reviewed by an admin before funds are deducted
     const { data: insertResult, error: insertError } = await supabaseClient

@@ -129,6 +129,24 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // SOVEREIGN V9.4: Rate limiting - 3 payment submissions per hour
+    const { data: rateLimitResult, error: rateLimitError } = await supabaseAdmin.rpc('enforce_rate_limit', {
+      p_user_id: userId,
+      p_endpoint: 'submit-membership-payment',
+      p_limit: 3,
+      p_window_minutes: 60
+    });
+
+    if (rateLimitError) {
+      console.error('[SUBMIT-PAYMENT] Rate limit check error:', rateLimitError);
+    } else if (rateLimitResult) {
+      console.warn(`[SUBMIT-PAYMENT] Rate limit exceeded for user ${userId}`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Too many payment submissions. Please wait 1 hour.', code: 'ERR_RATE_001' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Check user's current membership
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')

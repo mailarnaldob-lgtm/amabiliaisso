@@ -120,6 +120,24 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // SOVEREIGN V9.4: Rate limiting - 10 transfers per 5 minutes
+    const { data: rateLimitResult, error: rateLimitError } = await supabaseAdmin.rpc('enforce_rate_limit', {
+      p_user_id: userId,
+      p_endpoint: 'internal-transfer',
+      p_limit: 10,
+      p_window_minutes: 5
+    });
+
+    if (rateLimitError) {
+      console.error('[INTERNAL-TRANSFER] Rate limit check error:', rateLimitError);
+    } else if (rateLimitResult) {
+      console.warn(`[INTERNAL-TRANSFER] Rate limit exceeded for user ${userId}`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Too many requests. Please wait 5 minutes.', code: 'ERR_RATE_001' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Calculate fee (flat ₳5 per Blueprint V8.0)
     const transferFee = 5;
 
