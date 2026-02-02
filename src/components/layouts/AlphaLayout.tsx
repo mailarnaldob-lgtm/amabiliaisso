@@ -10,19 +10,19 @@ interface AlphaLayoutProps {
   appColor?: string;
 }
 
-export function AlphaLayout({ children, title, subtitle, appColor = 'from-primary to-primary' }: AlphaLayoutProps) {
+export function AlphaLayout({ children, title, subtitle }: AlphaLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* 2026 Background Atmosphere */}
       <div className="bg-atmosphere" />
       
-      {/* Header - 2026 Glassmorphism with sharp corners */}
+      {/* Header - 2026 Glassmorphism with Golden-Yellow Accent */}
       {title && (
-        <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-xl">
+        <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 h-16">
             <div>
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full bg-primary`} />
+                <div className="w-2 h-2 rounded-full bg-[#FFD700]" />
                 <h1 className="text-lg font-semibold text-foreground tracking-tight">{title}</h1>
               </div>
               {subtitle && (
@@ -30,9 +30,10 @@ export function AlphaLayout({ children, title, subtitle, appColor = 'from-primar
               )}
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded hover:bg-muted/50 transition-colors haptic-press">
+              <Link to="/dashboard/transactions" className="p-2 rounded hover:bg-muted/50 transition-colors haptic-press relative">
                 <Bell className="h-5 w-5 text-muted-foreground" />
-              </button>
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FFD700]" />
+              </Link>
               <Link to="/dashboard/settings" className="p-2 rounded hover:bg-muted/50 transition-colors haptic-press">
                 <Settings className="h-5 w-5 text-muted-foreground" />
               </Link>
