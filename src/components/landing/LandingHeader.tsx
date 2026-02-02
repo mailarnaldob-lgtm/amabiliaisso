@@ -1,21 +1,38 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
+/**
+ * LandingHeader V8.5 - Sovereign Prestige Navigation
+ * High-end fintech aesthetic with smart window logic
+ * Desktop: Auth opens in new tab | Mobile: Same window navigation
+ */
 export function LandingHeader() {
+  const isMobile = useIsMobile();
+
+  const handleAuthNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Desktop: Open in new tab | Mobile: Navigate in same window
+    if (!isMobile) {
+      e.preventDefault();
+      window.open('/auth', '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <motion.header 
       className="sticky top-0 z-50"
       style={{
-        background: 'hsl(220 23% 5% / 0.9)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid hsl(45 100% 51% / 0.1)'
+        background: 'hsl(220 23% 5% / 0.95)',
+        backdropFilter: 'blur(24px)',
+        borderBottom: '1px solid hsl(45 100% 51% / 0.08)'
       }}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="container mx-auto py-4 flex items-center justify-between px-6 lg:px-8">
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <motion.div 
             className="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -37,35 +54,72 @@ export function LandingHeader() {
               ₳
             </span>
           </motion.div>
-          <span className="text-xl font-bold tracking-tight text-foreground group-hover:text-amber-400 transition-colors">
-            Amabilia
+          <span 
+            className="text-xl font-semibold tracking-[0.15em] text-foreground group-hover:text-amber-400 transition-colors duration-300"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            AMABILIA
           </span>
         </Link>
         
-        <div className="flex items-center gap-3">
-          <Link to="/auth">
+        {/* Navigation + Auth Cluster */}
+        <nav className="flex items-center gap-2 sm:gap-4">
+          {/* About Link */}
+          <Link 
+            to="/about" 
+            className="relative px-3 py-2 text-sm font-medium tracking-wide text-muted-foreground hover:text-foreground transition-colors duration-300 group"
+          >
+            <span>About</span>
+            <span 
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] group-hover:w-full transition-all duration-300"
+              style={{ background: 'linear-gradient(90deg, transparent, #FFD700, transparent)' }}
+            />
+          </Link>
+
+          {/* Contact Link */}
+          <Link 
+            to="/contact" 
+            className="relative px-3 py-2 text-sm font-medium tracking-wide text-muted-foreground hover:text-foreground transition-colors duration-300 group"
+          >
+            <span>Contact</span>
+            <span 
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] group-hover:w-full transition-all duration-300"
+              style={{ background: 'linear-gradient(90deg, transparent, #FFD700, transparent)' }}
+            />
+          </Link>
+
+          {/* Divider */}
+          <div 
+            className="hidden sm:block w-px h-6 mx-2"
+            style={{ background: 'hsl(45 100% 51% / 0.2)' }}
+          />
+
+          {/* Login Button */}
+          <Link to="/auth" onClick={handleAuthNavigation}>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="hidden sm:inline-flex text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10"
+              className="text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10 font-medium tracking-wide transition-all duration-300"
             >
               Login
             </Button>
           </Link>
-          <Link to="/auth">
+
+          {/* Access Portal CTA */}
+          <Link to="/auth" onClick={handleAuthNavigation}>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button 
-                className="px-6 py-2 text-sm rounded-lg font-semibold text-black"
+                className="px-5 py-2 text-sm rounded-md font-semibold text-black tracking-wide"
                 style={{
                   background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-                  boxShadow: '0 0 20px hsl(45 100% 51% / 0.3)'
+                  boxShadow: '0 0 20px hsl(45 100% 51% / 0.3), inset 0 1px 0 hsl(45 100% 80% / 0.3)'
                 }}
               >
                 Access Portal
               </Button>
             </motion.div>
           </Link>
-        </div>
+        </nav>
       </div>
     </motion.header>
   );
