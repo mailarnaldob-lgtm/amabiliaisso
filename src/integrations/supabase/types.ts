@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_campaigns: {
+        Row: {
+          advertiser_id: string
+          approved_at: string | null
+          approved_by: string | null
+          campaign_type: string
+          created_at: string | null
+          current_completions: number
+          description: string
+          expires_at: string | null
+          id: string
+          is_featured: boolean | null
+          max_completions: number
+          proof_type: string
+          remaining_budget: number
+          required_level: string
+          reward_per_task: number
+          status: string
+          target_url: string
+          title: string
+          total_budget: number
+          updated_at: string | null
+        }
+        Insert: {
+          advertiser_id: string
+          approved_at?: string | null
+          approved_by?: string | null
+          campaign_type?: string
+          created_at?: string | null
+          current_completions?: number
+          description: string
+          expires_at?: string | null
+          id?: string
+          is_featured?: boolean | null
+          max_completions?: number
+          proof_type?: string
+          remaining_budget: number
+          required_level?: string
+          reward_per_task: number
+          status?: string
+          target_url: string
+          title: string
+          total_budget: number
+          updated_at?: string | null
+        }
+        Update: {
+          advertiser_id?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          campaign_type?: string
+          created_at?: string | null
+          current_completions?: number
+          description?: string
+          expires_at?: string | null
+          id?: string
+          is_featured?: boolean | null
+          max_completions?: number
+          proof_type?: string
+          remaining_budget?: number
+          required_level?: string
+          reward_per_task?: number
+          status?: string
+          target_url?: string
+          title?: string
+          total_budget?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       loan_transactions: {
         Row: {
           amount: number
@@ -506,6 +575,22 @@ export type Database = {
           p_amount: number
           p_fee_percent: number
           p_payment_method: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      create_ad_campaign: {
+        Args: {
+          p_campaign_type: string
+          p_description: string
+          p_expires_days?: number
+          p_max_completions: number
+          p_proof_type: string
+          p_required_level?: string
+          p_reward_per_task: number
+          p_target_url: string
+          p_title: string
+          p_total_budget: number
           p_user_id: string
         }
         Returns: Json
