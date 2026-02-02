@@ -642,6 +642,7 @@ export type Database = {
         Args: { p_loan_id: string; p_user_id: string }
         Returns: Json
       }
+      process_expired_loans: { Args: never; Returns: Json }
       reject_membership_payment: {
         Args: {
           p_admin_id: string
