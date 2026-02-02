@@ -107,9 +107,9 @@ export default function FinanceApp() {
   // Debtor recovery view
   if (showDebtorView) {
     return (
-      <AlphaLayout title="₳LPHA FINANCE" subtitle="P2P Smart Credit" appColor="from-accent to-accent/70">
+      <AlphaLayout title="P2P Finance" subtitle="Smart Credit Protocol">
         <div className="mb-4 flex justify-end">
-          <Button variant="outline" size="sm" onClick={() => setShowDebtorView(false)} className="font-mono text-xs border-platinum/20">
+          <Button variant="outline" size="sm" onClick={() => setShowDebtorView(false)} className="font-mono text-xs border-[#FFD700]/20 text-[#FFD700] hover:bg-[#FFD700]/10">
             Return to Dashboard
           </Button>
         </div>
@@ -119,26 +119,26 @@ export default function FinanceApp() {
   }
 
   return (
-    <AlphaLayout title="₳LPHA FINANCE" subtitle="P2P Smart Credit" appColor="from-accent to-accent/70">
+    <AlphaLayout title="P2P Finance" subtitle="Smart Credit Protocol">
       {/* Circuit Breaker Status */}
       <CircuitBreakerIndicator reserveRatio={115} />
 
       {/* Qualification Check Banner */}
-      <Card className={`my-4 bg-slate/60 backdrop-blur-xl ${qualificationMet ? 'border-emerald-500/30' : 'border-amber-500/30'}`}>
+      <Card className={`my-4 bg-card backdrop-blur-xl border ${qualificationMet ? 'border-emerald-500/30' : 'border-[#FFD700]/30'}`}>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${qualificationMet ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-amber-500/10 border border-amber-500/20'}`}>
-              {qualificationMet ? <CheckCircle2 className="h-5 w-5 text-emerald-400" /> : <Shield className="h-5 w-5 text-amber-400" />}
+            <div className={`p-2 rounded-lg ${qualificationMet ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#FFD700]/10 border border-[#FFD700]/20'}`}>
+              {qualificationMet ? <CheckCircle2 className="h-5 w-5 text-emerald-400" /> : <Shield className="h-5 w-5 text-[#FFD700]" />}
             </div>
             <div className="flex-1">
-              <p className="font-medium text-platinum font-mono">
-                {qualificationMet ? 'QUALIFIED_FOR_P2P_CREDIT' : 'QUALIFICATION_REQUIRED'}
+              <p className="font-medium text-foreground">
+                {qualificationMet ? 'Qualified for P2P Credit' : 'Qualification Required'}
               </p>
-              <p className="text-xs text-platinum/50 font-mono">
-                {qualificationMet ? 'You meet requirements for lending and borrowing' : 'Invite 3 active participants to unlock'}
+              <p className="text-xs text-muted-foreground">
+                {qualificationMet ? 'You meet requirements for lending and borrowing' : 'Invite 3 active partners to unlock'}
               </p>
             </div>
-            <Badge variant="outline" className={`font-mono ${qualificationMet ? 'border-emerald-500/30 text-emerald-400' : 'border-amber-500/30 text-amber-400'}`}>
+            <Badge variant="outline" className={`font-mono ${qualificationMet ? 'border-emerald-500/30 text-emerald-400' : 'border-[#FFD700]/30 text-[#FFD700]'}`}>
               {referralCount}/3
             </Badge>
           </div>
@@ -147,68 +147,68 @@ export default function FinanceApp() {
 
       {/* Tabs for Lend/Borrow */}
       <Tabs defaultValue="lend" className="mb-6">
-        <TabsList className="grid w-full grid-cols-2 mb-4 bg-slate/80 border border-platinum/10 p-1">
-          <TabsTrigger value="lend" className="gap-2 font-mono text-sm data-[state=active]:bg-accent/20 data-[state=active]:text-accent">
+        <TabsList className="grid w-full grid-cols-2 mb-4 bg-card border border-border p-1">
+          <TabsTrigger value="lend" className="gap-2 text-sm data-[state=active]:bg-[#FFD700]/20 data-[state=active]:text-[#FFD700]">
             <TrendingUp className="h-4 w-4" />
-            LEND
+            Lend
           </TabsTrigger>
-          <TabsTrigger value="borrow" className="gap-2 font-mono text-sm data-[state=active]:bg-accent/20 data-[state=active]:text-accent">
+          <TabsTrigger value="borrow" className="gap-2 text-sm data-[state=active]:bg-[#FFD700]/20 data-[state=active]:text-[#FFD700]">
             <TrendingDown className="h-4 w-4" />
-            BORROW
+            Borrow
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="lend">
-          {/* Lend Summary - Terminal Style */}
-          <Card className="mb-4 overflow-hidden bg-slate/80 border-accent/20 backdrop-blur-xl">
-            <div className="bg-gradient-to-br from-accent/20 to-accent/5 p-5 border-b border-accent/10">
-              <p className="text-xs text-platinum/60 font-mono uppercase tracking-widest">7_DAY_CREDIT_CYCLE</p>
+          {/* Lend Summary - Golden-Yellow Theme */}
+          <Card className="mb-4 overflow-hidden bg-card border-[#FFD700]/20 backdrop-blur-xl">
+            <div className="bg-gradient-to-br from-[#FFD700]/20 to-[#FFA500]/5 p-5 border-b border-[#FFD700]/10">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">7-Day Credit Cycle</p>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-4xl font-bold text-accent font-display">3%</span>
-                <span className="text-sm text-platinum/60 font-mono">VARIABLE_RETURN</span>
+                <span className="text-4xl font-bold text-[#FFD700]">3%</span>
+                <span className="text-sm text-muted-foreground">Weekly Return</span>
               </div>
-              <div className="flex items-center gap-4 mt-4 text-xs text-platinum/50 font-mono">
+              <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <Percent className="h-3 w-3 text-accent" />
-                  1% ENTRY
+                  <Percent className="h-3 w-3 text-[#FFD700]" />
+                  1% Entry Fee
                 </span>
                 <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3 text-accent" />
-                  168h LOCK
+                  <Calendar className="h-3 w-3 text-[#FFD700]" />
+                  7-Day Lock
                 </span>
                 <span className="flex items-center gap-1">
-                  <Lock className="h-3 w-3 text-accent" />
-                  NON-GUARANTEED
+                  <Lock className="h-3 w-3 text-[#FFD700]" />
+                  Non-Guaranteed
                 </span>
               </div>
             </div>
           </Card>
 
           {/* Marketplace Offers */}
-          <h3 className="text-xs font-mono text-platinum/50 uppercase tracking-widest mb-3">
-            CREDIT_MARKETPLACE
+          <h3 className="text-xs text-muted-foreground uppercase tracking-widest mb-3">
+            Credit Marketplace
           </h3>
           
           {lendOffers.map(offer => (
-            <Card key={offer.id} className="mb-3 bg-slate/60 border-platinum/10 hover:border-accent/30 transition-all duration-150">
+            <Card key={offer.id} className="mb-3 bg-card border-border hover:border-[#FFD700]/30 transition-all duration-150">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-accent/10 border border-accent/20">
-                      <TrendingUp className="h-5 w-5 text-accent" />
+                    <div className="p-2 rounded-lg bg-[#FFD700]/10 border border-[#FFD700]/20">
+                      <TrendingUp className="h-5 w-5 text-[#FFD700]" />
                     </div>
                     <div>
-                      <p className="font-bold text-platinum font-mono">₳{formatAlpha(offer.amount)}</p>
-                      <p className="text-xs text-platinum/50 font-mono">
-                        {offer.rate}% • {offer.term}d
+                      <p className="font-bold text-foreground font-mono">₳{formatAlpha(offer.amount)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {offer.rate}% • {offer.term} days
                       </p>
                     </div>
                   </div>
                   <Badge 
                     variant={offer.status === 'matched' ? 'default' : 'outline'} 
-                    className={`font-mono text-[10px] ${offer.status === 'matched' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'border-platinum/20 text-platinum/60'}`}
+                    className={`text-[10px] ${offer.status === 'matched' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'border-[#FFD700]/20 text-[#FFD700]'}`}
                   >
-                    {offer.status === 'matched' ? 'MATCHED' : 'AVAILABLE'}
+                    {offer.status === 'matched' ? 'Matched' : 'Available'}
                   </Badge>
                 </div>
               </CardContent>
@@ -216,16 +216,16 @@ export default function FinanceApp() {
           ))}
 
           <Button 
-            className="w-full mt-4 bg-accent hover:bg-accent/90 text-obsidian font-mono font-bold active:scale-95 transition-all duration-150" 
+            className="w-full mt-4 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:opacity-90 text-black font-bold active:scale-95 transition-all duration-150" 
             disabled={!qualificationMet} 
             onClick={() => handleLendClick(1000)}
           >
             <TrendingUp className="h-4 w-4 mr-2" />
-            POST_LENDING_OFFER
+            Post Lending Offer
           </Button>
           
           {!qualificationMet && (
-            <p className="text-xs text-center text-platinum/40 mt-2 font-mono">
+            <p className="text-xs text-center text-muted-foreground mt-2">
               Complete qualification to unlock lending
             </p>
           )}
@@ -233,38 +233,38 @@ export default function FinanceApp() {
 
         <TabsContent value="borrow">
           {/* Borrower Stats */}
-          <Card className="mb-4 bg-slate/60 border-platinum/10">
+          <Card className="mb-4 bg-card border-border">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-platinum/50 font-mono">CREDIT_LIMIT</span>
-                <span className="font-bold text-platinum font-mono">₳{formatAlpha(borrowerStats.debtLimit)}</span>
+                <span className="text-sm text-muted-foreground">Credit Limit</span>
+                <span className="font-bold text-foreground font-mono">₳{formatAlpha(borrowerStats.debtLimit)}</span>
               </div>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-platinum/50 font-mono">CURRENT_DEBT</span>
-                <span className="font-bold text-accent font-mono">₳{formatAlpha(borrowerStats.currentDebt)}</span>
+                <span className="text-sm text-muted-foreground">Current Debt</span>
+                <span className="font-bold text-[#FFD700] font-mono">₳{formatAlpha(borrowerStats.currentDebt)}</span>
               </div>
-              <Progress value={0} className="h-1.5 bg-obsidian/50" />
-              <p className="text-xs text-platinum/40 mt-2 font-mono">
+              <Progress value={0} className="h-1.5 bg-muted" />
+              <p className="text-xs text-muted-foreground mt-2">
                 Limit based on VPA mission history
               </p>
             </CardContent>
           </Card>
 
           {/* Available Loans */}
-          <h3 className="text-xs font-mono text-platinum/50 uppercase tracking-widest mb-3">
-            AVAILABLE_CREDIT_OFFERS
+          <h3 className="text-xs text-muted-foreground uppercase tracking-widest mb-3">
+            Available Credit Offers
           </h3>
           
           {lendOffers.filter(o => o.status === 'pending').map(offer => (
-            <Card key={offer.id} className="mb-3 bg-slate/60 border-platinum/10 hover:border-accent/30 transition-all duration-150">
+            <Card key={offer.id} className="mb-3 bg-card border-border hover:border-[#FFD700]/30 transition-all duration-150">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-bold text-platinum font-mono">₳{formatAlpha(offer.amount)}</p>
-                    <p className="text-xs text-platinum/50 font-mono">
+                    <p className="font-bold text-foreground font-mono">₳{formatAlpha(offer.amount)}</p>
+                    <p className="text-xs text-muted-foreground">
                       Total: ₳{formatAlpha(Math.round(offer.amount * 1.03))}
                     </p>
-                    <p className="text-xs text-platinum/40 font-mono">
+                    <p className="text-xs text-muted-foreground">
                       + ₳10 origination + 1% fee
                     </p>
                   </div>
@@ -273,9 +273,9 @@ export default function FinanceApp() {
                     variant="outline" 
                     disabled={!qualificationMet} 
                     onClick={() => handleBorrowClick(offer.amount)}
-                    className="font-mono text-xs border-accent/30 text-accent hover:bg-accent/10 active:scale-95 transition-all duration-150"
+                    className="text-xs border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/10 active:scale-95 transition-all duration-150"
                   >
-                    ACCEPT
+                    Accept
                   </Button>
                 </div>
               </CardContent>
@@ -287,23 +287,23 @@ export default function FinanceApp() {
       {/* Active Loans with Countdown Timer */}
       {activeLoans.length > 0 && (
         <>
-          <h3 className="text-xs font-mono text-platinum/50 uppercase tracking-widest mb-3">
-            MY_ACTIVE_CREDITS
+          <h3 className="text-xs text-muted-foreground uppercase tracking-widest mb-3">
+            My Active Credits
           </h3>
           
           {activeLoans.map(loan => (
             <div key={loan.id} className="space-y-3 mb-4">
-              <Card className="bg-slate/60 border-accent/20">
+              <Card className="bg-card border-[#FFD700]/20">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-accent/20 text-accent border-accent/30 font-mono text-[10px]">LENDING</Badge>
-                      <span className="text-sm text-platinum/50 font-mono">
+                      <Badge className="bg-[#FFD700]/20 text-[#FFD700] border-[#FFD700]/30 text-[10px]">Lending</Badge>
+                      <span className="text-sm text-muted-foreground">
                         → {loan.borrower}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-2xl font-bold text-platinum font-mono">₳{formatAlpha(loan.amount)}</span>
+                      <span className="text-2xl font-bold text-foreground font-mono">₳{formatAlpha(loan.amount)}</span>
                       <span className="text-emerald-400 font-medium ml-2 font-mono">
                         +₳{formatAlpha(loan.expectedReturn - loan.amount)}
                       </span>

@@ -12,14 +12,15 @@ import { UserStateIndicator, UserLifecycleFlow } from '@/components/alpha/UserSt
 import { useOptimisticWallets } from '@/hooks/useOptimisticWallets';
 import { useWalletTransactions, WalletTransaction } from '@/hooks/useWalletTransactions';
 import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 // Transaction display mapping
 function getTransactionDisplay(tx: WalletTransaction) {
   const type = tx.transaction_type;
   if (type.includes('cash_in') || type.includes('deposit')) {
     return {
-      icon: <ArrowDownLeft className="h-4 w-4 text-primary" />,
-      bg: 'bg-primary/10',
+      icon: <ArrowDownLeft className="h-4 w-4 text-[#FFD700]" />,
+      bg: 'bg-[#FFD700]/10',
       label: 'Deposit'
     };
   }
@@ -39,22 +40,22 @@ function getTransactionDisplay(tx: WalletTransaction) {
   }
   if (type.includes('referral') || type.includes('commission') || type.includes('royalty')) {
     return {
-      icon: <Coins className="h-4 w-4 text-primary" />,
-      bg: 'bg-primary/10',
+      icon: <Coins className="h-4 w-4 text-[#FFD700]" />,
+      bg: 'bg-[#FFD700]/10',
       label: 'Royalty'
     };
   }
   if (type.includes('task') || type.includes('reward') || type.includes('mission')) {
     return {
-      icon: <CheckCircle2 className="h-4 w-4 text-primary" />,
-      bg: 'bg-primary/10',
+      icon: <CheckCircle2 className="h-4 w-4 text-emerald-400" />,
+      bg: 'bg-emerald-500/10',
       label: 'Mission'
     };
   }
   if (type.includes('loan') || type.includes('lending')) {
     return {
-      icon: <Banknote className="h-4 w-4 text-primary" />,
-      bg: 'bg-primary/10',
+      icon: <Banknote className="h-4 w-4 text-[#FFD700]" />,
+      bg: 'bg-[#FFD700]/10',
       label: 'Lending'
     };
   }
@@ -71,6 +72,7 @@ function getTransactionDisplay(tx: WalletTransaction) {
     label: 'Transaction'
   };
 }
+
 export default function BankApp() {
   const wallets = useAppStore(state => state.wallets);
   const [exchangerOpen, setExchangerOpen] = useState(false);
@@ -82,27 +84,31 @@ export default function BankApp() {
     data: transactions,
     isLoading: txLoading
   } = useWalletTransactions(10);
+  
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
   const mainWallet = wallets.find(w => w.type === 'main');
   const taskWallet = wallets.find(w => w.type === 'task');
   const royaltyWallet = wallets.find(w => w.type === 'royalty');
+  
   const handleTransferToMain = async () => {
     if (taskWallet && taskWallet.balance >= 100) {
       await optimisticTransfer('task', 'main', taskWallet.balance);
     }
   };
-  return <AlphaLayout title="Bank" subtitle="Sovereign Vault & Exchanger" appColor="from-primary to-primary">
+
+  return (
+    <AlphaLayout title="Sovereign Bank" subtitle="Vault & Exchanger">
       {/* User State Indicator */}
       <UserStateIndicator state="ACTIVE" fraudScore={15} />
 
-      {/* Sovereign Vault - 2026 Obsidian/Cyan Theme */}
-      <div className="terminal-card my-6 overflow-hidden relative rounded">
-        <div className="bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground relative z-10">
-          <p className="text-sm opacity-80 mb-1">Total ₳ Credits</p>
+      {/* Sovereign Vault - Golden-Yellow Elite Theme */}
+      <div className="my-6 overflow-hidden relative rounded-xl border border-[#FFD700]/20 bg-card shadow-lg shadow-[#FFD700]/5">
+        <div className="bg-gradient-to-br from-[#FFD700] to-[#FFA500] p-6 text-black relative z-10">
+          <p className="text-sm opacity-80 mb-1 font-medium">Total ₳ Credits</p>
           <div className="flex items-baseline gap-2">
             <span className="text-4xl font-bold font-mono tabular-nums">₳{formatAlpha(totalBalance)}</span>
           </div>
-          <p className="text-xs opacity-60 mt-2">
+          <p className="text-xs opacity-70 mt-2">
             Sovereign Ledger Balance • Amabilia Network
           </p>
         </div>
@@ -124,50 +130,81 @@ export default function BankApp() {
         </CardContent>
       </div>
 
-      {/* Quick Actions - 2026 Button Style */}
+      {/* Quick Actions - Golden-Yellow Buttons */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <EliteButton variant="default" size="sm" className="flex-col gap-1 h-auto py-3 haptic-press" onClick={() => setExchangerOpen(true)} leftIcon={<ArrowDownLeft className="h-5 w-5" />}>
-          <span className="text-[10px]">Exchange</span>
+        <EliteButton 
+          variant="default" 
+          size="sm" 
+          className="flex-col gap-1 h-auto py-3 haptic-press bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:opacity-90 text-black font-bold" 
+          onClick={() => setExchangerOpen(true)} 
+          leftIcon={<ArrowDownLeft className="h-5 w-5" />}
+        >
+          <span className="text-[10px]">Top-up</span>
         </EliteButton>
-        <EliteButton variant="outline" size="sm" className="flex-col gap-1 h-auto py-3 haptic-press" loading={hasPendingTransactions} onClick={handleTransferToMain} leftIcon={<RefreshCw className="h-5 w-5" />}>
+        <EliteButton 
+          variant="outline" 
+          size="sm" 
+          className="flex-col gap-1 h-auto py-3 haptic-press border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/10" 
+          loading={hasPendingTransactions} 
+          onClick={handleTransferToMain} 
+          leftIcon={<RefreshCw className="h-5 w-5" />}
+        >
           <span className="text-[10px]">Transfer</span>
         </EliteButton>
-        <EliteButton variant="ghost" size="sm" className="flex-col gap-1 h-auto py-3 haptic-press" disabled leftIcon={<QrCode className="h-5 w-5" />}>
+        <Link to="/dashboard/transactions" className="contents">
+          <EliteButton 
+            variant="ghost" 
+            size="sm" 
+            className="flex-col gap-1 h-auto py-3 haptic-press hover:bg-[#FFD700]/10 hover:text-[#FFD700]" 
+            leftIcon={<History className="h-5 w-5" />}
+          >
+            <span className="text-[10px]">History</span>
+          </EliteButton>
+        </Link>
+        <EliteButton 
+          variant="ghost" 
+          size="sm" 
+          className="flex-col gap-1 h-auto py-3 haptic-press hover:bg-[#FFD700]/10 hover:text-[#FFD700]" 
+          disabled 
+          leftIcon={<QrCode className="h-5 w-5" />}
+        >
           <span className="text-[10px]">QR Code</span>
         </EliteButton>
-        <EliteButton variant="ghost" size="sm" className="flex-col gap-1 h-auto py-3 haptic-press" disabled leftIcon={<History className="h-5 w-5" />}>
-          <span className="text-[10px]">History</span>
-        </EliteButton>
       </div>
 
-      {/* Floating Exchanger Button */}
+      {/* Floating Exchanger Button - Golden */}
       <div className="fixed bottom-28 right-4 z-40">
-        <EliteButton size="icon" variant="default" className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl animate-pulse haptic-press" onClick={() => setExchangerOpen(true)}>
-          <span className="text-2xl font-bold">₳</span>
+        <EliteButton 
+          size="icon" 
+          variant="default" 
+          className="h-14 w-14 rounded-full shadow-lg shadow-[#FFD700]/30 haptic-press bg-gradient-to-br from-[#FFD700] to-[#FFA500] hover:opacity-90" 
+          onClick={() => setExchangerOpen(true)}
+        >
+          <span className="text-2xl font-bold text-black">₳</span>
         </EliteButton>
       </div>
 
-      {/* Credit Accounts - 2026 Theme */}
+      {/* Credit Accounts - Golden Accent */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
           Credit Accounts
         </h3>
         
         <WalletCard name="Main Wallet" balance={mainWallet?.balance || 0} description="Primary credit storage" />
-        
         <WalletCard name="Activity Wallet" balance={taskWallet?.balance || 0} description="Credits from completed activities" />
-        
         <WalletCard name="Royalty Wallet" balance={royaltyWallet?.balance || 0} description="Network participation credits" />
       </div>
 
-      {/* Recent Activity - 2026 Theme */}
+      {/* Recent Activity */}
       <div className="mt-6 space-y-3">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
           Recent Activity
         </h3>
         
-        {txLoading ? <>
-            {[1, 2, 3].map(i => <div key={i} className="terminal-card rounded">
+        {txLoading ? (
+          <>
+            {[1, 2, 3].map(i => (
+              <div key={i} className="rounded-xl border border-border bg-card">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -183,18 +220,20 @@ export default function BankApp() {
                     </div>
                   </div>
                 </CardContent>
-              </div>)}
-          </> : transactions && transactions.length > 0 ? transactions.map(tx => {
-        const display = getTransactionDisplay(tx);
-        const isPositive = tx.amount > 0;
-        const timeAgo = tx.created_at ? formatDistanceToNow(new Date(tx.created_at), {
-          addSuffix: true
-        }) : 'Unknown';
-        return <div key={tx.id} className="terminal-card rounded widget-hover">
+              </div>
+            ))}
+          </>
+        ) : transactions && transactions.length > 0 ? (
+          transactions.map(tx => {
+            const display = getTransactionDisplay(tx);
+            const isPositive = tx.amount > 0;
+            const timeAgo = tx.created_at ? formatDistanceToNow(new Date(tx.created_at), { addSuffix: true }) : 'Unknown';
+            return (
+              <div key={tx.id} className="rounded-xl border border-border bg-card hover:border-[#FFD700]/30 transition-all">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`p-1.5 rounded ${display.bg}`}>
+                      <div className={`p-1.5 rounded-lg ${display.bg}`}>
                         {display.icon}
                       </div>
                       <div>
@@ -205,17 +244,20 @@ export default function BankApp() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`font-bold font-mono tabular-nums ${isPositive ? 'text-primary text-glow-cyan' : 'text-foreground'}`}>
+                      <p className={`font-bold font-mono tabular-nums ${isPositive ? 'text-[#FFD700]' : 'text-foreground'}`}>
                         {isPositive ? '+' : ''}₳{formatAlpha(Math.abs(tx.amount))}
                       </p>
-                      <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                      <Badge variant="outline" className="text-[10px] border-[#FFD700]/30 text-[#FFD700]">
                         {display.label}
                       </Badge>
                     </div>
                   </div>
                 </CardContent>
-              </div>;
-      }) : <div className="terminal-card rounded">
+              </div>
+            );
+          })
+        ) : (
+          <div className="rounded-xl border border-border bg-card">
             <CardContent className="p-6 text-center">
               <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">No transactions yet</p>
@@ -223,14 +265,15 @@ export default function BankApp() {
                 Your activity will appear here
               </p>
             </CardContent>
-          </div>}
+          </div>
+        )}
       </div>
 
       {/* Account Lifecycle */}
-      <div className="terminal-card mt-6 relative rounded">
+      <div className="mt-6 rounded-xl border border-border bg-card relative">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2 text-foreground">
-            <Clock className="h-4 w-4 text-primary" />
+            <Clock className="h-4 w-4 text-[#FFD700]" />
             Account Lifecycle
           </CardTitle>
         </CardHeader>
@@ -240,16 +283,19 @@ export default function BankApp() {
       </div>
 
       {/* Disclaimer */}
-      <div className="mt-8 p-4 rounded bg-muted/30 border border-border">
-        <p className="text-xs text-muted-foreground text-center">₳ Credits are redeemable anytime via the ALPHA Exchanger.</p>
+      <div className="mt-8 p-4 rounded-xl bg-muted/30 border border-border">
+        <p className="text-xs text-muted-foreground text-center">
+          ₳ Credits are redeemable anytime via the Sovereign Exchanger.
+        </p>
       </div>
 
       {/* Exchanger Modal */}
       <ExchangerModal open={exchangerOpen} onOpenChange={setExchangerOpen} />
-    </AlphaLayout>;
+    </AlphaLayout>
+  );
 }
 
-// Wallet Card - 2026 Theme
+// Wallet Card - Golden-Yellow Theme
 function WalletCard({
   name,
   balance,
@@ -259,12 +305,13 @@ function WalletCard({
   balance: number;
   description: string;
 }) {
-  return <div className="terminal-card overflow-hidden widget-hover transition-all rounded">
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden hover:border-[#FFD700]/30 transition-all">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded bg-primary/10 border border-primary/20">
-              <Wallet className="h-5 w-5 text-primary" />
+            <div className="p-2 rounded-lg bg-[#FFD700]/10 border border-[#FFD700]/20">
+              <Wallet className="h-5 w-5 text-[#FFD700]" />
             </div>
             <div>
               <p className="font-medium text-foreground">{name}</p>
@@ -273,9 +320,10 @@ function WalletCard({
           </div>
           <div className="text-right">
             <p className="font-bold text-foreground font-mono tabular-nums">₳{formatAlpha(balance)}</p>
-            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">Active</Badge>
+            <Badge variant="outline" className="text-[10px] border-[#FFD700]/30 text-[#FFD700]">Active</Badge>
           </div>
         </div>
       </CardContent>
-    </div>;
+    </div>
+  );
 }
