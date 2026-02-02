@@ -1,17 +1,30 @@
 project_id = "oquyabvzplwgdiqxctft"
 
+# ============================================
+# SOVEREIGN EDGE FUNCTIONS REGISTRY V9.2
+# Cleaned: Removed legacy MySQL dependencies
+# All functions use code-level JWT verification
+# ============================================
+
+# System Health
 [functions.health]
 verify_jwt = false
 
+# Exchanger Functions
 [functions.swap-cash-in]
 verify_jwt = false
 
 [functions.swap-cash-out]
 verify_jwt = false
 
+# Wallet Operations
 [functions.wallet-transfer]
 verify_jwt = false
 
+[functions.internal-transfer]
+verify_jwt = false
+
+# Lending Marketplace
 [functions.lending-post-offer]
 verify_jwt = false
 
@@ -24,9 +37,7 @@ verify_jwt = false
 [functions.lending-cancel-offer]
 verify_jwt = false
 
-[functions.internal-transfer]
-verify_jwt = false
-
+# VPA & Campaign Functions
 [functions.create-ad-campaign]
 verify_jwt = false
 
@@ -36,35 +47,23 @@ verify_jwt = false
 [functions.submit-membership-payment]
 verify_jwt = false
 
-[functions.mysql-admin-login]
-verify_jwt = false
-
-[functions.mysql-admin-session]
-verify_jwt = false
-
-[functions.mysql-task-proofs]
-verify_jwt = false
-
-[functions.mysql-approve-proof]
-verify_jwt = false
-
-[functions.mysql-user-data]
-verify_jwt = false
-
-[functions.daily-vault-yield]
-verify_jwt = false
-
-[functions.auto-loan-repayment]
-verify_jwt = false
-
+# Utility Functions
 [functions.get-payment-methods]
+verify_jwt = false
+
+# Elite Vault (ABC Smart Vault)
+[functions.vault-deposit]
+verify_jwt = false
+
+[functions.vault-withdraw]
 verify_jwt = false
 
 [functions.verify-abc-access]
 verify_jwt = false
 
-[functions.vault-deposit]
+# Automated Cron Functions
+[functions.daily-vault-yield]
 verify_jwt = false
 
-[functions.vault-withdraw]
+[functions.auto-loan-repayment]
 verify_jwt = false
