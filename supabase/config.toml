@@ -35,3 +35,12 @@ verify_jwt = false
 
 [functions.mysql-user-data]
 verify_jwt = false
+
+[functions.daily-vault-yield]
+verify_jwt = false
+
+[functions.auto-loan-repayment]
+verify_jwt = false
+
+[functions.get-payment-methods]
+verify_jwt = false
