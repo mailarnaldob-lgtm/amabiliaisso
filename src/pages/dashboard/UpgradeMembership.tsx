@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { usePaymentMethods } from '@/hooks/usePaymentMethods';
+import { useEliteQualification } from '@/hooks/useEliteQualification';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import { 
   ArrowLeft,
   Crown,
@@ -22,7 +24,9 @@ import {
   Upload,
   QrCode,
   Shield,
-  TrendingUp
+  TrendingUp,
+  Lock,
+  Users
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -38,6 +42,7 @@ const MEMBERSHIP_TIERS = [
     color: 'bg-secondary',
     borderColor: 'border-secondary/30',
     features: ['50% referral commission', 'Access to community platform'],
+    requiresReferrals: 0,
   },
   {
     id: 'pro',
@@ -47,6 +52,7 @@ const MEMBERSHIP_TIERS = [
     color: 'bg-primary',
     borderColor: 'border-primary/30',
     features: ['50% referral commission', 'Activity-based credits (VPA)', 'Training access'],
+    requiresReferrals: 0,
   },
   {
     id: 'elite',
@@ -56,6 +62,7 @@ const MEMBERSHIP_TIERS = [
     color: 'bg-amber-500',
     borderColor: 'border-amber-500/30',
     features: ['50% referral commission', 'Activity-based credits (VPA)', 'P2P credit marketplace', '1% daily vault yield', 'VIP support'],
+    requiresReferrals: 3, // Must have 3 Direct PRO referrals (Blueprint V8.0)
   },
 ];
 
@@ -63,6 +70,7 @@ export default function UpgradeMembership() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const { data: paymentMethods, isLoading: isLoadingMethods } = usePaymentMethods();
+  const { data: eliteQualification, isLoading: isLoadingQualification } = useEliteQualification();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -75,6 +83,9 @@ export default function UpgradeMembership() {
   const [showQR, setShowQR] = useState(false);
 
   const currentTierIndex = MEMBERSHIP_TIERS.findIndex(t => t.id === profile?.membership_tier);
+  
+  // Filter available tiers - show tiers higher than current
+  // Elite shows but is locked unless user has 3 PRO referrals
   const availableTiers = MEMBERSHIP_TIERS.filter((_, index) => index > currentTierIndex);
 
   const selectedTierData = MEMBERSHIP_TIERS.find(t => t.id === selectedTier);
@@ -170,6 +181,16 @@ export default function UpgradeMembership() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+    
+    // Elite Gatekeeper Check (Blueprint V8.0)
+    if (selectedTier === 'elite' && !eliteQualification?.isQualified) {
+      toast({
+        variant: 'destructive',
+        title: 'Elite Gatekeeper Requirement',
+        description: `You need ${3 - (eliteQualification?.qualifiedReferrals || 0)} more PRO referrals to unlock Elite status.`,
+      });
+      return;
+    }
     
     const result = paymentSchema.safeParse({
       tier: selectedTier,
@@ -269,23 +290,72 @@ export default function UpgradeMembership() {
               <CardDescription>Choose the access level you want to upgrade to</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
+              {/* Elite Gatekeeper Warning */}
+              {selectedTier === 'elite' && !eliteQualification?.isQualified && (
+                <Alert className="mb-6 border-amber-500/30 bg-amber-500/10">
+                  <Lock className="h-4 w-4 text-amber-500" />
+                  <AlertDescription className="text-sm">
+                    <strong className="text-amber-400">Elite Gatekeeper Requirement:</strong> You need{' '}
+                    <span className="font-bold text-amber-300">3 Direct PRO Referrals</span> to unlock Elite status.
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          PRO Referrals: {eliteQualification?.qualifiedReferrals || 0}/3
+                        </span>
+                        <span>{Math.round(((eliteQualification?.qualifiedReferrals || 0) / 3) * 100)}%</span>
+                      </div>
+                      <Progress value={((eliteQualification?.qualifiedReferrals || 0) / 3) * 100} className="h-2" />
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <RadioGroup value={selectedTier} onValueChange={setSelectedTier} className="grid md:grid-cols-3 gap-4">
                 {availableTiers.map((tier) => {
                   const TierIcon = tier.icon;
+                  const isEliteLocked = tier.id === 'elite' && !eliteQualification?.isQualified;
+                  
                   return (
-                    <div key={tier.id}>
-                      <RadioGroupItem value={tier.id} id={tier.id} className="peer sr-only" />
+                    <div key={tier.id} className="relative">
+                      {isEliteLocked && (
+                        <div className="absolute top-2 right-2 z-10">
+                          <Badge variant="outline" className="bg-amber-500/20 border-amber-500/30 text-amber-400 text-xs">
+                            <Lock className="h-3 w-3 mr-1" />
+                            {eliteQualification?.qualifiedReferrals || 0}/3 PRO
+                          </Badge>
+                        </div>
+                      )}
+                      <RadioGroupItem 
+                        value={tier.id} 
+                        id={tier.id} 
+                        className="peer sr-only" 
+                        disabled={isEliteLocked}
+                      />
                       <Label
                         htmlFor={tier.id}
                         className={`flex flex-col items-center p-6 border-2 border-border rounded cursor-pointer 
                           peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 
-                          hover:border-muted transition-all duration-150 widget-hover`}
+                          hover:border-muted transition-all duration-150 widget-hover
+                          ${isEliteLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                       >
                         <div className={`w-12 h-12 rounded ${tier.color} flex items-center justify-center mb-3`}>
-                          <TierIcon className="h-6 w-6 text-primary-foreground" />
+                          {isEliteLocked ? (
+                            <Lock className="h-6 w-6 text-primary-foreground" />
+                          ) : (
+                            <TierIcon className="h-6 w-6 text-primary-foreground" />
+                          )}
                         </div>
                         <span className="font-semibold text-lg text-foreground">{tier.name}</span>
                         <span className="text-2xl font-bold text-primary font-mono mt-1">₳{tier.price.toLocaleString()}</span>
+                        
+                        {tier.requiresReferrals > 0 && (
+                          <Badge variant="outline" className="mt-2 text-xs border-amber-500/30 text-amber-400">
+                            <Users className="h-3 w-3 mr-1" />
+                            Requires {tier.requiresReferrals} PRO Referrals
+                          </Badge>
+                        )}
+                        
                         <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
                           {tier.features.map((f) => (
                             <li key={f} className="flex items-center gap-1.5">
