@@ -1,9 +1,10 @@
 /**
- * ALPHA BANKERS COOPERATIVE - SOVEREIGN EXECUTION V9.1
+ * ALPHA BANKERS COOPERATIVE - SOVEREIGN EXECUTION V9.2
  * Elite-Only High-Performance Financial Engine
- * ABC Smart Vault + P2P Credits System
+ * ABC Smart Vault + P2P Credits System + Auto-Provisioning
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AlphaLayout } from '@/components/layouts/AlphaLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,13 +20,16 @@ import {
   CheckCircle2,
   Vault,
   Users,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles
 } from 'lucide-react';
 import { formatAlpha, cn } from '@/lib/utils';
 import { RiskDisclosureModal } from '@/components/alpha/RiskDisclosureModal';
 import { LoanCountdownTimer } from '@/components/alpha/LoanCountdownTimer';
 import { DebtorRescuePanel } from '@/components/alpha/DebtorRescuePanel';
+import { EliteMomentCelebration } from '@/components/alpha/EliteMomentCelebration';
 import { useEliteQualification } from '@/hooks/useEliteQualification';
+import { useABCAccess, useEliteUnlockDetector } from '@/hooks/useABCAccess';
 import { ABCSmartVault, SmartCreditLedger, ReserveRatioGauge } from '@/components/vault';
 import { useTierAccess } from '@/components/tier';
 import { usePendingLoans, useActiveLoans, useMyBorrowedLoans } from '@/hooks/useLoans';
@@ -34,6 +38,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useWallets } from '@/hooks/useWallets';
+import { useProfile } from '@/hooks/useProfile';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -72,17 +77,28 @@ export default function FinanceApp() {
   const [createOfferOpen, setCreateOfferOpen] = useState(false);
   const [lendAmount, setLendAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEliteCelebration, setShowEliteCelebration] = useState(false);
   
   const { canAccessElite } = useTierAccess();
   const { data: qualificationData, isLoading: loadingQualification } = useEliteQualification();
   const { data: pendingLoans = [], isLoading: loadingOffers, refetch: refetchOffers } = usePendingLoans();
   const { data: borrowedLoans = [] } = useMyBorrowedLoans();
+  const { data: abcAccess } = useABCAccess();
+  const { data: eliteUnlock } = useEliteUnlockDetector();
+  const { data: profile } = useProfile();
   const { getBalance } = useWallets();
   const queryClient = useQueryClient();
 
-  // Qualification check
-  const qualifiedReferrals = qualificationData?.qualifiedReferrals || 0;
-  const qualificationMet = qualifiedReferrals >= REQUIRED_REFERRALS;
+  // Trigger celebration for newly unlocked Elite users
+  useEffect(() => {
+    if (eliteUnlock?.newlyUnlocked && canAccessElite) {
+      setShowEliteCelebration(true);
+    }
+  }, [eliteUnlock?.newlyUnlocked, canAccessElite]);
+
+  // Qualification check - use ABC access data if available
+  const qualifiedReferrals = abcAccess?.referrals?.qualified ?? qualificationData?.qualifiedReferrals ?? 0;
+  const qualificationMet = abcAccess?.referrals?.met ?? qualifiedReferrals >= REQUIRED_REFERRALS;
   
   // Active debt for debtor recovery view
   const activeDebt = borrowedLoans
@@ -225,7 +241,15 @@ export default function FinanceApp() {
   }
 
   return (
-    <AlphaLayout title="Alpha Bankers Cooperative" subtitle="Smart Credit Protocol V9.1">
+    <>
+      {/* Elite Moment Celebration - Golden Confetti */}
+      <EliteMomentCelebration
+        isVisible={showEliteCelebration}
+        onComplete={() => setShowEliteCelebration(false)}
+        userName={profile?.full_name}
+      />
+
+      <AlphaLayout title="Alpha Bankers Cooperative" subtitle="Smart Credit Protocol V9.2">
       {/* ABC Smart Vault - Primary Financial Hub */}
       <ABCSmartVault className="mb-6" />
       
@@ -558,6 +582,7 @@ export default function FinanceApp() {
           amount={pendingAction.amount} 
         />
       )}
-    </AlphaLayout>
+      </AlphaLayout>
+    </>
   );
 }
