@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
+import { HeroVideoPlayer } from './HeroVideoPlayer';
 
 // 2026 Power Statement
 const POWER_STATEMENT = "We engineered a self-sustaining financial architecture that integrated incentivized mission economies with autonomous P2P compounding, successfully bridging the gap between high-velocity liquidity and long-term exponential growth for the global individual.";
@@ -251,44 +252,29 @@ export function HeroSection() {
             </motion.div>
           </motion.div>
           
-          {/* Right: 3D Financial Monoliths with Parallax */}
-          <div className="relative h-[400px] lg:h-[500px] hidden lg:block">
-            <FinancialMonolith className="absolute top-0 right-0 w-48 h-64" delay={0.2} parallaxOffset={30} />
-            <FinancialMonolith className="absolute top-24 right-36 w-40 h-56" delay={0.4} parallaxOffset={50} />
-            <FinancialMonolith className="absolute bottom-0 right-12 w-52 h-48" delay={0.6} parallaxOffset={20} />
+          {/* Right: Video Player with Fallback */}
+          <div className="relative hidden lg:block">
+            <HeroVideoPlayer />
             
-            {/* Floating Alpha Coins */}
-            <motion.div className="absolute top-16 left-8 w-16 h-16 rounded-full text-2xl font-bold text-amber-400 opacity-100 flex-row flex items-center justify-center gap-[10px] mx-[66px]" style={{
-            background: 'radial-gradient(circle, hsl(45 100% 51% / 0.2) 0%, hsl(220 23% 8%) 100%)',
-            border: '2px solid hsl(45 100% 51% / 0.3)',
-            boxShadow: '0 0 30px hsl(45 100% 51% / 0.3)'
-          }} animate={{
-            y: [0, -15, 0],
-            rotate: [0, 5, 0],
-            boxShadow: ['0 0 30px hsl(45 100% 51% / 0.3)', '0 0 50px hsl(45 100% 51% / 0.5)', '0 0 30px hsl(45 100% 51% / 0.3)']
-          }} transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }} whileHover={{
-            scale: 1.2,
-            rotate: 15
-          }}>
-              ₳
-            </motion.div>
-            
-            <motion.div className="absolute bottom-24 left-0 w-12 h-12 rounded-full items-center justify-center text-lg font-bold text-amber-400/70 opacity-80 flex flex-row" style={{
-            background: 'radial-gradient(circle, hsl(45 100% 51% / 0.1) 0%, hsl(220 23% 8%) 100%)',
-            border: '1px solid hsl(45 100% 51% / 0.2)'
-          }} animate={{
-            y: [0, -10, 0],
-            rotate: [0, -5, 0]
-          }} transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5
-          }}>
+            {/* Floating Alpha Coin - Decorative */}
+            <motion.div 
+              className="absolute -top-4 -right-4 w-12 h-12 rounded-full text-lg font-bold text-amber-400 flex items-center justify-center z-10"
+              style={{
+                background: 'radial-gradient(circle, hsl(45 100% 51% / 0.2) 0%, hsl(220 23% 8%) 100%)',
+                border: '2px solid hsl(45 100% 51% / 0.3)',
+                boxShadow: '0 0 30px hsl(45 100% 51% / 0.3)'
+              }}
+              animate={{
+                y: [0, -8, 0],
+                rotate: [0, 5, 0],
+                boxShadow: ['0 0 20px hsl(45 100% 51% / 0.3)', '0 0 40px hsl(45 100% 51% / 0.5)', '0 0 20px hsl(45 100% 51% / 0.3)']
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
               ₳
             </motion.div>
           </div>

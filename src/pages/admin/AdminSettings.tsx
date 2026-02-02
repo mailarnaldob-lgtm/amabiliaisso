@@ -13,6 +13,7 @@ import { CampaignApprovalPanel } from '@/components/admin/CampaignApprovalPanel'
 import { PaymentAssetManager } from '@/components/admin/PaymentAssetManager';
 import { CashInAuditPanel } from '@/components/admin/CashInAuditPanel';
 import { CashOutAuditPanel } from '@/components/admin/CashOutAuditPanel';
+import { MediaManagerPanel } from '@/components/admin/MediaManagerPanel';
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
 import { 
   Bell,
@@ -22,6 +23,7 @@ import {
   LayoutGrid,
   Save,
   ArrowDownToLine,
+  Video,
 } from 'lucide-react';
 
 export default function AdminSettings() {
@@ -47,7 +49,7 @@ export default function AdminSettings() {
         <div className="space-y-8 max-w-5xl">
           {/* Main Settings Tabs */}
           <Tabs defaultValue="cashin" className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-6 bg-card/50 border border-border">
+            <TabsList className="grid w-full grid-cols-7 mb-6 bg-card/50 border border-border">
               <TabsTrigger value="cashin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Wallet className="h-4 w-4 mr-2" />
                 Cash-In
@@ -63,6 +65,10 @@ export default function AdminSettings() {
               <TabsTrigger value="qr-manager" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Wallet className="h-4 w-4 mr-2" />
                 QR Codes
+              </TabsTrigger>
+              <TabsTrigger value="media" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Video className="h-4 w-4 mr-2" />
+                Media
               </TabsTrigger>
               <TabsTrigger value="tasks" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <LayoutGrid className="h-4 w-4 mr-2" />
@@ -93,6 +99,11 @@ export default function AdminSettings() {
             {/* NEW: Payment Asset Manager Tab (Independent Module) */}
             <TabsContent value="qr-manager">
               <PaymentAssetManager />
+            </TabsContent>
+
+            {/* Media Manager Tab */}
+            <TabsContent value="media">
+              <MediaManagerPanel />
             </TabsContent>
 
             {/* Tasks Tab */}
