@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdminSessionValid } from '@/lib/adminSession';
@@ -17,6 +17,23 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
+  const [adminLoading, setAdminLoading] = useState(requireAdmin);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check admin status asynchronously
+  useEffect(() => {
+    if (requireAdmin && user) {
+      isAdminSessionValid().then((valid) => {
+        setIsAdmin(valid);
+        setAdminLoading(false);
+      }).catch(() => {
+        setIsAdmin(false);
+        setAdminLoading(false);
+      });
+    } else {
+      setAdminLoading(false);
+    }
+  }, [requireAdmin, user]);
 
   // Log unauthorized access attempts
   useEffect(() => {
@@ -27,14 +44,14 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   }, [authLoading, user, location.pathname]);
 
   // Loading state with Sovereign branding
-  if (authLoading) {
+  if (authLoading || adminLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-obsidian gap-4">
         <div className="relative">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <Shield className="h-4 w-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary" />
+          <Loader2 className="h-10 w-10 animate-spin text-accent" />
+          <Shield className="h-4 w-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-accent" />
         </div>
-        <p className="text-xs text-muted-foreground font-mono">SOVEREIGN LEDGER AUTHENTICATING...</p>
+        <p className="text-xs text-platinum/60 font-mono tracking-widest">SOVEREIGN LEDGER AUTHENTICATING...</p>
       </div>
     );
   }
@@ -45,8 +62,8 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Admin route protection with memory-based session
-  if (requireAdmin && !isAdminSessionValid()) {
+  // Admin route protection with async session check
+  if (requireAdmin && !isAdmin) {
     return <Navigate to="/admin/login" replace />;
   }
 

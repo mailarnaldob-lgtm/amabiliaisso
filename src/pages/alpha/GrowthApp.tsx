@@ -1,5 +1,5 @@
 import { AlphaLayout } from '@/components/layouts/AlphaLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -12,7 +12,6 @@ import {
   Star,
   Trophy,
   Gift,
-  AlertTriangle,
   TrendingUp,
   Shield,
   CheckCircle2,
@@ -75,129 +74,113 @@ export default function GrowthApp() {
     <AlphaLayout 
       title="₳LPHA GROWTH" 
       subtitle="Royalties & Network"
-      appColor="from-purple-500 to-pink-600"
+      appColor="from-purple-500 to-accent"
     >
-
-      {/* Referral Code Card */}
-      <Card className="mb-6 overflow-hidden">
-        <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-5 text-white">
-          <p className="text-sm opacity-80 mb-1">Your Referral Code</p>
+      {/* Referral Code Card - Terminal Style */}
+      <Card className="mb-6 overflow-hidden bg-slate/80 border-accent/20 backdrop-blur-xl">
+        <div className="bg-gradient-to-br from-purple-500/20 to-accent/10 p-5 border-b border-accent/10">
+          <p className="text-xs text-platinum/60 font-mono uppercase tracking-widest mb-2">YOUR_REFERRAL_CODE</p>
           <div className="flex items-center justify-between">
-            <span className="text-2xl font-mono font-bold tracking-wider">{referralCode}</span>
+            <span className="text-2xl font-mono font-bold tracking-widest text-accent">{referralCode}</span>
             <Button 
               size="sm" 
-              variant="secondary" 
-              className="bg-white/20 hover:bg-white/30 text-white"
+              variant="outline" 
+              className="border-accent/30 text-accent hover:bg-accent/10 font-mono active:scale-95 transition-all duration-150"
               onClick={copyReferralCode}
             >
               <Copy className="h-4 w-4 mr-1" />
-              Copy
+              COPY
             </Button>
           </div>
           <div className="flex items-center gap-2 mt-3">
             <span className="text-lg">{levelInfo.icon}</span>
-            <span className="text-sm opacity-80">{levelInfo.name}</span>
+            <span className="text-sm text-platinum/60 font-mono">{levelInfo.name}</span>
           </div>
         </div>
-        <CardContent className="p-4">
-          <Button variant="outline" className="w-full gap-2" disabled>
+        <CardContent className="p-4 bg-obsidian/50">
+          <Button variant="outline" className="w-full gap-2 border-platinum/20 text-platinum/60 font-mono" disabled>
             <Share2 className="h-4 w-4" />
-            Share Invite Link
+            SHARE_INVITE_LINK
           </Button>
         </CardContent>
       </Card>
 
-      {/* Network Stats */}
+      {/* Network Stats - Grid */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <StatCard 
-          icon={Users} 
-          label="Direct" 
-          value={networkStats.directReferrals} 
-          color="from-purple-500 to-pink-600"
-        />
-        <StatCard 
-          icon={Star} 
-          label="Active" 
-          value={networkStats.activeReferrals} 
-          color="from-emerald-500 to-teal-600"
-        />
-        <StatCard 
-          icon={TrendingUp} 
-          label="Network" 
-          value={networkStats.totalNetwork} 
-          color="from-blue-500 to-indigo-600"
-        />
+        <StatCard icon={Users} label="DIRECT" value={networkStats.directReferrals} color="purple" />
+        <StatCard icon={Star} label="ACTIVE" value={networkStats.activeReferrals} color="emerald" />
+        <StatCard icon={TrendingUp} label="NETWORK" value={networkStats.totalNetwork} color="cyan" />
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-          <TabsTrigger value="army" className="text-xs">My Army</TabsTrigger>
-          <TabsTrigger value="ledger" className="text-xs">Ledger</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-slate/80 border border-platinum/10 p-1">
+          <TabsTrigger value="overview" className="text-xs font-mono data-[state=active]:bg-accent/20 data-[state=active]:text-accent">Overview</TabsTrigger>
+          <TabsTrigger value="army" className="text-xs font-mono data-[state=active]:bg-accent/20 data-[state=active]:text-accent">My Army</TabsTrigger>
+          <TabsTrigger value="ledger" className="text-xs font-mono data-[state=active]:bg-accent/20 data-[state=active]:text-accent">Ledger</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
           {/* Royalties Earned */}
-          <Card className="mb-4">
+          <Card className="mb-4 bg-slate/60 border-platinum/10">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Gift className="h-5 w-5 text-purple-500" />
-                  <span className="font-medium">Total Royalties</span>
+                  <Gift className="h-5 w-5 text-purple-400" />
+                  <span className="font-medium text-platinum font-mono">TOTAL_ROYALTIES</span>
                 </div>
-                <span className="text-2xl font-bold">₳{formatAlpha(networkStats.royaltiesEarned)}</span>
+                <span className="text-2xl font-bold text-accent font-mono">₳{formatAlpha(networkStats.royaltiesEarned)}</span>
               </div>
-              <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-border">
+              <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-platinum/10">
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Pending</p>
-                  <p className="font-bold text-amber-500">₳{networkStats.pendingRoyalties}</p>
+                  <p className="text-xs text-platinum/50 font-mono">PENDING</p>
+                  <p className="font-bold text-amber-400 font-mono">₳{networkStats.pendingRoyalties}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">To Debt</p>
-                  <p className="font-bold text-muted-foreground">₳{networkStats.redirectedToDebt}</p>
+                  <p className="text-xs text-platinum/50 font-mono">TO_DEBT</p>
+                  <p className="font-bold text-platinum/40 font-mono">₳{networkStats.redirectedToDebt}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Royalty Structure */}
-          <Card className="mb-4 bg-muted/30">
+          <Card className="mb-4 bg-obsidian/50 border-platinum/10">
             <CardContent className="p-4">
-              <h4 className="font-medium mb-3 flex items-center gap-2">
-                <Activity className="h-4 w-4 text-primary" />
-                Multi-Tier Royalty Structure
+              <h4 className="font-medium mb-3 flex items-center gap-2 text-platinum font-mono">
+                <Activity className="h-4 w-4 text-accent" />
+                MULTI_TIER_ROYALTY
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Direct Referral Upgrade</span>
-                  <Badge className="bg-purple-500">50%</Badge>
+                  <span className="text-platinum/50 font-mono">Direct Referral Upgrade</span>
+                  <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 font-mono">50%</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Network VPA Mission</span>
-                  <Badge variant="outline">10%</Badge>
+                  <span className="text-platinum/50 font-mono">Network VPA Mission</span>
+                  <Badge variant="outline" className="border-platinum/20 text-platinum/60 font-mono">10%</Badge>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
+              <p className="text-xs text-platinum/40 mt-3 font-mono">
                 If debt {">"} 0: Royalties redirected to debt repayment
               </p>
             </CardContent>
           </Card>
 
           {/* Rank Progress */}
-          <Card>
+          <Card className="bg-slate/60 border-platinum/10">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-amber-500" />
-                  <span className="font-medium">Rank Progress</span>
+                  <Trophy className="h-5 w-5 text-amber-400" />
+                  <span className="font-medium text-platinum font-mono">RANK_PROGRESS</span>
                 </div>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-platinum/50 font-mono">
                   {levelInfo.name} → {nextLevel.name}
                 </span>
               </div>
-              <Progress value={progressToNextLevel} className="h-2" />
-              <p className="text-xs text-muted-foreground mt-2">
+              <Progress value={progressToNextLevel} className="h-1.5 bg-obsidian/50" />
+              <p className="text-xs text-platinum/40 mt-2 font-mono">
                 {nextLevel.minTasks - networkStats.activeReferrals} more active referrals to rank up
               </p>
             </CardContent>
@@ -206,11 +189,11 @@ export default function GrowthApp() {
 
         <TabsContent value="army">
           {/* Referral Validation Info */}
-          <Card className="mb-4 bg-muted/30">
+          <Card className="mb-4 bg-obsidian/50 border-platinum/10">
             <CardContent className="p-3">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Shield className="h-4 w-4" />
-                <span>Referrals validated: No self-referral • No circular chains • Device/IP correlation</span>
+              <div className="flex items-center gap-2 text-xs text-platinum/50 font-mono">
+                <Shield className="h-4 w-4 text-accent" />
+                <span>VALIDATION: No self-referral • No circular chains • Device/IP correlation</span>
               </div>
             </CardContent>
           </Card>
@@ -218,18 +201,18 @@ export default function GrowthApp() {
           {/* My Army (Direct Referrals) */}
           <div className="space-y-2">
             {directReferrals.map((referral) => (
-              <Card key={referral.id} className="hover:shadow-md transition-shadow">
+              <Card key={referral.id} className="bg-slate/60 border-platinum/10 hover:border-accent/30 transition-all duration-150">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-accent/20 border border-accent/20 flex items-center justify-center text-accent font-bold font-mono">
                         {referral.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-medium">{referral.name}</p>
+                        <p className="font-medium text-platinum font-mono">{referral.name}</p>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-[10px]">{referral.tier}</Badge>
-                          <span className="text-xs text-muted-foreground">
+                          <Badge variant="outline" className="text-[10px] border-platinum/20 text-platinum/60 font-mono">{referral.tier}</Badge>
+                          <span className="text-xs text-platinum/50 font-mono">
                             {referral.missions} missions
                           </span>
                         </div>
@@ -237,11 +220,11 @@ export default function GrowthApp() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right mr-2">
-                        <p className="text-xs text-muted-foreground">Earned</p>
-                        <p className="font-bold text-sm">₳{referral.earned}</p>
+                        <p className="text-xs text-platinum/50 font-mono">EARNED</p>
+                        <p className="font-bold text-sm text-accent font-mono">₳{referral.earned}</p>
                       </div>
                       <StatusBadge status={referral.status} />
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <ChevronRight className="h-4 w-4 text-platinum/30" />
                     </div>
                   </div>
                 </CardContent>
@@ -253,42 +236,42 @@ export default function GrowthApp() {
         <TabsContent value="ledger">
           {/* Recent Royalties Ledger */}
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground mb-2">
-              Every credit shows the Source (User_ID + Action)
+            <p className="text-xs text-platinum/50 mb-2 font-mono">
+              LEDGER: Source (User_ID + Action)
             </p>
             {recentRoyalties.map((royalty) => (
-              <Card key={royalty.id}>
+              <Card key={royalty.id} className="bg-slate/60 border-platinum/10">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`p-1.5 rounded-lg ${
-                        royalty.type === 'direct' ? 'bg-purple-500/10' :
-                        royalty.type === 'network' ? 'bg-blue-500/10' :
-                        'bg-muted'
+                        royalty.type === 'direct' ? 'bg-purple-500/10 border border-purple-500/20' :
+                        royalty.type === 'network' ? 'bg-accent/10 border border-accent/20' :
+                        'bg-slate border border-platinum/20'
                       }`}>
                         <Gift className={`h-4 w-4 ${
-                          royalty.type === 'direct' ? 'text-purple-500' :
-                          royalty.type === 'network' ? 'text-blue-500' :
-                          'text-muted-foreground'
+                          royalty.type === 'direct' ? 'text-purple-400' :
+                          royalty.type === 'network' ? 'text-accent' :
+                          'text-platinum/50'
                         }`} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium">
+                        <p className="text-sm font-medium text-platinum font-mono">
                           {royalty.source}
                         </p>
-                        <p className="text-xs text-muted-foreground">{royalty.action}</p>
+                        <p className="text-xs text-platinum/50 font-mono">{royalty.action}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       {royalty.type === 'pending' ? (
-                        <Badge variant="outline" className="text-amber-600 border-amber-500/30">
+                        <Badge variant="outline" className="text-amber-400 border-amber-500/30 font-mono text-[10px]">
                           <Clock className="h-3 w-3 mr-1" />
-                          Pending
+                          PENDING
                         </Badge>
                       ) : (
                         <>
-                          <p className="font-bold text-emerald-500">+₳{royalty.amount}</p>
-                          <p className="text-xs text-muted-foreground">{royalty.time}</p>
+                          <p className="font-bold text-emerald-400 font-mono">+₳{royalty.amount}</p>
+                          <p className="text-xs text-platinum/50 font-mono">{royalty.time}</p>
                         </>
                       )}
                     </div>
@@ -301,13 +284,13 @@ export default function GrowthApp() {
       </Tabs>
 
       {/* Loop Prevention Notice */}
-      <Card className="bg-muted/30">
+      <Card className="bg-obsidian/50 border-platinum/10">
         <CardContent className="p-4">
-          <h4 className="font-medium mb-2 flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary" />
-            Anti-Fraud Protection
+          <h4 className="font-medium mb-2 flex items-center gap-2 text-platinum font-mono">
+            <Shield className="h-4 w-4 text-accent" />
+            ANTI_FRAUD_PROTECTION
           </h4>
-          <ul className="text-xs text-muted-foreground space-y-1">
+          <ul className="text-xs text-platinum/50 space-y-1 font-mono">
             <li>• Real-time fraud scoring (0-100)</li>
             <li>• No self-referrals allowed</li>
             <li>• Circular chain detection</li>
@@ -318,11 +301,10 @@ export default function GrowthApp() {
       </Card>
 
       {/* Disclaimer */}
-      <div className="mt-8 p-4 rounded-xl bg-muted/30 border border-border">
-        <p className="text-xs text-muted-foreground text-center">
+      <div className="mt-8 p-4 rounded-lg bg-obsidian/80 border border-platinum/10">
+        <p className="text-xs text-platinum/40 text-center font-mono">
           Royalties are internal credit allocations based on network participation. 
           They are non-monetary and subject to fraud gate validation.
-          All royalty distributions are logged immutably.
         </p>
       </div>
     </AlphaLayout>
@@ -333,23 +315,23 @@ function StatusBadge({ status }: { status: string }) {
   switch (status) {
     case 'active':
       return (
-        <Badge className="bg-emerald-500">
+        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-mono text-[10px]">
           <CheckCircle2 className="h-3 w-3 mr-1" />
-          Active
+          ACTIVE
         </Badge>
       );
     case 'inactive':
       return (
-        <Badge variant="secondary">
+        <Badge variant="secondary" className="bg-slate text-platinum/50 font-mono text-[10px]">
           <XCircle className="h-3 w-3 mr-1" />
-          Inactive
+          INACTIVE
         </Badge>
       );
     case 'pending':
       return (
-        <Badge variant="outline" className="text-amber-600 border-amber-500/30">
+        <Badge variant="outline" className="text-amber-400 border-amber-500/30 font-mono text-[10px]">
           <Clock className="h-3 w-3 mr-1" />
-          Pending
+          PENDING
         </Badge>
       );
     default:
@@ -366,16 +348,22 @@ function StatCard({
   icon: React.ElementType; 
   label: string; 
   value: number; 
-  color: string;
+  color: 'purple' | 'emerald' | 'cyan';
 }) {
+  const colorClasses = {
+    purple: 'from-purple-500/20 to-purple-500/5 border-purple-500/20 text-purple-400',
+    emerald: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 text-emerald-400',
+    cyan: 'from-accent/20 to-accent/5 border-accent/20 text-accent',
+  };
+
   return (
-    <Card>
+    <Card className={`bg-gradient-to-br ${colorClasses[color]} border backdrop-blur-xl`}>
       <CardContent className="p-3 text-center">
-        <div className={`p-2 rounded-lg bg-gradient-to-br ${color} w-fit mx-auto mb-2`}>
-          <Icon className="h-4 w-4 text-white" />
+        <div className={`p-2 rounded-lg bg-obsidian/50 w-fit mx-auto mb-2`}>
+          <Icon className={`h-4 w-4 ${color === 'cyan' ? 'text-accent' : color === 'purple' ? 'text-purple-400' : 'text-emerald-400'}`} />
         </div>
-        <p className="text-xl font-bold">{value}</p>
-        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-xl font-bold font-mono text-platinum">{value}</p>
+        <p className="text-xs text-platinum/50 font-mono">{label}</p>
       </CardContent>
     </Card>
   );
