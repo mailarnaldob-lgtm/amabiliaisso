@@ -440,6 +440,27 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          endpoint: string
+          request_count: number | null
+          user_id: string
+          window_start: string | null
+        }
+        Insert: {
+          endpoint: string
+          request_count?: number | null
+          user_id: string
+          window_start?: string | null
+        }
+        Update: {
+          endpoint?: string
+          request_count?: number | null
+          user_id?: string
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       referral_commissions: {
         Row: {
           commission_amount: number
@@ -772,6 +793,16 @@ export type Database = {
         }
         Returns: Json
       }
+      check_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_limit: number
+          p_user_id: string
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
+      cleanup_expired_rate_limits: { Args: never; Returns: number }
       create_ad_campaign: {
         Args: {
           p_campaign_type: string
@@ -787,6 +818,15 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      enforce_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_limit: number
+          p_user_id: string
+          p_window_minutes?: number
+        }
+        Returns: string
       }
       flag_cash_out_request: {
         Args: { p_admin_id: string; p_request_id: string }
