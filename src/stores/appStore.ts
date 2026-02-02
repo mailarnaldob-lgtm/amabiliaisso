@@ -211,21 +211,25 @@ export const ARMY_LEVELS: Record<ArmyLevel, { name: string; minTasks: number; ic
 };
 
 // Membership tier configuration - accurate business logic
-// Note: null tier = FREE ACCOUNT (no payment), basic/pro/elite require payments
-export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: number; features: string[] }> = {
+// Note: null tier = FREE ACCOUNT (no payment), basic/pro/elite require monthly subscriptions
+// Subscription cycle: 30 days per renewal
+export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: number; cycle: string; features: string[] }> = {
   basic: {
     name: 'Basic',
-    cost: 300, // ₱300
-    features: ['50% Referral Commission', 'Access to Community Platform'],
+    cost: 300, // ₱300/month
+    cycle: 'Monthly',
+    features: ['50% Referral Commission', 'Access to Community Platform', '30-Day Access Cycle'],
   },
   pro: {
     name: 'Pro',
-    cost: 600, // ₱600
-    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Training Access'],
+    cost: 600, // ₱600/month
+    cycle: 'Monthly',
+    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Training Access', '30-Day Access Cycle'],
   },
   elite: {
     name: 'Elite',
-    cost: 900, // ₱900
-    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Credit Marketplace (P2P Lending)', 'KYC Verification', 'VIP Support'],
+    cost: 900, // ₱900/month
+    cycle: 'Monthly',
+    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Credit Marketplace (P2P Lending)', 'KYC Verification', 'VIP Support', '30-Day Access Cycle'],
   },
 };

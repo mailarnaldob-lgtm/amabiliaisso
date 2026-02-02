@@ -8,9 +8,9 @@ const tiers = [
     sublabel: 'Per referral'
   },
   {
-    label: 'Basic Activation',
+    label: 'Service Maintenance',
     value: '₱300',
-    sublabel: 'One-time'
+    sublabel: 'Monthly'
   },
   {
     label: 'Wallet Types',
