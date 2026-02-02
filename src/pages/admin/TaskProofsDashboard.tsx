@@ -71,12 +71,13 @@ export default function TaskProofsDashboard() {
       });
       
       if (error) throw error;
-      const result = data as { success?: boolean; reward_credited?: number } | null;
+      const result = data as { success?: boolean; worker_reward?: number; task_reward?: number } | null;
       if (!result?.success) throw new Error('Failed to approve submission');
       return result;
     },
     onSuccess: (data) => {
-      toast.success(`Task approved! ₳${data?.reward_credited || 0} credited.`);
+      const credited = Number(data?.worker_reward ?? 0);
+      toast.success(`Task approved! ₳${credited.toLocaleString()} credited.`);
       queryClient.invalidateQueries({ queryKey: ['admin-task-submissions'] });
     },
     onError: (error: Error) => {
