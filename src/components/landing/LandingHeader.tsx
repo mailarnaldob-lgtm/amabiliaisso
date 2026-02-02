@@ -1,15 +1,18 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Menu, X } from 'lucide-react';
+import { useState } from 'react';
 
 /**
- * LandingHeader V8.5 - Sovereign Prestige Navigation
- * High-end fintech aesthetic with smart window logic
- * Desktop: Auth opens in new tab | Mobile: Same window navigation
+ * LandingHeader V9.0 - Sovereign Prestige Navigation (Mobile Optimized)
+ * High-end fintech aesthetic with responsive burger menu
+ * Desktop: Full nav | Mobile: Logo + Burger Menu (44x44px touch targets)
  */
 export function LandingHeader() {
   const isMobile = useIsMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleAuthNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Desktop: Open in new tab | Mobile: Navigate in same window
@@ -17,6 +20,11 @@ export function LandingHeader() {
       e.preventDefault();
       window.open('/auth', '_blank', 'noopener,noreferrer');
     }
+    setIsMenuOpen(false);
+  };
+
+  const handleLinkClick = () => {
+    setIsMenuOpen(false);
   };
 
   return (
@@ -31,7 +39,7 @@ export function LandingHeader() {
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="container mx-auto py-4 flex items-center justify-between px-6 lg:px-8">
+      <div className="container mx-auto py-4 flex items-center justify-between px-4 lg:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <motion.div 
@@ -55,15 +63,15 @@ export function LandingHeader() {
             </span>
           </motion.div>
           <span 
-            className="text-xl font-semibold tracking-[0.15em] text-foreground group-hover:text-amber-400 transition-colors duration-300"
+            className="text-xl font-semibold tracking-[0.15em] text-foreground group-hover:text-amber-400 transition-colors duration-300 hidden sm:block"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
             AMABILIA
           </span>
         </Link>
         
-        {/* Navigation + Auth Cluster */}
-        <nav className="flex items-center gap-2 sm:gap-4">
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-2 sm:gap-4">
           {/* About Link */}
           <Link 
             to="/about" 
@@ -120,7 +128,106 @@ export function LandingHeader() {
             </motion.div>
           </Link>
         </nav>
+
+        {/* Mobile Burger Menu Button - 44x44px touch target */}
+        <button
+          className="md:hidden flex items-center justify-center w-11 h-11 rounded-lg hover:bg-amber-400/10 transition-colors duration-300"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
+          aria-expanded={isMenuOpen}
+        >
+          {isMenuOpen ? (
+            <X className="h-6 w-6 text-amber-400" />
+          ) : (
+            <Menu className="h-6 w-6 text-muted-foreground" />
+          )}
+        </button>
       </div>
+
+      {/* Mobile Navigation Slide-in Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div 
+            className="md:hidden overflow-hidden"
+            style={{
+              background: 'hsl(220 23% 5% / 0.98)',
+              borderTop: '1px solid hsl(45 100% 51% / 0.08)'
+            }}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <nav className="container py-4 flex flex-col gap-2 px-4">
+              {/* Access Portal - Primary Action (Golden) */}
+              <Link to="/auth" onClick={handleAuthNavigation}>
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.05 }}
+                >
+                  <Button 
+                    className="w-full py-4 text-base rounded-lg font-semibold text-black tracking-wide"
+                    style={{
+                      background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                      boxShadow: '0 0 20px hsl(45 100% 51% / 0.3)'
+                    }}
+                  >
+                    Access Portal
+                  </Button>
+                </motion.div>
+              </Link>
+
+              <div className="h-px my-2" style={{ background: 'hsl(45 100% 51% / 0.1)' }} />
+
+              {/* About */}
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Link 
+                  to="/about" 
+                  className="flex items-center px-4 py-3 rounded-lg text-base font-medium tracking-wide text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-300"
+                  onClick={handleLinkClick}
+                >
+                  About
+                </Link>
+              </motion.div>
+
+              {/* Contact */}
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.15 }}
+              >
+                <Link 
+                  to="/contact" 
+                  className="flex items-center px-4 py-3 rounded-lg text-base font-medium tracking-wide text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-300"
+                  onClick={handleLinkClick}
+                >
+                  Contact
+                </Link>
+              </motion.div>
+
+              {/* Login */}
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Link 
+                  to="/auth" 
+                  className="flex items-center px-4 py-3 rounded-lg text-base font-medium tracking-wide text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-300"
+                  onClick={handleAuthNavigation}
+                >
+                  Login
+                </Link>
+              </motion.div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 }
