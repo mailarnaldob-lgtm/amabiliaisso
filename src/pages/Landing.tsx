@@ -147,7 +147,7 @@ export default function Landing() {
               </div>
               
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]">
-                <span className="platinum-text bg-black text-[#f4c162]">Next-Generation</span>
+                <span className="platinum-text bg-black text-primary-foreground">Next-Generation</span>
                 <br />
                 <span className="text-foreground">Financial Architecture</span>
               </h1>
