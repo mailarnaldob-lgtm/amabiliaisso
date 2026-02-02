@@ -21,7 +21,6 @@ import { QuickActionHub } from '@/components/dashboard/QuickActionHub';
 import { SovereignBalanceCard } from '@/components/dashboard/SovereignBalanceCard';
 import { ActiveAssignmentsCard } from '@/components/dashboard/ActiveAssignmentsCard';
 import { WalletBreakdown } from '@/components/dashboard/WalletBreakdown';
-import { SubscriptionStatusBadge } from '@/components/dashboard/SubscriptionStatusBadge';
 
 export default function MemberDashboard() {
   const { signOut } = useAuth();
@@ -149,17 +148,8 @@ export default function MemberDashboard() {
           </Alert>
         )}
 
-        {/* Subscription Status Alert */}
-        {profile?.subscription_status && profile.subscription_status !== 'active' && profile.membership_tier && (
-          <SubscriptionStatusBadge 
-            status={profile.subscription_status}
-            expiresAt={profile.subscription_expires_at}
-            tier={profile.membership_tier}
-          />
-        )}
-
-        {/* Activation CTA for Inactive/No Tier Users */}
-        {(!profile?.membership_tier || profile?.subscription_status === 'inactive') && (
+        {/* Activation CTA for Inactive Users (no tier) */}
+        {!profile?.membership_tier && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -170,15 +160,15 @@ export default function MemberDashboard() {
                 <AlertTriangle className="h-7 w-7 text-black" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold text-foreground mb-1">Service Maintenance Required</h2>
+                <h2 className="text-lg font-bold text-foreground mb-1">Account Activation Required</h2>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Activate your monthly membership (₱300/month) to access 50% referral commissions, global assignments, and P2P lending.
+                  Unlock 50% referral commissions, global assignments, and P2P lending with a one-time ₱300 activation.
                 </p>
               </div>
               <Link to="/dashboard/upgrade" className="w-full sm:w-auto">
                 <Button className="w-full gap-2 bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-bold hover:opacity-90 haptic-press">
                   <CreditCard className="h-5 w-5" />
-                  Activate Membership
+                  Activate Now
                 </Button>
               </Link>
             </div>

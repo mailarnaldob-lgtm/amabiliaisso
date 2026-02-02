@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   PlusCircle, ArrowDownCircle, Briefcase, Users, 
-  Target, X, Sparkles, RefreshCw
+  Target, X, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -16,13 +16,6 @@ interface QuickAction {
 }
 
 const quickActions: QuickAction[] = [
-  { 
-    icon: RefreshCw, 
-    label: 'Membership Renewal', 
-    path: '/dashboard/upgrade', 
-    color: 'from-[#FFD700] to-[#FFA500]',
-    description: 'Renew monthly service access'
-  },
   { 
     icon: PlusCircle, 
     label: 'Top-up Wallet', 
@@ -42,14 +35,14 @@ const quickActions: QuickAction[] = [
     label: 'Commit Capital', 
     path: '/dashboard/finance', 
     color: 'from-purple-500 to-purple-600',
-    description: 'Invest in P2P lending'
+    description: 'Invest in P2P lending (1% daily)'
   },
   { 
     icon: Users, 
     label: 'Partner Invite', 
     path: '/dashboard/referrals', 
     color: 'from-orange-500 to-orange-600',
-    description: 'Invite partners to earn'
+    description: 'Earn 50% referral commission'
   },
   { 
     icon: Target, 
