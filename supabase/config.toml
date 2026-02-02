@@ -21,6 +21,21 @@ verify_jwt = false
 [functions.lending-repayment]
 verify_jwt = false
 
+[functions.lending-cancel-offer]
+verify_jwt = false
+
+[functions.internal-transfer]
+verify_jwt = false
+
+[functions.create-ad-campaign]
+verify_jwt = false
+
+[functions.submit-task-proof]
+verify_jwt = false
+
+[functions.submit-membership-payment]
+verify_jwt = false
+
 [functions.mysql-admin-login]
 verify_jwt = false
 
