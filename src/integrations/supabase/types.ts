@@ -83,6 +83,51 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_in_requests: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          payment_method: string
+          proof_url: string | null
+          reference_number: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          payment_method: string
+          proof_url?: string | null
+          reference_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          payment_method?: string
+          proof_url?: string | null
+          reference_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       elite_vaults: {
         Row: {
           available_balance: number | null
@@ -633,6 +678,10 @@ export type Database = {
         Args: { p_admin_id: string; p_campaign_id: string; p_reason?: string }
         Returns: Json
       }
+      approve_cash_in_request: {
+        Args: { p_admin_id: string; p_request_id: string }
+        Returns: Json
+      }
       approve_membership_payment: {
         Args: { p_admin_id: string; p_payment_id: string }
         Returns: Json
@@ -686,6 +735,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      hold_cash_in_request: {
+        Args: { p_admin_id: string; p_request_id: string }
+        Returns: Json
+      }
       internal_transfer_atomic: {
         Args: {
           p_amount: number
@@ -718,6 +771,10 @@ export type Database = {
         Returns: Json
       }
       process_expired_loans: { Args: never; Returns: Json }
+      reject_cash_in_request: {
+        Args: { p_admin_id: string; p_reason?: string; p_request_id: string }
+        Returns: Json
+      }
       reject_membership_payment: {
         Args: {
           p_admin_id: string

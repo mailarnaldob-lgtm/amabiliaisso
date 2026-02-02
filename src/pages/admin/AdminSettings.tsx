@@ -11,6 +11,7 @@ import { TaskManagementPanel } from '@/components/admin/TaskManagementPanel';
 import { AdminNotificationCenter } from '@/components/admin/AdminNotificationCenter';
 import { CampaignApprovalPanel } from '@/components/admin/CampaignApprovalPanel';
 import { PaymentAssetManager } from '@/components/admin/PaymentAssetManager';
+import { CashInAuditPanel } from '@/components/admin/CashInAuditPanel';
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
 import { 
   Bell,
@@ -43,15 +44,19 @@ export default function AdminSettings() {
       {() => (
         <div className="space-y-8 max-w-5xl">
           {/* Main Settings Tabs */}
-          <Tabs defaultValue="notifications" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6 bg-card/50 border border-border">
+          <Tabs defaultValue="cashin" className="w-full">
+            <TabsList className="grid w-full grid-cols-5 mb-6 bg-card/50 border border-border">
+              <TabsTrigger value="cashin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Wallet className="h-4 w-4 mr-2" />
+                Cash-In
+              </TabsTrigger>
               <TabsTrigger value="notifications" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Bell className="h-4 w-4 mr-2" />
                 Approvals
               </TabsTrigger>
               <TabsTrigger value="qr-manager" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Wallet className="h-4 w-4 mr-2" />
-                QR Manager
+                QR Codes
               </TabsTrigger>
               <TabsTrigger value="tasks" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <LayoutGrid className="h-4 w-4 mr-2" />
@@ -62,6 +67,11 @@ export default function AdminSettings() {
                 Platform
               </TabsTrigger>
             </TabsList>
+
+            {/* NEW: Cash-In Audit Panel Tab */}
+            <TabsContent value="cashin">
+              <CashInAuditPanel />
+            </TabsContent>
 
             {/* Notifications & Approvals Tab */}
             <TabsContent value="notifications" className="space-y-6">
