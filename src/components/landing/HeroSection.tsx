@@ -43,7 +43,7 @@ function FinancialMonolith({
     y,
     rotateZ: rotate
   }}>
-      <motion.div className="preserve-3d transition-all duration-500 hover:scale-105 w-full h-full rounded-sm opacity-70" style={{
+      <motion.div className="preserve-3d transition-all duration-500 hover:scale-105 w-full h-full rounded-sm opacity-50 border-0" style={{
       background: 'linear-gradient(135deg, hsl(45 100% 51% / 0.15) 0%, hsl(220 23% 6%) 50%, hsl(45 100% 51% / 0.08) 100%)',
       boxShadow: '0 40px 80px hsl(0 0% 0% / 0.6), 0 0 60px hsl(45 100% 51% / 0.2), inset 0 1px 0 hsl(45 100% 51% / 0.3)',
       border: '1px solid hsl(45 100% 51% / 0.2)'
