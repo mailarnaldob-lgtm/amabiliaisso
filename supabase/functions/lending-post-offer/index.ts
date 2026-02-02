@@ -14,8 +14,8 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new Error('Unauthorized');
     }
 
     const supabaseClient = createClient(
@@ -24,8 +24,12 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
+    // Validate token claims (JWT verification)
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    const userId = claimsData?.claims?.sub;
+
+    if (claimsError || !userId) {
       throw new Error('Unauthorized');
     }
 
@@ -39,7 +43,7 @@ serve(async (req) => {
 
     const { amount, termDays } = validation.data!;
 
-    console.log(`[LENDING] User ${user.id} posting offer: ₳${amount} for ${termDays} days`);
+    console.log(`[LENDING] User ${userId} posting offer: ₳${amount} for ${termDays} days`);
 
     // Use service role for RPC call
     const supabaseAdmin = createClient(
@@ -49,7 +53,7 @@ serve(async (req) => {
 
     // Use atomic database function with row-level locking to prevent race conditions
     const { data: result, error: rpcError } = await supabaseAdmin.rpc('lending_post_offer', {
-      p_user_id: user.id,
+      p_user_id: userId,
       p_principal_amount: amount,
       p_interest_rate: 3.00, // Fixed 3% per term
       p_term_days: termDays

@@ -15,8 +15,8 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new Error('Unauthorized');
     }
 
     const supabaseClient = createClient(
@@ -25,8 +25,12 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
+    // Validate token claims (JWT verification)
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    const userId = claimsData?.claims?.sub;
+
+    if (claimsError || !userId) {
       throw new Error('Unauthorized');
     }
 
@@ -47,7 +51,7 @@ serve(async (req) => {
 
     // Use atomic database function with row-level locking to prevent race conditions
     const { data: result, error: rpcError } = await supabaseAdmin.rpc('transfer_with_lock', {
-      p_user_id: user.id,
+      p_user_id: userId,
       p_from_type: from_wallet_type,
       p_to_type: to_wallet_type,
       p_amount: amount
@@ -63,7 +67,7 @@ serve(async (req) => {
       throw new Error(result?.error || 'Transfer failed');
     }
 
-    console.log(`Transfer successful: User ${user.id} moved ₳${amount} from ${from_wallet_type} to ${to_wallet_type}`);
+    console.log(`Transfer successful: User ${userId} moved ₳${amount} from ${from_wallet_type} to ${to_wallet_type}`);
 
     return new Response(
       JSON.stringify({

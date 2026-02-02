@@ -19,8 +19,8 @@ serve(async (req) => {
   try {
     // Get authorization header
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new Error('Unauthorized');
     }
 
     // Create Supabase client with user's JWT
@@ -30,9 +30,12 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Get user from JWT
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
+    // Validate token claims (JWT verification)
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    const userId = claimsData?.claims?.sub;
+
+    if (claimsError || !userId) {
       throw new Error('Unauthorized');
     }
 
@@ -54,7 +57,7 @@ serve(async (req) => {
 
     // Use atomic database function with row-level locking to prevent race conditions
     const { data: result, error: rpcError } = await supabaseAdmin.rpc('cash_out_with_lock', {
-      p_user_id: user.id,
+      p_user_id: userId,
       p_amount: amount,
       p_fee_percent: WITHDRAWAL_FEE_PERCENT,
       p_payment_method: payment_method,
@@ -72,7 +75,7 @@ serve(async (req) => {
       throw new Error(result?.error || 'Cash-out failed');
     }
 
-    console.log(`Cash-out successful: User ${user.id} burned ₳${amount}, disbursing ₱${result.net_amount} via ${payment_method}`);
+    console.log(`Cash-out successful: User ${userId} burned ₳${amount}, disbursing ₱${result.net_amount} via ${payment_method}`);
 
     // TODO: Integrate with actual payment gateway (GCash/Maya/Bank API)
     // For now, we just log the request and mark it as pending
