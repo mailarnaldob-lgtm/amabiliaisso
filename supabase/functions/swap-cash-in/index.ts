@@ -10,6 +10,7 @@ interface CashInRequest {
   amount: number;
   payment_method: string;
   reference_number?: string;
+  proof_url?: string;
 }
 
 // Safe error messages for clients
@@ -58,7 +59,7 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { amount, payment_method, reference_number }: CashInRequest = body;
+    const { amount, payment_method, reference_number, proof_url }: CashInRequest = body;
 
     // Input validation
     if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
@@ -82,44 +83,43 @@ serve(async (req) => {
     const sanitizedReference = reference_number 
       ? String(reference_number).slice(0, 100).replace(/[<>]/g, '') 
       : null;
+    const sanitizedProofUrl = proof_url 
+      ? String(proof_url).slice(0, 500) 
+      : null;
 
-    // Use service role for RPC call
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    // SOVEREIGN V9.3: Create pending cash-in request instead of direct credit
+    // The request will be reviewed by an admin before funds are credited
+    const { data: insertResult, error: insertError } = await supabaseClient
+      .from('cash_in_requests')
+      .insert({
+        user_id: user.id,
+        amount: amount,
+        payment_method: sanitizedPaymentMethod,
+        reference_number: sanitizedReference,
+        proof_url: sanitizedProofUrl,
+        status: 'pending',
+      })
+      .select('id')
+      .single();
 
-    // Call atomic RPC function to prevent race conditions
-    const { data: result, error: rpcError } = await supabaseAdmin.rpc('cash_in_with_lock', {
-      p_user_id: user.id,
-      p_amount: amount,
-      p_payment_method: sanitizedPaymentMethod,
-      p_reference_number: sanitizedReference
-    });
-
-    if (rpcError) {
-      console.error('[CASH-IN] RPC error:', rpcError);
-      throw new Error('Transaction failed. Please try again.');
+    if (insertError) {
+      console.error('[CASH-IN] Insert error:', insertError);
+      throw new Error('Failed to submit request. Please try again.');
     }
 
-    const rpcResult = result as { success: boolean; error?: string; transaction_id?: string; amount?: number; new_balance?: number };
-
-    if (!rpcResult.success) {
-      throw new Error(rpcResult.error || 'Transaction failed');
-    }
-
-    console.log(`[CASH-IN] Success: User ${user.id} credited ₳${amount} via ${sanitizedPaymentMethod}`);
+    console.log(`[CASH-IN] Request created: ${insertResult.id} - User ${user.id}, Amount ₳${amount}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         data: {
-          transaction_id: rpcResult.transaction_id,
+          request_id: insertResult.id,
           amount_php: amount,
           amount_alpha: amount,
-          new_balance: rpcResult.new_balance,
           payment_method: sanitizedPaymentMethod,
-          reference_number: sanitizedReference
+          reference_number: sanitizedReference,
+          status: 'pending',
+          message: 'Your deposit request has been submitted and is pending admin approval.'
         }
       }),
       { 
