@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePaymentMethods, useUpdatePaymentMethods, useUploadQRCode, PaymentMethod } from '@/hooks/usePaymentMethods';
 import { TaskManagementPanel } from '@/components/admin/TaskManagementPanel';
 import { AdminNotificationCenter } from '@/components/admin/AdminNotificationCenter';
+import { CampaignApprovalPanel } from '@/components/admin/CampaignApprovalPanel';
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
 import { 
   QrCode,
@@ -96,6 +97,9 @@ export default function AdminSettings() {
         <div className="space-y-8 max-w-4xl">
           {/* Notification Center */}
           <AdminNotificationCenter />
+
+          {/* Campaign Approval Panel */}
+          <CampaignApprovalPanel />
 
           {/* Exchanger Payment & QR Codes Configuration */}
           <Card className="border-primary/10 bg-gradient-to-br from-card to-primary/5 backdrop-blur-sm">
