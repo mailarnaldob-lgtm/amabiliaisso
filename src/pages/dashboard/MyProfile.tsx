@@ -157,7 +157,7 @@ export default function MyProfile() {
           <h2 className="text-xl font-bold text-foreground tracking-tight">{profile?.full_name || 'Member'}</h2>
           <div className="flex items-center justify-center gap-2 mt-3">
             <Badge className="capitalize bg-primary text-primary-foreground">
-              {profile?.membership_tier || 'basic'} Member
+              {profile?.membership_tier || 'Inactive'} Member
             </Badge>
             {profile?.is_kyc_verified && (
               <Badge variant="outline" className="border-primary/50 text-primary">

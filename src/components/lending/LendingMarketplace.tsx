@@ -529,7 +529,7 @@ function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProp
 export function AlphaP2PCreditsMarketplace() {
   const { user } = useAuth();
   const { wallets, getBalance } = useWallets();
-  const { canAccessPro } = useTierAccess();
+  const { canAccessExpert } = useTierAccess();
   const queryClient = useQueryClient();
   
   const [availableOffers, setAvailableOffers] = useState<Loan[]>([]);
@@ -540,7 +540,7 @@ export function AlphaP2PCreditsMarketplace() {
   const mainBalance = getBalance('main');
   
   // Read-only mode for non-PRO users - they can VIEW but not INTERACT
-  const isReadOnly = !canAccessPro;
+  const isReadOnly = !canAccessExpert;
 
   const fetchOffers = async () => {
     try {

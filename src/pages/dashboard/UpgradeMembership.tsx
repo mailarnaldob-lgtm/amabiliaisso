@@ -33,25 +33,26 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentSchema } from '@/lib/validations';
 import { supabase } from '@/integrations/supabase/client';
 
+// SOVEREIGN BRANDING V8.7 - PRO/EXPERT/ELITE hierarchy
 const MEMBERSHIP_TIERS = [
-  {
-    id: 'basic',
-    name: 'Basic',
-    price: 300,
-    icon: Star,
-    color: 'bg-secondary',
-    borderColor: 'border-secondary/30',
-    features: ['50% referral commission', 'Access to community platform'],
-    requiresReferrals: 0,
-  },
   {
     id: 'pro',
     name: 'Pro',
+    price: 300,
+    icon: Star,
+    color: 'bg-emerald-500',
+    borderColor: 'border-emerald-500/30',
+    features: ['Full VPA Mission Access', '50% Referral Commission', 'Omni-Transfer Engine', 'Alpha Mobile Dashboard'],
+    requiresReferrals: 0,
+  },
+  {
+    id: 'expert',
+    name: 'Expert',
     price: 600,
     icon: Zap,
     color: 'bg-primary',
     borderColor: 'border-primary/30',
-    features: ['50% referral commission', 'Activity-based credits (VPA)', 'Training access'],
+    features: ['All Pro Features', 'Ad Wizard Professional', 'Priority Mission Queue', '10% Network Overrides (Lvl 1-2)', '15,000 ₳ Daily Transfer Limit'],
     requiresReferrals: 0,
   },
   {
@@ -61,8 +62,8 @@ const MEMBERSHIP_TIERS = [
     icon: Crown,
     color: 'bg-amber-500',
     borderColor: 'border-amber-500/30',
-    features: ['50% referral commission', 'Activity-based credits (VPA)', 'P2P credit marketplace', '1% daily vault yield', 'VIP support'],
-    requiresReferrals: 3, // Must have 3 Direct PRO referrals (Blueprint V8.0)
+    features: ['All Expert Features', 'Alpha Bankers Cooperative', '1% Daily Vault Yield', 'P2P Lending Access', 'Full Royalty Engine', 'Priority Support'],
+    requiresReferrals: 3, // Must have 3 Direct EXPERT referrals (Blueprint V8.7)
   },
 ];
 
@@ -147,7 +148,7 @@ export default function UpgradeMembership() {
         .from('membership_payments')
         .insert({
           user_id: user.id,
-          tier: selectedTier as 'basic' | 'pro' | 'elite',
+          tier: selectedTier as 'pro' | 'expert' | 'elite',
           amount: selectedTierData.price,
           payment_method: paymentMethod,
           reference_number: referenceNumber,

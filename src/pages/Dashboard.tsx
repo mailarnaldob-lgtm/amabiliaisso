@@ -13,7 +13,7 @@ export default function Dashboard() {
   const { userName, membershipTier, armyLevel, referralCode, wallets } = useAppStore();
   const tierInfo = MEMBERSHIP_TIERS[membershipTier];
   const levelInfo = ARMY_LEVELS[armyLevel];
-  const { canAccessPro, canAccessElite } = useTierAccess();
+  const { canAccessExpert, canAccessElite } = useTierAccess();
   const { hasPendingTransactions } = useOptimisticWallets();
   
   // Calculate stats for analytics cards
@@ -54,7 +54,7 @@ export default function Dashboard() {
       )}
 
       {/* Tier-Based Analytics Cards - 2026 Style */}
-      {canAccessPro && (
+      {canAccessExpert && (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
           {/* P2P Credits Stats */}
           <div className="terminal-card rounded p-3 sm:p-4 widget-hover">

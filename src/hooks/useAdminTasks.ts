@@ -168,10 +168,10 @@ export const TASK_CATEGORIES = [
   'Other',
 ] as const;
 
-// Get required levels for dropdown
+// Get required levels for dropdown - SOVEREIGN BRANDING V8.7
 export const REQUIRED_LEVELS = [
-  { value: 'basic', label: 'Basic' },
   { value: 'pro', label: 'Pro' },
+  { value: 'expert', label: 'Expert' },
   { value: 'elite', label: 'Elite' },
 ] as const;
 

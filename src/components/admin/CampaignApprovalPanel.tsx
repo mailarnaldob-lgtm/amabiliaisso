@@ -71,7 +71,7 @@ export function CampaignApprovalPanel() {
           
           return {
             ...campaign,
-            advertiser: profile || { full_name: 'Unknown', membership_tier: 'basic' }
+            advertiser: profile || { full_name: 'Unknown', membership_tier: 'pro' }
           };
         })
       );

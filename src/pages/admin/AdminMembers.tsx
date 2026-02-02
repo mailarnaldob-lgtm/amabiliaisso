@@ -108,7 +108,7 @@ export default function AdminMembers() {
                               className={`capitalize flex items-center gap-1 w-fit ${getTierClass(member.membership_tier)}`}
                             >
                               {getTierIcon(member.membership_tier)}
-                              {member.membership_tier || 'basic'}
+                              {member.membership_tier || 'Inactive'}
                             </Badge>
                           </TableCell>
                           <TableCell>

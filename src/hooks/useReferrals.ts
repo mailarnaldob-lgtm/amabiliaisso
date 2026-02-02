@@ -6,7 +6,7 @@ export interface ReferralCommission {
   id: string;
   referrer_id: string;
   referred_id: string;
-  membership_tier: 'basic' | 'pro' | 'elite';
+  membership_tier: 'pro' | 'expert' | 'elite';
   membership_amount: number;
   commission_rate: number | null;
   commission_amount: number;

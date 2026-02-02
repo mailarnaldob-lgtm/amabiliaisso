@@ -66,8 +66,8 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
   const getTierBadge = (tier: string | null | undefined) => {
     switch (tier) {
       case 'elite': return { label: 'Elite', color: 'bg-[#FFD700]/20 text-[#FFD700] border-[#FFD700]/30' };
-      case 'pro': return { label: 'Pro', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
-      case 'basic': return { label: 'Basic', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' };
+      case 'expert': return { label: 'Expert', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
+      case 'pro': return { label: 'Pro', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' };
       default: return { label: 'Inactive', color: 'bg-muted text-muted-foreground border-border' };
     }
   };
