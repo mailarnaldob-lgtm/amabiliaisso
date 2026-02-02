@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Wallet, ArrowUpDown, Send, Target, Landmark, X 
+  Wallet, ArrowUpDown, Send, Target, Landmark, X, Megaphone 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
  * Alpha Coin Hub - V8.4
  * The iconic Floating Action Button with Golden Alpha Coin design
- * Contains: Wallet, Exchange, Money Transfer, Assignments, Lending
+ * Contains: Wallet, Exchange, Money Transfer, Assignments, Lending, Ad Wizard
  */
 
 interface HubItem {
@@ -55,6 +55,13 @@ const hubItems: HubItem[] = [
     description: 'P2P Credit Protocol',
     href: '/dashboard/finance',
     color: 'from-cyan-400 to-cyan-600'
+  },
+  { 
+    icon: Megaphone, 
+    label: 'Ad Wizard', 
+    description: 'Create campaigns',
+    href: '/dashboard/ads',
+    color: 'from-orange-400 to-red-500'
   },
 ];
 

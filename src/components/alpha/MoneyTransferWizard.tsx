@@ -163,59 +163,29 @@ export function MoneyTransferWizard({ isOpen, onClose }: MoneyTransferWizardProp
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // For internal transfers, use RPC for atomic operation
+      // For internal transfers, use atomic RPC function
       if (transferType === 'internal' && selectedRecipient) {
-        // Get recipient's wallet
-        const { data: recipientWallet } = await supabase
-          .from('wallets')
-          .select('id')
-          .eq('user_id', selectedRecipient.id)
-          .eq('wallet_type', 'main')
-          .single();
-
-        if (!recipientWallet) throw new Error('Recipient wallet not found');
-
-        // Deduct from sender (amount + fee)
-        const { error: deductError } = await supabase.rpc('cash_out_with_lock', {
-          p_user_id: user.id,
+        const { data, error } = await supabase.rpc('internal_transfer_atomic', {
+          p_sender_id: user.id,
+          p_recipient_id: selectedRecipient.id,
           p_amount: Number(amount),
-          p_fee_percent: (fee / Number(amount)) * 100,
-          p_payment_method: 'internal_transfer',
-          p_account_name: selectedRecipient.full_name,
-          p_account_number: selectedRecipient.referral_code
+          p_fee: fee,
+          p_note: note || null
         });
 
-        if (deductError) throw new Error(deductError.message);
+        if (error) throw new Error(error.message);
+        
+        // Check RPC response for success
+        const result = data as { success: boolean; error?: string };
+        if (!result.success) {
+          throw new Error(result.error || 'Transfer failed');
+        }
 
-        // Credit recipient - get current balance first
-        const { data: currentBalance } = await supabase
-          .from('wallets')
-          .select('balance')
-          .eq('id', recipientWallet.id)
-          .single();
-
-        await supabase
-          .from('wallets')
-          .update({ 
-            balance: (currentBalance?.balance || 0) + Number(amount),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', recipientWallet.id);
-
-        // Log recipient transaction
-        await supabase
-          .from('wallet_transactions')
-          .insert({
-            wallet_id: recipientWallet.id,
-            user_id: selectedRecipient.id,
-            amount: Number(amount),
-            transaction_type: 'transfer_in',
-            description: `Received from transfer${note ? `: ${note}` : ''}`
-          });
+        return result;
 
       } else {
         // External transfer - deduct and mark as pending
-        const { error } = await supabase.rpc('cash_out_with_lock', {
+        const { data, error } = await supabase.rpc('cash_out_with_lock', {
           p_user_id: user.id,
           p_amount: Number(amount),
           p_fee_percent: (fee / Number(amount)) * 100,
@@ -225,9 +195,14 @@ export function MoneyTransferWizard({ isOpen, onClose }: MoneyTransferWizardProp
         });
 
         if (error) throw new Error(error.message);
-      }
+        
+        const result = data as { success: boolean; error?: string };
+        if (!result.success) {
+          throw new Error(result.error || 'Transfer failed');
+        }
 
-      return { success: true };
+        return result;
+      }
     },
     onSuccess: () => {
       toast({
