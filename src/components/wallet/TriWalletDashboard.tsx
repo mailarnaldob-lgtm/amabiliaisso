@@ -37,7 +37,7 @@ export function TriWalletDashboard() {
       <Alert className="border-muted bg-muted/30">
         <Info className="h-4 w-4" />
         <AlertDescription className="text-xs">
-          ₳ Credits are internal system units. They cannot be redeemed for cash or monetary value.
+          ₳ Credits are Sovereign Utility Units powering P2P Liquidity and Royalty Distributions across the network.
         </AlertDescription>
       </Alert>
 
