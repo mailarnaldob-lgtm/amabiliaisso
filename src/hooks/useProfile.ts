@@ -8,7 +8,7 @@ export interface Profile {
   phone: string | null;
   referral_code: string;
   referred_by: string | null;
-  membership_tier: 'basic' | 'pro' | 'elite' | null;
+  membership_tier: 'pro' | 'expert' | 'elite' | null;
   membership_amount: number | null;
   is_kyc_verified: boolean | null;
   avatar_url: string | null;
@@ -51,13 +51,24 @@ export function useProfile() {
         }
 
         // Map Supabase profile data to Profile interface
+        // Handle legacy 'basic' tier by mapping to 'pro'
+        let mappedTier: 'pro' | 'expert' | 'elite' | null = null;
+        if (profileData.membership_tier) {
+          const tierValue = profileData.membership_tier as string;
+          if (tierValue === 'basic') {
+            mappedTier = 'pro';
+          } else if (tierValue === 'pro' || tierValue === 'expert' || tierValue === 'elite') {
+            mappedTier = tierValue as 'pro' | 'expert' | 'elite';
+          }
+        }
+
         return {
           id: profileData.id,
           full_name: profileData.full_name || user.user_metadata?.full_name || 'User',
           phone: profileData.phone || null,
           referral_code: profileData.referral_code || generateReferralCode(user.id),
           referred_by: profileData.referred_by || null,
-          membership_tier: profileData.membership_tier || 'basic',
+          membership_tier: mappedTier,
           membership_amount: profileData.membership_amount ? Number(profileData.membership_amount) : null,
           is_kyc_verified: Boolean(profileData.is_kyc_verified),
           avatar_url: profileData.avatar_url || null,
@@ -93,7 +104,7 @@ function createFallbackProfile(user: { id: string; email?: string; user_metadata
     phone: (user.user_metadata?.phone as string) || null,
     referral_code: generateReferralCode(user.id),
     referred_by: null,
-    membership_tier: 'basic',
+    membership_tier: null, // Inactive by default
     membership_amount: null,
     is_kyc_verified: false,
     avatar_url: null,

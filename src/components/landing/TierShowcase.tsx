@@ -6,14 +6,14 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 /**
- * Tier Showcase - V8.4
- * One-time activation fees per Blueprint V8.0
+ * Tier Showcase - SOVEREIGN BRANDING V8.7
+ * One-time activation fees per Blueprint V8.7
  * PRO: ₱300, EXPERT: ₱600, ELITE: ₱900
  * 1% DAILY vault yield for Elite
  */
 
 const tiers = [{
-  name: 'Basic',
+  name: 'Pro',
   price: 300,
   icon: Star,
   color: 'from-emerald-500 to-teal-600',
@@ -22,13 +22,13 @@ const tiers = [{
   features: ['Full VPA Mission Access', '50% Referral Commission', 'Omni-Transfer Engine', 'Alpha Mobile Dashboard'],
   popular: false
 }, {
-  name: 'Pro',
+  name: 'Expert',
   price: 600,
   icon: Zap,
   color: 'from-blue-500 to-indigo-600',
   shadowColor: 'shadow-blue-500/20',
   borderColor: 'border-blue-500/30',
-  features: ['All Basic Features', 'Ad Wizard Professional', 'Priority Mission Queue', '10% Network Overrides (Lvl 1-2)', '15,000 ₳ Daily Transfer Limit'],
+  features: ['All Pro Features', 'Ad Wizard Professional', 'Priority Mission Queue', '10% Network Overrides (Lvl 1-2)', '15,000 ₳ Daily Transfer Limit'],
   popular: true
 }, {
   name: 'Elite',
@@ -37,9 +37,10 @@ const tiers = [{
   color: 'from-[#FFD700] to-[#FFA500]',
   shadowColor: 'shadow-[#FFD700]/30',
   borderColor: 'border-[#FFD700]/50',
-  features: ['All Pro Features', 'Alpha Bankers Cooperative', '1% Daily Vault Yield', 'P2P Lending Access', 'Full Royalty Engine', 'Priority Support'],
+  features: ['All Expert Features', 'Alpha Bankers Cooperative', '1% Daily Vault Yield', 'P2P Lending Access', 'Full Royalty Engine', 'Priority Support'],
   popular: false
 }];
+
 export function TierShowcase() {
   return <section className="py-20 px-4 relative overflow-hidden">
       {/* Background */}
@@ -149,7 +150,7 @@ export function TierShowcase() {
       }} transition={{
         delay: 0.5
       }} className="text-center text-xs text-muted-foreground mt-8">
-          * Elite members require 3 direct PRO referrals to qualify for 1% Daily Vault Yield.
+          * Elite members require 3 direct EXPERT referrals to qualify for 1% Daily Vault Yield.
         </motion.p>
       </div>
     </section>;

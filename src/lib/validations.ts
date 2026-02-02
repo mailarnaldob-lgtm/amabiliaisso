@@ -17,9 +17,9 @@ export const profileSchema = z.object({
     .or(z.literal('')),
 });
 
-// Payment submission validation schema
+// Payment submission validation schema - SOVEREIGN BRANDING V8.7
 export const paymentSchema = z.object({
-  tier: z.enum(['basic', 'pro', 'elite'], {
+  tier: z.enum(['pro', 'expert', 'elite'], {
     required_error: 'Please select a membership tier',
   }),
   payment_method: z.enum(['gcash', 'bpi', 'bdo'], {

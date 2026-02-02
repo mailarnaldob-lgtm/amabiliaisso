@@ -63,7 +63,7 @@ const emptyFormData: CreateTaskInput = {
   title: '',
   description: '',
   category: 'Social Media',
-  required_level: 'basic',
+  required_level: 'pro',
   proof_type: 'screenshot',
   reward: 10,
   is_active: true,

@@ -67,8 +67,8 @@ export default function MemberDashboard() {
   const getTierConfig = (tier: string | null) => {
     switch (tier) {
       case 'elite': return { icon: Crown, label: 'Elite Member', color: 'from-[#FFD700] to-[#FFA500]' };
-      case 'pro': return { icon: Zap, label: 'Pro Member', color: 'from-primary to-primary/80' };
-      case 'basic': return { icon: Star, label: 'Basic Member', color: 'from-secondary to-secondary/80' };
+      case 'expert': return { icon: Zap, label: 'Expert Member', color: 'from-primary to-primary/80' };
+      case 'pro': return { icon: Star, label: 'Pro Member', color: 'from-emerald-500 to-teal-600' };
       default: return { icon: Star, label: 'Inactive', color: 'from-muted to-muted' };
     }
   };

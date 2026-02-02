@@ -42,10 +42,10 @@ const recentRoyalties = [
 ];
 
 const directReferrals = [
-  { id: 1, name: 'Alpha_Member_001', tier: 'Pro', status: 'active', missions: 15, earned: 120 },
+  { id: 1, name: 'Alpha_Member_001', tier: 'Expert', status: 'active', missions: 15, earned: 120 },
   { id: 2, name: 'Alpha_Member_002', tier: 'Elite', status: 'active', missions: 28, earned: 350 },
-  { id: 3, name: 'Alpha_Member_003', tier: 'Basic', status: 'inactive', missions: 3, earned: 30 },
-  { id: 4, name: 'Alpha_Member_004', tier: 'Basic', status: 'pending', missions: 0, earned: 0 },
+  { id: 3, name: 'Alpha_Member_003', tier: 'Pro', status: 'inactive', missions: 3, earned: 30 },
+  { id: 4, name: 'Alpha_Member_004', tier: 'Pro', status: 'pending', missions: 0, earned: 0 },
 ];
 
 export default function GrowthApp() {

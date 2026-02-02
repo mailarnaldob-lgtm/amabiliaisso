@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export type WalletType = 'main' | 'task' | 'royalty';
 export type ArmyLevel = 'cadet' | 'specialist' | 'operative' | 'vanguard' | 'elite_operator';
-export type MembershipTier = 'basic' | 'pro' | 'elite';
+export type MembershipTier = 'pro' | 'expert' | 'elite';
 export type LoanStatus = 'active' | 'pending' | 'repaid' | 'defaulted';
 
 export interface Wallet {
@@ -72,7 +72,7 @@ export const useAppStore = create<AppState>((set) => ({
   // Default user state - will be overridden by real data from useProfile hook
   userId: '',
   userName: '',
-  membershipTier: 'basic',
+  membershipTier: 'pro',
   armyLevel: 'cadet',
   isKycVerified: false,
   referralCode: '',
@@ -210,22 +210,23 @@ export const ARMY_LEVELS: Record<ArmyLevel, { name: string; minTasks: number; ic
   elite_operator: { name: 'VPA Elite Operator', minTasks: 500, icon: '👑' },
 };
 
-// Membership tier configuration - accurate business logic per Alpha Ecosystem Blueprint V8.0
-// ONE-TIME activation fees | Vault yield: 1% DAILY for Elite members
+// Membership tier configuration - SOVEREIGN BRANDING V8.7
+// PRO: ₱300 | EXPERT: ₱600 | ELITE: ₱900 (One-time activation fees)
+// Vault yield: 1% DAILY for Elite members
 export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: number; features: string[] }> = {
-  basic: {
-    name: 'Basic',
-    cost: 300, // ₱300 one-time
-    features: ['50% Referral Commission', 'Access to Community Platform'],
-  },
   pro: {
     name: 'Pro',
+    cost: 300, // ₱300 one-time
+    features: ['Full VPA Mission Access', '50% Referral Commission', 'Omni-Transfer Engine', 'Alpha Mobile Dashboard'],
+  },
+  expert: {
+    name: 'Expert',
     cost: 600, // ₱600 one-time
-    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Training Access'],
+    features: ['All Pro Features', 'Ad Wizard Professional', 'Priority Mission Queue', '10% Network Overrides (Lvl 1-2)', '15,000 ₳ Daily Transfer Limit'],
   },
   elite: {
     name: 'Elite',
     cost: 900, // ₱900 one-time
-    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'P2P Credit Marketplace', '1% Daily Vault Yield', 'VIP Support'],
+    features: ['All Expert Features', 'Alpha Bankers Cooperative', '1% Daily Vault Yield', 'P2P Lending Access', 'Full Royalty Engine', 'Priority Support'],
   },
 };

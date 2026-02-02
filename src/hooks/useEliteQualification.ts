@@ -3,10 +3,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * ELITE GATEKEEPER HOOK
- * Blueprint V8.0 Specification:
- * - Users must have 3 Direct PRO (or higher) referrals to qualify for ELITE status
- * - Only counts referrals who have upgraded to at least 'pro' tier
+ * ELITE GATEKEEPER HOOK - SOVEREIGN BRANDING V8.7
+ * Blueprint Specification:
+ * - Users must have 3 Direct EXPERT (or higher) referrals to qualify for ELITE status
+ * - Only counts referrals who have upgraded to at least 'expert' tier
  */
 export function useEliteQualification() {
   const { user } = useAuth();
@@ -23,15 +23,15 @@ export function useEliteQualification() {
         };
       }
       
-      // Get profiles referred by this user who are PRO or ELITE
+      // Get profiles referred by this user who are EXPERT or ELITE
       const { data, error, count } = await supabase
         .from('profiles')
         .select('id, full_name, membership_tier, created_at', { count: 'exact' })
         .eq('referred_by', user.id)
-        .in('membership_tier', ['pro', 'elite']);
+        .in('membership_tier', ['expert', 'elite']);
 
       if (error) {
-        console.error('Error fetching PRO referrals:', error);
+        console.error('Error fetching EXPERT referrals:', error);
         return { 
           qualifiedReferrals: 0, 
           requiredReferrals: 3, 

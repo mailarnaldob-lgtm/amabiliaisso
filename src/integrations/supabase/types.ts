@@ -676,7 +676,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "moderator" | "member"
       loan_status: "pending" | "active" | "repaid" | "defaulted" | "cancelled"
-      membership_tier: "basic" | "pro" | "elite"
+      membership_tier: "basic" | "pro" | "elite" | "expert"
       payment_status: "pending" | "approved" | "rejected"
       wallet_type: "task" | "royalty" | "main"
     }
@@ -808,7 +808,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "member"],
       loan_status: ["pending", "active", "repaid", "defaulted", "cancelled"],
-      membership_tier: ["basic", "pro", "elite"],
+      membership_tier: ["basic", "pro", "elite", "expert"],
       payment_status: ["pending", "approved", "rejected"],
       wallet_type: ["task", "royalty", "main"],
     },

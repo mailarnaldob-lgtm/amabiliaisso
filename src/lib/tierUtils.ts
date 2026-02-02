@@ -1,12 +1,17 @@
 /**
- * Tier Utilities
+ * Tier Utilities - SOVEREIGN BRANDING V8.7
  * 
  * Manages tier-to-label mapping globally across the UI.
  * 'INACTIVE ACCOUNT' is the default for users with no assigned membership tier (membership_tier: null).
- * New signups start as inactive and need to pay ₱300 to become Basic.
+ * New signups start as inactive and need to pay ₱300 to become PRO.
+ * 
+ * TIER HIERARCHY:
+ * - PRO: ₱300 (Entry Level)
+ * - EXPERT: ₱600 (Ad Wizard, Priority Queue, 10% Overrides)
+ * - ELITE: ₱900 (Alpha Bankers Cooperative, 1% Daily Vault Yield)
  */
 
-export type MembershipTier = 'basic' | 'pro' | 'elite' | null;
+export type MembershipTier = 'pro' | 'expert' | 'elite' | null;
 
 export interface TierConfig {
   id: string;
@@ -17,7 +22,7 @@ export interface TierConfig {
   features: string[];
 }
 
-// Tier configuration with accurate pricing
+// Tier configuration with accurate pricing per Blueprint V8.7
 export const TIER_CONFIG: Record<string, TierConfig> = {
   free: {
     id: 'free',
@@ -27,21 +32,21 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
     color: 'bg-muted',
     features: ['Basic platform access', 'Community browsing'],
   },
-  basic: {
-    id: 'basic',
-    label: 'BASIC ACCOUNT',
-    displayName: 'Basic',
-    price: 300,
-    color: 'bg-secondary',
-    features: ['Referral access program', '50% referral commission', 'Access to community platform'],
-  },
   pro: {
     id: 'pro',
     label: 'PRO ACCOUNT',
     displayName: 'Pro',
+    price: 300,
+    color: 'bg-secondary',
+    features: ['Full VPA Mission Access', '50% Referral Commission', 'Omni-Transfer Engine', 'Alpha Mobile Dashboard'],
+  },
+  expert: {
+    id: 'expert',
+    label: 'EXPERT ACCOUNT',
+    displayName: 'Expert',
     price: 600,
     color: 'bg-primary',
-    features: ['Referral access program', '50% referral commission', 'Activity-based credits (VPA)', 'Training access'],
+    features: ['All Pro Features', 'Ad Wizard Professional', 'Priority Mission Queue', '10% Network Overrides (Lvl 1-2)', '15,000 ₳ Daily Transfer Limit'],
   },
   elite: {
     id: 'elite',
@@ -49,7 +54,7 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
     displayName: 'Elite',
     price: 900,
     color: 'bg-accent-foreground',
-    features: ['Referral access program', '50% referral commission', 'Activity-based credits (VPA)', 'Credit marketplace (P2P Lending)', 'VIP support', 'KYC verification'],
+    features: ['All Expert Features', 'Alpha Bankers Cooperative', '1% Daily Vault Yield', 'P2P Lending Access', 'Full Royalty Engine', 'Priority Support'],
   },
 };
 

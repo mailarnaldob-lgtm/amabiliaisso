@@ -9,8 +9,8 @@ interface TierGateProps {
 }
 
 const tierHierarchy: Record<MembershipTier, number> = {
-  basic: 1,
-  pro: 2,
+  pro: 1,
+  expert: 2,
   elite: 3,
 };
 
@@ -36,10 +36,10 @@ export function useTierAccess() {
   return {
     currentTier: membershipTier,
     hasTierAccess,
-    isBasic: membershipTier === 'basic',
     isPro: membershipTier === 'pro',
+    isExpert: membershipTier === 'expert',
     isElite: membershipTier === 'elite',
-    canAccessPro: tierHierarchy[membershipTier] >= tierHierarchy.pro,
+    canAccessExpert: tierHierarchy[membershipTier] >= tierHierarchy.expert,
     canAccessElite: membershipTier === 'elite',
   };
 }
