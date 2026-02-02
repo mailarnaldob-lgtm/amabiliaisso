@@ -11,7 +11,9 @@ import {
   Eye,
   Settings,
   DollarSign,
-  ArrowLeft
+  ArrowLeft,
+  Landmark,
+  Settings2
 } from 'lucide-react';
 import { clearAdminSession } from '@/lib/adminSession';
 
@@ -25,6 +27,8 @@ const navItems = [
   { href: '/admin/members', label: 'Members', icon: Users },
   { href: '/admin/payments', label: 'Payments', icon: CreditCard },
   { href: '/admin/commissions', label: 'Commissions', icon: DollarSign },
+  { href: '/admin/loans', label: 'Loan Management', icon: Landmark },
+  { href: '/admin/economic', label: 'Economic Controls', icon: Settings2 },
   { href: '/admin/god-eye', label: 'God-Eye Panel', icon: Eye },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];

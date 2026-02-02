@@ -38,6 +38,8 @@ const AdminMembers = lazy(() => import("./pages/admin/AdminMembers"));
 const AdminPayments = lazy(() => import("./pages/admin/AdminPayments"));
 const AdminCommissions = lazy(() => import("./pages/admin/AdminCommissions"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminLoans = lazy(() => import("./pages/admin/AdminLoans"));
+const AdminEconomicControls = lazy(() => import("./pages/admin/AdminEconomicControls"));
 const GodEyePanel = lazy(() => import("./pages/admin/GodEyePanel"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const TaskProofsDashboard = lazy(() => import("./pages/admin/TaskProofsDashboard"));
@@ -132,6 +134,8 @@ const App = () => (
                 <Route path="/admin/members" element={<ProtectedRoute requireAdmin><AdminMembers /></ProtectedRoute>} />
                 <Route path="/admin/payments" element={<ProtectedRoute requireAdmin><AdminPayments /></ProtectedRoute>} />
                 <Route path="/admin/commissions" element={<ProtectedRoute requireAdmin><AdminCommissions /></ProtectedRoute>} />
+                <Route path="/admin/loans" element={<ProtectedRoute requireAdmin><AdminLoans /></ProtectedRoute>} />
+                <Route path="/admin/economic" element={<ProtectedRoute requireAdmin><AdminEconomicControls /></ProtectedRoute>} />
                 <Route path="/admin/god-eye" element={<ProtectedRoute requireAdmin><GodEyePanel /></ProtectedRoute>} />
                 <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
                 
