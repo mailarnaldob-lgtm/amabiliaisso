@@ -36,8 +36,7 @@ const footerSections = [
 
 const certifications = [
   { icon: Lock, label: 'SSL Secured' },
-  { icon: CheckCircle, label: 'PCI Compliant' },
-  { icon: Shield, label: '256-bit Encryption' }
+  { icon: CheckCircle, label: 'PCI Compliant' }
 ];
 
 export function LandingFooter() {
