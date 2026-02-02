@@ -37,8 +37,13 @@ function validateInternalTransfer(input: unknown): { success: boolean; data?: In
     return { success: false, error: 'Minimum transfer amount is ₳50' };
   }
 
-  // Sanitize note (optional)
+  // Sanitize note (optional) - max 200 chars per security guidelines
   const sanitizedNote = note ? sanitizeString(note, 200) : undefined;
+  
+  // Validate note doesn't exceed max length after sanitization
+  if (sanitizedNote && sanitizedNote.length > 200) {
+    return { success: false, error: 'Note is too long (max 200 characters)' };
+  }
 
   return {
     success: true,
