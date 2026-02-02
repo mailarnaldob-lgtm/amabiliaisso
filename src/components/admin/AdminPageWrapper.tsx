@@ -30,8 +30,9 @@ export function AdminPageWrapper({ children, title, description }: AdminPageWrap
 
   if (!isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-atmosphere">
-        <div className="text-center space-y-4">
+      <div className="min-h-screen flex items-center justify-center bg-background relative">
+        <div className="bg-atmosphere" />
+        <div className="text-center space-y-4 relative z-10">
           <div className="relative">
             <Shield className="w-16 h-16 text-primary mx-auto animate-pulse" />
             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
@@ -46,7 +47,10 @@ export function AdminPageWrapper({ children, title, description }: AdminPageWrap
   }
 
   return (
-    <div className="min-h-screen bg-atmosphere flex">
+    <div className="min-h-screen bg-background flex relative">
+      {/* Background Atmosphere - separate element with pointer-events-none */}
+      <div className="bg-atmosphere" />
+      
       <AdminSidebar adminInfo={adminInfo} />
       
       {/* Main Content */}
