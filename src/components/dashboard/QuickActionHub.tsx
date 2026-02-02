@@ -3,16 +3,21 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   PlusCircle, ArrowDownCircle, Briefcase, Users, 
-  Target, X, Sparkles
+  Target, X, Sparkles, Crown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+/**
+ * Quick Action Hub - V8.4
+ * Terminology per Blueprint: Top-up Wallet, Secure Payout, Partner Invite, Commit Capital, Global Assignments
+ */
 
 interface QuickAction {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  description: string;
   path: string;
   color: string;
-  description: string;
 }
 
 const quickActions: QuickAction[] = [
@@ -35,7 +40,7 @@ const quickActions: QuickAction[] = [
     label: 'Commit Capital', 
     path: '/dashboard/finance', 
     color: 'from-purple-500 to-purple-600',
-    description: 'Invest in P2P lending (1% daily)'
+    description: 'P2P lending (1% daily)'
   },
   { 
     icon: Users, 
@@ -63,7 +68,7 @@ export function QuickActionHub() {
         onClick={() => setIsExpanded(!isExpanded)}
         whileTap={{ scale: 0.95 }}
         className={cn(
-          "fixed bottom-20 right-4 z-40",
+          "fixed bottom-24 right-4 z-40",
           "w-14 h-14 rounded-full",
           "bg-gradient-to-br from-[#FFD700] to-[#FFA500]",
           "shadow-lg shadow-[#FFD700]/30",
@@ -90,7 +95,7 @@ export function QuickActionHub() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsExpanded(false)}
-              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
             />
 
             {/* Actions Panel */}
@@ -100,11 +105,11 @@ export function QuickActionHub() {
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className={cn(
-                "fixed bottom-36 right-4 z-40",
+                "fixed bottom-40 right-4 z-40",
                 "w-72 max-w-[calc(100vw-2rem)]",
                 "bg-card/95 backdrop-blur-xl",
-                "border border-border rounded-xl",
-                "shadow-2xl shadow-black/20",
+                "border border-[#FFD700]/20 rounded-xl",
+                "shadow-2xl shadow-black/30",
                 "overflow-hidden"
               )}
             >
@@ -131,7 +136,7 @@ export function QuickActionHub() {
                       onClick={() => setIsExpanded(false)}
                       className={cn(
                         "flex items-center gap-3 p-3 rounded-lg",
-                        "hover:bg-muted/50 transition-colors",
+                        "hover:bg-[#FFD700]/5 transition-colors",
                         "group haptic-press"
                       )}
                     >
@@ -142,7 +147,7 @@ export function QuickActionHub() {
                         <action.icon className="h-5 w-5 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-foreground truncate">
+                        <p className="font-medium text-sm text-foreground truncate group-hover:text-[#FFD700] transition-colors">
                           {action.label}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">

@@ -159,26 +159,26 @@ export default function FinanceApp() {
         </TabsList>
 
         <TabsContent value="lend">
-          {/* Lend Summary - Golden-Yellow Theme */}
+          {/* Lend Summary - 1% DAILY per Blueprint V8.0 */}
           <Card className="mb-4 overflow-hidden bg-card border-[#FFD700]/20 backdrop-blur-xl">
             <div className="bg-gradient-to-br from-[#FFD700]/20 to-[#FFA500]/5 p-5 border-b border-[#FFD700]/10">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest">7-Day Credit Cycle</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">Daily Vault Yield</p>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-4xl font-bold text-[#FFD700]">3%</span>
-                <span className="text-sm text-muted-foreground">Weekly Return</span>
+                <span className="text-4xl font-bold text-[#FFD700]">1%</span>
+                <span className="text-sm text-muted-foreground">Daily Return</span>
               </div>
               <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Percent className="h-3 w-3 text-[#FFD700]" />
-                  1% Entry Fee
+                  0.8% Entry Fee
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3 w-3 text-[#FFD700]" />
-                  7-Day Lock
+                  28-Day Cycle
                 </span>
                 <span className="flex items-center gap-1">
                   <Lock className="h-3 w-3 text-[#FFD700]" />
-                  Non-Guaranteed
+                  Collateralized
                 </span>
               </div>
             </div>
