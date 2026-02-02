@@ -12,6 +12,7 @@ import { AdminNotificationCenter } from '@/components/admin/AdminNotificationCen
 import { CampaignApprovalPanel } from '@/components/admin/CampaignApprovalPanel';
 import { PaymentAssetManager } from '@/components/admin/PaymentAssetManager';
 import { CashInAuditPanel } from '@/components/admin/CashInAuditPanel';
+import { CashOutAuditPanel } from '@/components/admin/CashOutAuditPanel';
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
 import { 
   Bell,
@@ -19,7 +20,8 @@ import {
   Settings,
   Wallet,
   LayoutGrid,
-  Save
+  Save,
+  ArrowDownToLine,
 } from 'lucide-react';
 
 export default function AdminSettings() {
@@ -45,10 +47,14 @@ export default function AdminSettings() {
         <div className="space-y-8 max-w-5xl">
           {/* Main Settings Tabs */}
           <Tabs defaultValue="cashin" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-6 bg-card/50 border border-border">
+            <TabsList className="grid w-full grid-cols-6 mb-6 bg-card/50 border border-border">
               <TabsTrigger value="cashin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Wallet className="h-4 w-4 mr-2" />
                 Cash-In
+              </TabsTrigger>
+              <TabsTrigger value="cashout" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <ArrowDownToLine className="h-4 w-4 mr-2" />
+                Cash-Out
               </TabsTrigger>
               <TabsTrigger value="notifications" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Bell className="h-4 w-4 mr-2" />
@@ -68,9 +74,14 @@ export default function AdminSettings() {
               </TabsTrigger>
             </TabsList>
 
-            {/* NEW: Cash-In Audit Panel Tab */}
+            {/* Cash-In Audit Panel Tab */}
             <TabsContent value="cashin">
               <CashInAuditPanel />
+            </TabsContent>
+
+            {/* Cash-Out Audit Panel Tab */}
+            <TabsContent value="cashout">
+              <CashOutAuditPanel />
             </TabsContent>
 
             {/* Notifications & Approvals Tab */}

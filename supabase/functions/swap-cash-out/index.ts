@@ -7,8 +7,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Configurable fee structure
-const WITHDRAWAL_FEE_PERCENT = 2; // 2% fee
+// SOVEREIGN V9.4: Fixed fee structure per Blueprint V8.0
+const WITHDRAWAL_FEE_FLAT = 15; // ₳15 flat fee for external transfers
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -30,12 +30,9 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Validate token claims (JWT verification)
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    const userId = claimsData?.claims?.sub;
-
-    if (claimsError || !userId) {
+    // Get user from JWT
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
       throw new Error('Unauthorized');
     }
 
@@ -49,51 +46,55 @@ serve(async (req) => {
 
     const { amount, payment_method, account_number, account_name } = validation.data!;
 
-    // Use service role for wallet operations
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    // Check for pin_verified in raw input (optional field)
+    const pinVerified = Boolean((rawInput as Record<string, unknown>).pin_verified);
 
-    // Use atomic database function with row-level locking to prevent race conditions
-    const { data: result, error: rpcError } = await supabaseAdmin.rpc('cash_out_with_lock', {
-      p_user_id: userId,
-      p_amount: amount,
-      p_fee_percent: WITHDRAWAL_FEE_PERCENT,
-      p_payment_method: payment_method,
-      p_account_name: account_name,
-      p_account_number: account_number
-    });
+    // Calculate fee and net amount
+    const feeAmount = WITHDRAWAL_FEE_FLAT;
+    const netAmount = amount - feeAmount;
 
-    if (rpcError) {
-      console.error('RPC error:', rpcError);
-      throw new Error('Cash-out failed: database error');
+    if (netAmount <= 0) {
+      throw new Error(`Minimum withdrawal is ₳${feeAmount + 1} (after ₳${feeAmount} fee)`);
     }
 
-    // Check if the database function returned an error
-    if (!result?.success) {
-      throw new Error(result?.error || 'Cash-out failed');
+    // SOVEREIGN V9.4: Create pending cash-out request instead of direct deduction
+    // The request will be reviewed by an admin before funds are deducted
+    const { data: insertResult, error: insertError } = await supabaseClient
+      .from('cash_out_requests')
+      .insert({
+        user_id: user.id,
+        amount: amount,
+        fee_amount: feeAmount,
+        net_amount: netAmount,
+        payment_method: payment_method,
+        account_name: account_name,
+        account_number: account_number,
+        status: 'pending',
+        pin_verified: pinVerified,
+      })
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error('[CASH-OUT] Insert error:', insertError);
+      throw new Error('Failed to submit request. Please try again.');
     }
 
-    console.log(`Cash-out successful: User ${userId} burned ₳${amount}, disbursing ₱${result.net_amount} via ${payment_method}`);
-
-    // TODO: Integrate with actual payment gateway (GCash/Maya/Bank API)
-    // For now, we just log the request and mark it as pending
+    console.log(`[CASH-OUT] Request created: ${insertResult.id} - User ${user.id}, Amount ₳${amount}, Net ₱${netAmount}`);
     
     return new Response(
       JSON.stringify({
         success: true,
         data: {
-          transaction_id: result.transaction_id,
+          request_id: insertResult.id,
           amount_alpha: amount,
-          fee_alpha: result.fee,
-          net_php: result.net_amount,
-          new_balance: result.new_balance,
+          fee_alpha: feeAmount,
+          net_php: netAmount,
           payment_method,
           account_name,
           account_number: account_number.replace(/\d(?=\d{4})/g, '*'), // Mask account number
-          status: 'processing', // Will be updated when payment gateway confirms
-          estimated_time: '1-24 hours'
+          status: 'pending',
+          message: 'Your withdrawal request has been submitted and is pending admin approval (1-24 hours).'
         }
       }),
       { 
