@@ -68,7 +68,7 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { secureSignOut, isLoggingOut } = useAuth();
   const { data: profile } = useProfile();
   const { toast } = useToast();
 
@@ -534,11 +534,12 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
               <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                 <Button
                   variant="ghost"
-                  onClick={() => signOut()}
-                  className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl h-12"
+                  onClick={() => secureSignOut({ redirectTo: '/', clearAllData: true })}
+                  disabled={isLoggingOut}
+                  className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl h-12 disabled:opacity-50"
                 >
-                  <LogOut className="h-4 w-4" />
-                  <span className="font-medium">Sign Out</span>
+                  <LogOut className={cn("h-4 w-4", isLoggingOut && "animate-spin")} />
+                  <span className="font-medium">{isLoggingOut ? 'Signing Out...' : 'Secure Sign Out'}</span>
                 </Button>
               </motion.div>
               <div className="mt-3 text-center">
