@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,54 +9,19 @@ import {
   Users, 
   CreditCard, 
   TrendingUp, 
-  LogOut, 
-  LayoutDashboard, 
   Clock, 
   FileCheck, 
   Shield,
   Eye,
   Settings,
   DollarSign,
-  ArrowLeft,
   Info,
-  Loader2
+  Activity,
+  Zap
 } from 'lucide-react';
-import { initAdminSession, clearAdminSession, getAdminInfoSync } from '@/lib/adminSession';
-
-const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/task-proofs', label: 'Activity Proofs', icon: FileCheck },
-  { href: '/admin/members', label: 'Members', icon: Users },
-  { href: '/admin/payments', label: 'Payments', icon: CreditCard },
-  { href: '/admin/commissions', label: 'Commissions', icon: DollarSign },
-  { href: '/admin/god-eye', label: 'God-Eye Panel', icon: Eye },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
-];
+import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
 
 export default function AdminDashboard() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; role: string } | null>(null);
-
-  useEffect(() => {
-    const init = async () => {
-      const isAdmin = await initAdminSession();
-      if (!isAdmin) {
-        navigate('/admin/login');
-        return;
-      }
-      setAdminInfo(getAdminInfoSync());
-      setIsInitialized(true);
-    };
-    init();
-  }, [navigate]);
-
-  const handleLogout = () => {
-    clearAdminSession();
-    navigate('/');
-  };
-
   const { data: stats } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
@@ -89,216 +53,178 @@ export default function AdminDashboard() {
         pendingReviews: (pendingPayments || 0) + (pendingTasks || 0),
       };
     },
-    enabled: isInitialized,
   });
 
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
-        <div className="p-6 border-b border-border">
-          <Link to="/admin" className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-primary">Admin Panel</span>
-          </Link>
-          {adminInfo && (
-            <p className="text-sm text-muted-foreground mt-2">{adminInfo.email}</p>
-          )}
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => (
-            <Link key={item.href} to={item.href}>
-              <Button
-                variant={location.pathname === item.href ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-2"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Button>
-            </Link>
-          ))}
-        </nav>
-        
-        <div className="p-4 border-t border-border space-y-2">
-          <Link to="/dashboard">
-            <Button variant="outline" className="w-full gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to App
-            </Button>
-          </Link>
-          <Button variant="ghost" className="w-full gap-2" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" /> Logout
-          </Button>
-        </div>
-      </aside>
+    <AdminPageWrapper 
+      title="SOVEREIGN COMMAND CENTER" 
+      description="Complete oversight and control of the Alpha ecosystem"
+    >
+      {({ adminInfo }) => (
+        <div className="space-y-8">
 
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold">Admin Dashboard</h2>
-            <p className="text-muted-foreground">Manage members, review submissions, and allocate credits</p>
+          {/* System Status Alert */}
+          <Alert className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent backdrop-blur-sm">
+            <Zap className="h-4 w-4 text-primary" />
+            <AlertTitle className="font-mono text-primary">SYSTEM ONLINE</AlertTitle>
+            <AlertDescription className="text-sm text-muted-foreground">
+              All administrative operations are protected by Row Level Security policies and require authenticated admin credentials.
+            </AlertDescription>
+          </Alert>
+
+          {/* Stats Grid */}
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="border-primary/10 bg-gradient-to-br from-card to-primary/5 hover:border-primary/30 transition-all duration-300 group">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                  <Users className="h-4 w-4 text-primary" /> Total Members
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-4xl font-bold font-mono text-foreground group-hover:text-primary transition-colors">
+                  {stats?.totalMembers || 0}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">Registered accounts</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/10 bg-gradient-to-br from-card to-primary/5 hover:border-primary/30 transition-all duration-300 group">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                  <TrendingUp className="h-4 w-4 text-primary" /> Credits Allocated
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-4xl font-bold font-mono text-foreground group-hover:text-primary transition-colors">
+                  ₳{(stats?.totalCredits || 0).toLocaleString()}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">System credits distributed</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/10 bg-gradient-to-br from-card to-primary/5 hover:border-primary/30 transition-all duration-300 group">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                  <Clock className="h-4 w-4 text-primary" /> Pending Reviews
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-4xl font-bold font-mono text-foreground group-hover:text-primary transition-colors">
+                  {stats?.pendingReviews || 0}
+                </p>
+                {(stats?.pendingReviews || 0) > 0 && (
+                  <Link to="/admin/task-proofs">
+                    <Badge className="mt-2 bg-destructive/20 text-destructive border border-destructive/30 hover:bg-destructive/30 transition-colors">
+                      <Activity className="w-3 h-3 mr-1" />
+                      Needs Review
+                    </Badge>
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
           </div>
-          <Badge className="bg-primary text-primary-foreground">
-            {adminInfo?.role || 'Admin'}
-          </Badge>
+
+          {/* Quick Actions */}
+          <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="font-mono text-foreground">Quick Actions</CardTitle>
+              <CardDescription>Common administrative tasks</CardDescription>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Link to="/admin/task-proofs">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-3 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 h-12"
+                >
+                  <FileCheck className="h-5 w-5 text-primary" />
+                  Review Activity Submissions
+                </Button>
+              </Link>
+              <Link to="/admin/members">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-3 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 h-12"
+                >
+                  <Users className="h-5 w-5 text-primary" />
+                  Manage Members
+                </Button>
+              </Link>
+              <Link to="/admin/payments">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-3 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 h-12"
+                >
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  Verify Registrations
+                </Button>
+              </Link>
+              <Link to="/admin/commissions">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-3 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 h-12"
+                >
+                  <DollarSign className="h-5 w-5 text-primary" />
+                  View Commissions
+                </Button>
+              </Link>
+              <Link to="/admin/god-eye">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-3 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 h-12"
+                >
+                  <Eye className="h-5 w-5 text-primary" />
+                  God-Eye Panel
+                </Button>
+              </Link>
+              <Link to="/admin/settings">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-3 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 h-12"
+                >
+                  <Settings className="h-5 w-5 text-primary" />
+                  System Settings
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Capabilities Overview */}
+          <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="font-mono text-foreground">Admin Capabilities</CardTitle>
+              <CardDescription>Full system control</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="grid md:grid-cols-2 gap-3 text-sm">
+                <li className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <Shield className="h-5 w-5 text-primary" />
+                  <span className="text-foreground">Review, create, edit, delete any entity</span>
+                </li>
+                <li className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <Users className="h-5 w-5 text-primary" />
+                  <span className="text-foreground">Manage all member accounts and tiers</span>
+                </li>
+                <li className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <span className="text-foreground">Approve/reject payment verifications</span>
+                </li>
+                <li className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <FileCheck className="h-5 w-5 text-primary" />
+                  <span className="text-foreground">Review and approve task proofs</span>
+                </li>
+                <li className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <DollarSign className="h-5 w-5 text-primary" />
+                  <span className="text-foreground">Manage commission payouts</span>
+                </li>
+                <li className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <Eye className="h-5 w-5 text-primary" />
+                  <span className="text-foreground">Monitor system health and liquidity</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Admin Login Instructions */}
-        <Alert className="mb-6 border-primary/50 bg-primary/5">
-          <Info className="h-4 w-4 text-primary" />
-          <AlertTitle>Secure Admin Access</AlertTitle>
-          <AlertDescription className="text-sm">
-            <p className="mb-2">Admin authentication uses Supabase Auth with role-based access control:</p>
-            <ol className="list-decimal list-inside space-y-1">
-              <li>Login with your admin email at <code className="bg-muted px-1 rounded">/admin/login</code></li>
-              <li>Your admin role is verified server-side via the <code className="bg-muted px-1 rounded">has_role()</code> function</li>
-              <li>All admin operations are protected by Row Level Security policies</li>
-            </ol>
-          </AlertDescription>
-        </Alert>
-
-        {/* Admin Notice */}
-        <Alert className="mb-6 border-amber-500/50 bg-amber-500/5">
-          <Shield className="h-4 w-4 text-amber-500" />
-          <AlertDescription>
-            All credit allocations require manual review and approval. This panel provides full administrative control over the platform.
-          </AlertDescription>
-        </Alert>
-        
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" /> Total Members
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{stats?.totalMembers || 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">Registered accounts</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" /> Credits Allocated
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">₳{(stats?.totalCredits || 0).toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">System credits distributed</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" /> Pending Reviews
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{stats?.pendingReviews || 0}</p>
-              {(stats?.pendingReviews || 0) > 0 && (
-                <Link to="/admin/task-proofs">
-                  <Badge variant="destructive" className="mt-2">Needs Review</Badge>
-                </Link>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common administrative tasks</CardDescription>
-          </CardHeader>
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link to="/admin/task-proofs">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <FileCheck className="h-4 w-4" />
-                Review Activity Submissions
-              </Button>
-            </Link>
-            <Link to="/admin/members">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Users className="h-4 w-4" />
-                Manage Members
-              </Button>
-            </Link>
-            <Link to="/admin/payments">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <CreditCard className="h-4 w-4" />
-                Verify Registrations
-              </Button>
-            </Link>
-            <Link to="/admin/commissions">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <DollarSign className="h-4 w-4" />
-                View Commissions
-              </Button>
-            </Link>
-            <Link to="/admin/god-eye">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Eye className="h-4 w-4" />
-                God-Eye Panel
-              </Button>
-            </Link>
-            <Link to="/admin/settings">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Settings className="h-4 w-4" />
-                System Settings
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Capabilities Overview */}
-        <Card className="mt-6 border-border">
-          <CardHeader>
-            <CardTitle>Admin Capabilities</CardTitle>
-            <CardDescription>Full system control</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="grid md:grid-cols-2 gap-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-primary" />
-                Review, create, edit, delete any entity
-              </li>
-              <li className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" />
-                Manage all member accounts and tiers
-              </li>
-              <li className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-primary" />
-                Approve/reject payment verifications
-              </li>
-              <li className="flex items-center gap-2">
-                <FileCheck className="h-4 w-4 text-primary" />
-                Review and approve task proofs
-              </li>
-              <li className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-primary" />
-                Manage commission payouts
-              </li>
-              <li className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-primary" />
-                Monitor system health and liquidity
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+      )}
+    </AdminPageWrapper>
   );
 }
