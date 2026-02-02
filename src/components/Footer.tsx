@@ -241,9 +241,9 @@ export function Footer() {
         {/* Disclaimer */}
         <div className="mt-6 pt-4 border-t border-border/5">
           <p className="text-[10px] text-muted-foreground/50 text-center leading-relaxed max-w-3xl mx-auto">
-            Alpha Credits (₳) are internal utility tokens for platform operations. 
-            This platform does not constitute financial advice. 
-            All investments carry risk. Please review our Risk Disclosure before participating.
+            ₳ Credits are the primary Sovereign Utility Units powering the Amabilia Network's decentralized protocols. 
+            They represent Proof-of-Participation and fuel P2P Liquidity Agreements within the ecosystem. 
+            Please review our documentation before participating in Sovereign Growth activities.
           </p>
         </div>
       </div>

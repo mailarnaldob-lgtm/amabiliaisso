@@ -86,9 +86,9 @@ export function RiskDisclosureModal({
                 Nature of Service
               </h4>
               <p className="text-muted-foreground">
-                The ₳LPHA Smart Finance service facilitates peer-to-peer credit allocation 
-                within a closed-loop ecosystem. All transactions involve internal system 
-                credits (₳) which are non-monetary units with no cash value outside the platform.
+                The ₳LPHA Smart Finance service facilitates peer-to-peer liquidity allocation 
+                within the Amabilia Network ecosystem. All transactions utilize ₳ Credits, 
+                the primary Liquidity Units that power decentralized assignments and lending protocols.
               </p>
             </section>
 
@@ -136,10 +136,10 @@ export function RiskDisclosureModal({
                 Important Notices
               </h4>
               <ul className="text-muted-foreground space-y-1">
-                <li>• This is NOT an investment product</li>
-                <li>• ₳ Credits are internal system units only</li>
-                <li>• No financial advice is provided</li>
-                <li>• Past performance does not indicate future results</li>
+                <li>• ₳ Credits are Sovereign Utility Units within the Alpha Ecosystem</li>
+                <li>• They represent Proof-of-Participation and fuel the Sovereign Vault</li>
+                <li>• All P2P Liquidity Agreements are facilitated through ₳ Credits</li>
+                <li>• Performance metrics reflect ecosystem participation, not investment returns</li>
                 <li>• All transactions are logged immutably</li>
               </ul>
             </section>

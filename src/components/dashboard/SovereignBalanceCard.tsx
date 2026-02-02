@@ -57,7 +57,7 @@ export function SovereignBalanceCard({
         {/* Balance */}
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-sm font-medium text-black/70">Total ₳ Credits</p>
+            <p className="text-sm font-medium text-black/70">Sovereign ₳ Liquidity</p>
             <button 
               onClick={() => setIsHidden(!isHidden)}
               className="p-1.5 rounded-lg bg-black/10 hover:bg-black/20 transition-colors"
@@ -98,9 +98,9 @@ export function SovereignBalanceCard({
               )} />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">Vault Yield</p>
+              <p className="text-sm font-medium text-foreground">Sovereign Vault Yield</p>
               <p className="text-xs text-muted-foreground">
-                {hasVaultAccess ? '1% Daily Compounding' : 'Elite members only'}
+                {hasVaultAccess ? '1% Daily Compounding Power' : 'Elite tier unlocks Vault access'}
               </p>
             </div>
           </div>

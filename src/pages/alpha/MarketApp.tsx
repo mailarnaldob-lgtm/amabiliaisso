@@ -341,8 +341,8 @@ export default function MarketApp() {
       {/* Disclaimer */}
       <div className="mt-8 p-4 rounded-xl bg-muted/30 border border-border">
         <p className="text-xs text-muted-foreground text-center">
-          VPA missions are voluntary participation activities. 
-          Credits are for platform use only. All proofs are logged immutably.
+          Global Assignments power the Amabilia Network economy. 
+          ₳ Credits earned represent your Proof-of-Participation. All submissions are logged on the Sovereign Ledger.
         </p>
       </div>
 
