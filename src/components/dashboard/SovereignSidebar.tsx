@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, Home, History, Users, Settings, Shield, 
   FileText, HelpCircle, LogOut, ChevronRight, Crown,
   Copy, Share2, Bell, Lock, Moon, Globe, CreditCard,
-  Smartphone, ChevronDown
+  Smartphone, ChevronDown, Target, Landmark, TrendingUp, MapPin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,8 +17,8 @@ import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 
 /**
- * Sovereign Sidebar - V8.8
- * Enhanced burger menu with integrated settings panel
+ * Sovereign Sidebar - V9.0
+ * Enhanced burger menu with section headers + active-route indicator
  * Premium transitions & presentation
  */
 
@@ -34,12 +34,40 @@ interface SidebarItem {
   badge?: string;
 }
 
-const navigationItems: SidebarItem[] = [
-  { icon: Home, label: 'Command Center', path: '/dashboard', description: 'Your primary dashboard' },
-  { icon: History, label: 'Account History', path: '/dashboard/transactions', description: 'View all transactions' },
-  { icon: Users, label: 'Partner Network', path: '/dashboard/referrals', description: 'Manage your referrals' },
-  { icon: Crown, label: 'Ad Wizard', path: '/dashboard/ads', description: 'Create ad campaigns', badge: 'PRO+' },
+interface NavSection {
+  title: string;
+  items: SidebarItem[];
+}
+
+// Organized navigation sections
+const navSections: NavSection[] = [
+  {
+    title: 'Main',
+    items: [
+      { icon: Home, label: 'Command Center', path: '/dashboard', description: 'Your primary dashboard' },
+      { icon: History, label: 'Account History', path: '/dashboard/transactions', description: 'View all transactions' },
+    ]
+  },
+  {
+    title: 'Apps',
+    items: [
+      { icon: TrendingUp, label: 'Sovereign Bank', path: '/dashboard/bank', description: 'Wallet & Exchanger' },
+      { icon: Target, label: 'Global Assignments', path: '/dashboard/market', description: 'VPA Missions' },
+      { icon: Landmark, label: 'Alpha Bankers', path: '/dashboard/finance', description: 'P2P Lending' },
+      { icon: Users, label: 'Royalty Network', path: '/dashboard/growth', description: 'Team & Referrals' },
+      { icon: Crown, label: 'Ad Wizard', path: '/dashboard/ads', description: 'Create ad campaigns', badge: 'PRO+' },
+    ]
+  },
+  {
+    title: 'Account',
+    items: [
+      { icon: Users, label: 'Partner Network', path: '/dashboard/referrals', description: 'Manage your referrals' },
+    ]
+  }
 ];
+
+// All paths for route detection
+const allNavPaths = navSections.flatMap(s => s.items.map(i => ({ path: i.path, label: i.label })));
 
 // Animation variants for staggered entrance
 const containerVariants = {
@@ -47,8 +75,8 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.1
+      staggerChildren: 0.04,
+      delayChildren: 0.08
     }
   }
 };
@@ -103,6 +131,16 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
     setIsOpen(false);
     navigate(path);
   };
+
+  // Determine active route label for "You are here" indicator
+  const activeRouteLabel = useMemo(() => {
+    const currentPath = location.pathname;
+    const found = allNavPaths.find(n => n.path === currentPath);
+    if (found) return found.label;
+    // Check for partial matches (sub-routes)
+    const partial = allNavPaths.find(n => currentPath.startsWith(n.path) && n.path !== '/dashboard');
+    return partial?.label || 'Dashboard';
+  }, [location.pathname]);
 
   return (
     <>
@@ -255,60 +293,98 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
               )}
             </motion.div>
 
+            {/* Active Route Indicator - "You are here" */}
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mx-4 mb-3 p-2.5 rounded-lg bg-[#FFD700]/10 border border-[#FFD700]/20"
+            >
+              <div className="flex items-center gap-2">
+                <MapPin className="h-3.5 w-3.5 text-[#FFD700]" />
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">You are here</span>
+              </div>
+              <p className="text-sm font-semibold text-[#FFD700] mt-0.5 truncate">{activeRouteLabel}</p>
+            </motion.div>
+
             {/* Navigation Items with stagger animation */}
-            <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+            <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-4">
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="space-y-1"
+                className="space-y-4"
               >
-                {navigationItems.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <motion.div key={item.path + item.label} variants={itemVariants}>
-                      <Link
-                        to={item.path}
-                        onClick={() => setIsOpen(false)}
-                        className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all duration-200",
-                          "group haptic-press",
-                          isActive 
-                            ? "bg-gradient-to-r from-[#FFD700]/15 to-[#FFD700]/5 text-[#FFD700] border border-[#FFD700]/20" 
-                            : "hover:bg-muted/50 text-foreground border border-transparent"
-                        )}
-                      >
-                        <div className={cn(
-                          "p-2 rounded-lg transition-all duration-200",
-                          isActive ? "bg-[#FFD700]/20" : "bg-muted/30 group-hover:bg-muted/50"
-                        )}>
-                          <item.icon className={cn(
-                            "h-4 w-4 transition-colors",
-                            isActive ? "text-[#FFD700]" : "text-muted-foreground group-hover:text-foreground"
-                          )} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-sm truncate">{item.label}</p>
-                            {item.badge && (
-                              <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4 border-[#FFD700]/30 text-[#FFD700]">
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-[10px] text-muted-foreground truncate">{item.description}</p>
-                        </div>
-                        <ChevronRight className={cn(
-                          "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                          "group-hover:translate-x-0.5"
-                        )} />
-                      </Link>
-                    </motion.div>
-                  );
-                })}
+                {navSections.map((section) => (
+                  <motion.div key={section.title} variants={itemVariants} className="space-y-1">
+                    {/* Section Header */}
+                    <div className="flex items-center gap-2 px-2 py-1">
+                      <div className="h-px flex-1 bg-gradient-to-r from-[#FFD700]/30 to-transparent" />
+                      <span className="text-[9px] uppercase tracking-widest text-[#FFD700]/70 font-bold">
+                        {section.title}
+                      </span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-[#FFD700]/30 to-transparent" />
+                    </div>
 
-                {/* Divider */}
-                <motion.div variants={itemVariants} className="py-2">
+                    {/* Section Items */}
+                    {section.items.map((item) => {
+                      const isActive = location.pathname === item.path;
+                      return (
+                        <Link
+                          key={item.path + item.label}
+                          to={item.path}
+                          onClick={() => setIsOpen(false)}
+                          className={cn(
+                            "flex items-center gap-3 p-3 rounded-xl transition-all duration-200",
+                            "group haptic-press relative",
+                            isActive 
+                              ? "bg-gradient-to-r from-[#FFD700]/15 to-[#FFD700]/5 text-[#FFD700] border border-[#FFD700]/20" 
+                              : "hover:bg-muted/50 text-foreground border border-transparent"
+                          )}
+                        >
+                          {/* Active indicator bar */}
+                          {isActive && (
+                            <motion.div
+                              layoutId="activeNavIndicator"
+                              className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-[#FFD700]"
+                              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            />
+                          )}
+                          <div className={cn(
+                            "p-2 rounded-lg transition-all duration-200",
+                            isActive ? "bg-[#FFD700]/20" : "bg-muted/30 group-hover:bg-muted/50"
+                          )}>
+                            <item.icon className={cn(
+                              "h-4 w-4 transition-colors",
+                              isActive ? "text-[#FFD700]" : "text-muted-foreground group-hover:text-foreground"
+                            )} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className={cn(
+                                "font-medium text-sm truncate",
+                                isActive && "font-semibold"
+                              )}>{item.label}</p>
+                              {item.badge && (
+                                <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4 border-[#FFD700]/30 text-[#FFD700]">
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground truncate">{item.description}</p>
+                          </div>
+                          <ChevronRight className={cn(
+                            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                            isActive ? "text-[#FFD700]" : "group-hover:translate-x-0.5"
+                          )} />
+                        </Link>
+                      );
+                    })}
+                  </motion.div>
+                ))}
+
+                {/* Divider before Settings */}
+                <motion.div variants={itemVariants} className="py-1">
                   <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
                 </motion.div>
 
