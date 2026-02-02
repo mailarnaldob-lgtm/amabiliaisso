@@ -186,11 +186,15 @@ export type Database = {
           full_name: string
           id: string
           is_kyc_verified: boolean | null
+          last_renewal_at: string | null
           membership_amount: number | null
           membership_tier: Database["public"]["Enums"]["membership_tier"] | null
           phone: string | null
           referral_code: string
           referred_by: string | null
+          renewal_cycle: string | null
+          subscription_expires_at: string | null
+          subscription_status: string | null
           updated_at: string | null
         }
         Insert: {
@@ -199,6 +203,7 @@ export type Database = {
           full_name: string
           id: string
           is_kyc_verified?: boolean | null
+          last_renewal_at?: string | null
           membership_amount?: number | null
           membership_tier?:
             | Database["public"]["Enums"]["membership_tier"]
@@ -206,6 +211,9 @@ export type Database = {
           phone?: string | null
           referral_code: string
           referred_by?: string | null
+          renewal_cycle?: string | null
+          subscription_expires_at?: string | null
+          subscription_status?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -214,6 +222,7 @@ export type Database = {
           full_name?: string
           id?: string
           is_kyc_verified?: boolean | null
+          last_renewal_at?: string | null
           membership_amount?: number | null
           membership_tier?:
             | Database["public"]["Enums"]["membership_tier"]
@@ -221,6 +230,9 @@ export type Database = {
           phone?: string | null
           referral_code?: string
           referred_by?: string | null
+          renewal_cycle?: string | null
+          subscription_expires_at?: string | null
+          subscription_status?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -482,6 +494,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_subscription: {
+        Args: {
+          p_cycle?: string
+          p_tier: Database["public"]["Enums"]["membership_tier"]
+          p_user_id: string
+        }
+        Returns: Json
+      }
       approve_membership_payment: {
         Args: { p_admin_id: string; p_payment_id: string }
         Returns: Json
@@ -518,6 +538,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_subscription_active: { Args: { p_user_id: string }; Returns: boolean }
       lending_cancel_offer: {
         Args: { p_loan_id: string; p_user_id: string }
         Returns: Json

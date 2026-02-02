@@ -3,9 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   PlusCircle, ArrowDownCircle, Briefcase, Users, 
-  Target, X, Sparkles
+  Target, X, Sparkles, RefreshCw
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface QuickAction {
@@ -17,6 +16,13 @@ interface QuickAction {
 }
 
 const quickActions: QuickAction[] = [
+  { 
+    icon: RefreshCw, 
+    label: 'Membership Renewal', 
+    path: '/dashboard/upgrade', 
+    color: 'from-[#FFD700] to-[#FFA500]',
+    description: 'Renew monthly service access'
+  },
   { 
     icon: PlusCircle, 
     label: 'Top-up Wallet', 

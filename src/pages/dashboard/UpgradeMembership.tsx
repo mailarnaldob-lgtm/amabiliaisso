@@ -34,28 +34,31 @@ const MEMBERSHIP_TIERS = [
     id: 'basic',
     name: 'Basic',
     price: 300,
+    cycle: '/month',
     icon: Star,
     color: 'bg-secondary',
     borderColor: 'border-secondary/30',
-    features: ['50% referral commission', 'Access to community platform'],
+    features: ['50% referral commission', 'Access to community platform', '30-day access cycle'],
   },
   {
     id: 'pro',
     name: 'Pro',
     price: 600,
+    cycle: '/month',
     icon: Zap,
     color: 'bg-primary',
     borderColor: 'border-primary/30',
-    features: ['50% referral commission', 'Activity-based credits (VPA)', 'Training access'],
+    features: ['50% referral commission', 'Activity-based credits (VPA)', 'Training access', '30-day access cycle'],
   },
   {
     id: 'elite',
     name: 'Elite',
     price: 900,
+    cycle: '/month',
     icon: Crown,
     color: 'bg-amber-500',
     borderColor: 'border-amber-500/30',
-    features: ['50% referral commission', 'Activity-based credits (VPA)', 'Credit marketplace (P2P)', 'VIP support'],
+    features: ['50% referral commission', 'Activity-based credits (VPA)', 'Credit marketplace (P2P)', 'VIP support', '30-day access cycle'],
   },
 ];
 
@@ -242,11 +245,11 @@ export default function UpgradeMembership() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded bg-primary/10 border border-primary/20 mb-6">
             <TrendingUp className="h-4 w-4 text-primary" />
-            <span className="text-primary text-xs font-semibold tracking-wider uppercase">Upgrade Access</span>
+            <span className="text-primary text-xs font-semibold tracking-wider uppercase">Membership Renewal</span>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tight">Upgrade Your Access Level</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tight">Activate or Renew Membership</h1>
           <p className="text-muted-foreground">
-            Unlock more participation opportunities with a higher tier
+            Monthly service subscription for continued platform access
           </p>
         </div>
 
@@ -254,7 +257,7 @@ export default function UpgradeMembership() {
         <Alert className="mb-6 border-muted bg-muted/30 rounded">
           <Info className="h-4 w-4 text-muted-foreground" />
           <AlertDescription className="text-xs text-muted-foreground">
-            Membership fees are one-time registration payments for platform access. All registrations require admin verification before activation.
+            <strong>Monthly Service Maintenance:</strong> Membership fees are recurring monthly subscriptions for continued platform access. Your subscription will be active for 30 days upon admin verification.
           </AlertDescription>
         </Alert>
 
@@ -285,7 +288,10 @@ export default function UpgradeMembership() {
                           <TierIcon className="h-6 w-6 text-primary-foreground" />
                         </div>
                         <span className="font-semibold text-lg text-foreground">{tier.name}</span>
-                        <span className="text-2xl font-bold text-primary font-mono mt-1">₳{tier.price.toLocaleString()}</span>
+                        <span className="text-2xl font-bold text-primary font-mono mt-1">
+                          ₳{tier.price.toLocaleString()}
+                          <span className="text-xs text-muted-foreground font-normal">{tier.cycle}</span>
+                        </span>
                         <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
                           {tier.features.map((f) => (
                             <li key={f} className="flex items-center gap-1.5">
@@ -305,7 +311,7 @@ export default function UpgradeMembership() {
           <Card className="mb-8 titanium-card">
             <CardHeader className="border-b border-border">
               <CardTitle className="text-foreground">2. Choose Payment Method</CardTitle>
-              <CardDescription>Send your registration fee to one of these accounts</CardDescription>
+              <CardDescription>Send your monthly membership fee to one of these accounts</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               {isLoadingMethods ? (
