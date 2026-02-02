@@ -22,6 +22,7 @@ const MarketApp = lazy(() => import("./pages/alpha/MarketApp"));
 const FinanceApp = lazy(() => import("./pages/alpha/FinanceApp"));
 const GrowthApp = lazy(() => import("./pages/alpha/GrowthApp"));
 const SettingsApp = lazy(() => import("./pages/alpha/SettingsApp"));
+const AdsApp = lazy(() => import("./pages/alpha/AdsApp"));
 
 // Member dashboard pages - Lazy loaded
 const MemberDashboard = lazy(() => import("./pages/dashboard/MemberDashboard"));
@@ -90,6 +91,9 @@ const App = () => (
                 
                 {/* App #4: GROWTH - Royalties & Network */}
                 <Route path="/dashboard/growth" element={<ProtectedRoute><GrowthApp /></ProtectedRoute>} />
+                
+                {/* App #5: ADS - Ad Wizard (PRO+) */}
+                <Route path="/dashboard/ads" element={<ProtectedRoute><AdsApp /></ProtectedRoute>} />
                 
                 {/* Settings */}
                 <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsApp /></ProtectedRoute>} />
