@@ -11,6 +11,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -607,17 +618,47 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
               transition={{ delay: 0.3 }}
               className="p-4 border-t border-border/50 bg-gradient-to-t from-muted/30 to-transparent"
             >
-              <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                <Button
-                  variant="ghost"
-                  onClick={() => secureSignOut({ redirectTo: '/', clearAllData: true })}
-                  disabled={isLoggingOut}
-                  className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl h-12 disabled:opacity-50"
-                >
-                  <LogOut className={cn("h-4 w-4", isLoggingOut && "animate-spin")} />
-                  <span className="font-medium">{isLoggingOut ? 'Signing Out...' : 'Secure Sign Out'}</span>
-                </Button>
-              </motion.div>
+              {/* Logout Confirmation Dialog */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                    <Button
+                      variant="ghost"
+                      disabled={isLoggingOut}
+                      className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl h-12 disabled:opacity-50"
+                    >
+                      <LogOut className={cn("h-4 w-4", isLoggingOut && "animate-spin")} />
+                      <span className="font-medium">{isLoggingOut ? 'Signing Out...' : 'Secure Sign Out'}</span>
+                    </Button>
+                  </motion.div>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="max-w-sm border-[#FFD700]/20 bg-card">
+                  <AlertDialogHeader>
+                    <div className="flex items-center justify-center mb-2">
+                      <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                        <LogOut className="h-6 w-6 text-destructive" />
+                      </div>
+                    </div>
+                    <AlertDialogTitle className="text-center">Sign Out?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-center">
+                      You will be securely signed out of your Amabilia account. All local session data will be cleared.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
+                    <AlertDialogAction
+                      onClick={() => secureSignOut({ redirectTo: '/', clearAllData: true })}
+                      className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Yes, Sign Out
+                    </AlertDialogAction>
+                    <AlertDialogCancel className="w-full mt-0 border-[#FFD700]/30 hover:bg-[#FFD700]/10">
+                      Cancel
+                    </AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               <div className="mt-3 text-center">
                 <p className="text-[10px] text-muted-foreground font-mono tracking-wider">
                   AMABILIA NETWORK • 2026
