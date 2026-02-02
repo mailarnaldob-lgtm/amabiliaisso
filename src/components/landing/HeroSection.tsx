@@ -43,7 +43,7 @@ function FinancialMonolith({
     y,
     rotateZ: rotate
   }}>
-      <motion.div className="preserve-3d transition-all duration-500 hover:scale-105 w-full h-full border-0 rounded shadow-sm opacity-5" style={{
+      <motion.div className="preserve-3d transition-all duration-500 hover:scale-105 w-full h-full border-0 rounded opacity-5 border-solid shadow-2xl mb-[18px] px-[51px] py-[30px]" style={{
       background: 'linear-gradient(135deg, hsl(45 100% 51% / 0.15) 0%, hsl(220 23% 6%) 50%, hsl(45 100% 51% / 0.08) 100%)',
       boxShadow: '0 40px 80px hsl(0 0% 0% / 0.6), 0 0 60px hsl(45 100% 51% / 0.2), inset 0 1px 0 hsl(45 100% 51% / 0.3)',
       border: '1px solid hsl(45 100% 51% / 0.2)'
@@ -258,7 +258,7 @@ export function HeroSection() {
             <FinancialMonolith className="absolute bottom-0 right-12 w-52 h-48" delay={0.6} parallaxOffset={20} />
             
             {/* Floating Alpha Coins */}
-            <motion.div className="absolute top-16 left-8 w-16 h-16 rounded-full text-2xl font-bold text-amber-400 opacity-100 flex-row flex items-center justify-center gap-[10px]" style={{
+            <motion.div className="absolute top-16 left-8 w-16 h-16 rounded-full text-2xl font-bold text-amber-400 opacity-100 flex-row flex items-center justify-center gap-[10px] mx-[66px]" style={{
             background: 'radial-gradient(circle, hsl(45 100% 51% / 0.2) 0%, hsl(220 23% 8%) 100%)',
             border: '2px solid hsl(45 100% 51% / 0.3)',
             boxShadow: '0 0 30px hsl(45 100% 51% / 0.3)'
