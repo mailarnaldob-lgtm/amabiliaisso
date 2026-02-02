@@ -8,9 +8,9 @@ const tiers = [
     sublabel: 'Per referral'
   },
   {
-    label: 'Activation Cost',
-    value: '₱600',
-    sublabel: 'One-time PRO'
+    label: 'Basic Activation',
+    value: '₱300',
+    sublabel: 'One-time'
   },
   {
     label: 'Wallet Types',
@@ -18,9 +18,9 @@ const tiers = [
     sublabel: 'Task, Royalty, Main'
   },
   {
-    label: 'Lending Terms',
-    value: '7-30',
-    sublabel: 'Days flexible'
+    label: 'P2P Lending',
+    value: '3%',
+    sublabel: 'Weekly yield'
   }
 ];
 
