@@ -80,22 +80,25 @@ export function CampaignApprovalPanel() {
     },
   });
 
-  // Approve campaign mutation
+  // Approve campaign mutation using atomic RPC
   const approveCampaign = useMutation({
     mutationFn: async (campaignId: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error } = await supabase
-        .from('ad_campaigns')
-        .update({ 
-          status: 'active',
-          approved_at: new Date().toISOString(),
-          approved_by: user.id
-        })
-        .eq('id', campaignId);
+      const { data, error } = await supabase.rpc('admin_approve_campaign', {
+        p_campaign_id: campaignId,
+        p_admin_id: user.id
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message);
+      
+      const result = data as { success: boolean; error?: string };
+      if (!result.success) {
+        throw new Error(result.error || 'Approval failed');
+      }
+      
+      return result;
     },
     onSuccess: () => {
       toast({
@@ -114,64 +117,26 @@ export function CampaignApprovalPanel() {
     },
   });
 
-  // Reject campaign mutation (refund budget)
+  // Reject campaign mutation using atomic RPC with refund
   const rejectCampaign = useMutation({
     mutationFn: async ({ campaignId, reason }: { campaignId: string; reason: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Get campaign details for refund
-      const { data: campaign, error: fetchError } = await supabase
-        .from('ad_campaigns')
-        .select('advertiser_id, total_budget')
-        .eq('id', campaignId)
-        .single();
+      const { data, error } = await supabase.rpc('admin_reject_campaign', {
+        p_campaign_id: campaignId,
+        p_admin_id: user.id,
+        p_reason: reason
+      });
 
-      if (fetchError || !campaign) throw new Error('Campaign not found');
-
-      // Update campaign status to cancelled
-      const { error: updateError } = await supabase
-        .from('ad_campaigns')
-        .update({ 
-          status: 'cancelled',
-          approved_at: new Date().toISOString(),
-          approved_by: user.id
-        })
-        .eq('id', campaignId);
-
-      if (updateError) throw updateError;
-
-      // Refund budget to advertiser (only net budget, fee is non-refundable)
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('id, balance')
-        .eq('user_id', campaign.advertiser_id)
-        .eq('wallet_type', 'main')
-        .single();
-
-      if (wallet) {
-        const refundAmount = campaign.total_budget; // Net budget already stored
-        
-        await supabase
-          .from('wallets')
-          .update({ 
-            balance: (wallet.balance || 0) + refundAmount,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', wallet.id);
-
-        // Log refund transaction
-        await supabase
-          .from('wallet_transactions')
-          .insert({
-            wallet_id: wallet.id,
-            user_id: campaign.advertiser_id,
-            amount: refundAmount,
-            transaction_type: 'campaign_refund',
-            description: `Campaign rejected: ${reason}`,
-            reference_id: campaignId
-          });
+      if (error) throw new Error(error.message);
+      
+      const result = data as { success: boolean; error?: string };
+      if (!result.success) {
+        throw new Error(result.error || 'Rejection failed');
       }
+      
+      return result;
     },
     onSuccess: () => {
       toast({

@@ -551,6 +551,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_approve_campaign: {
+        Args: { p_admin_id: string; p_campaign_id: string }
+        Returns: Json
+      }
+      admin_reject_campaign: {
+        Args: { p_admin_id: string; p_campaign_id: string; p_reason?: string }
+        Returns: Json
+      }
       approve_membership_payment: {
         Args: { p_admin_id: string; p_payment_id: string }
         Returns: Json
@@ -602,6 +610,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      internal_transfer_atomic: {
+        Args: {
+          p_amount: number
+          p_fee: number
+          p_note?: string
+          p_recipient_id: string
+          p_sender_id: string
+        }
+        Returns: Json
       }
       lending_cancel_offer: {
         Args: { p_loan_id: string; p_user_id: string }

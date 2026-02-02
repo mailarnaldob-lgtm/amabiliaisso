@@ -4,10 +4,11 @@ import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EliteButton } from '@/components/ui/elite-button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Wallet, ArrowUpRight, ArrowDownLeft, RefreshCw, History, QrCode, Clock, CheckCircle2, Coins, CreditCard, Banknote, AlertCircle } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownLeft, RefreshCw, History, Send, Clock, CheckCircle2, Coins, CreditCard, Banknote, AlertCircle } from 'lucide-react';
 import { formatAlpha } from '@/lib/utils';
 import { useAppStore } from '@/stores/appStore';
 import { ExchangerModal } from '@/components/alpha/ExchangerModal';
+import { MoneyTransferWizard } from '@/components/alpha/MoneyTransferWizard';
 import { UserStateIndicator, UserLifecycleFlow } from '@/components/alpha/UserStateIndicator';
 import { useOptimisticWallets } from '@/hooks/useOptimisticWallets';
 import { useWalletTransactions, WalletTransaction } from '@/hooks/useWalletTransactions';
@@ -76,6 +77,7 @@ function getTransactionDisplay(tx: WalletTransaction) {
 export default function BankApp() {
   const wallets = useAppStore(state => state.wallets);
   const [exchangerOpen, setExchangerOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const {
     hasPendingTransactions,
     optimisticTransfer
@@ -165,10 +167,10 @@ export default function BankApp() {
           variant="ghost" 
           size="sm" 
           className="flex-col gap-1 h-auto py-3 haptic-press hover:bg-[#FFD700]/10 hover:text-[#FFD700]" 
-          disabled 
-          leftIcon={<QrCode className="h-5 w-5" />}
+          onClick={() => setTransferOpen(true)}
+          leftIcon={<Send className="h-5 w-5" />}
         >
-          <span className="text-[10px]">QR Code</span>
+          <span className="text-[10px]">Send</span>
         </EliteButton>
       </div>
 
@@ -291,6 +293,9 @@ export default function BankApp() {
 
       {/* Exchanger Modal */}
       <ExchangerModal open={exchangerOpen} onOpenChange={setExchangerOpen} />
+      
+      {/* Money Transfer Wizard */}
+      <MoneyTransferWizard isOpen={transferOpen} onClose={() => setTransferOpen(false)} />
     </AlphaLayout>
   );
 }

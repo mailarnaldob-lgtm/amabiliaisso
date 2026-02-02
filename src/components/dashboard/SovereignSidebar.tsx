@@ -38,6 +38,7 @@ const sidebarItems: SidebarItem[] = [
   { icon: Home, label: 'Command Center', path: '/dashboard', description: 'Your primary dashboard' },
   { icon: History, label: 'Account History', path: '/dashboard/transactions', description: 'View all transactions' },
   { icon: Users, label: 'Partner Network', path: '/dashboard/referrals', description: 'Manage your referrals' },
+  { icon: Crown, label: 'Ad Wizard', path: '/dashboard/ads', description: 'Create ad campaigns', badge: 'PRO+' },
   { icon: Settings, label: 'Profile Settings', path: '/dashboard/settings', description: 'Update your profile' },
   { icon: Shield, label: 'Security Center', path: '/dashboard/settings#security', description: 'Account security' },
   { icon: Bell, label: 'Notifications', path: '/dashboard/transactions', description: 'Activity alerts' },
@@ -214,7 +215,14 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
                       )} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{item.label}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm truncate">{item.label}</p>
+                        {item.badge && (
+                          <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4 border-[#FFD700]/30 text-[#FFD700]">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-[10px] text-muted-foreground truncate">{item.description}</p>
                     </div>
                     <ChevronRight className={cn(
