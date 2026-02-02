@@ -299,13 +299,6 @@ export default function GrowthApp() {
         </CardContent>
       </Card>
 
-      {/* Disclaimer */}
-      <div className="mt-8 p-4 rounded-xl bg-muted/30 border border-border">
-        <p className="text-xs text-muted-foreground text-center">
-          Royalties are internal credit allocations based on network participation. 
-          They are non-monetary and subject to fraud gate validation.
-        </p>
-      </div>
     </AlphaLayout>
   );
 }
