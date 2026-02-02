@@ -7,31 +7,31 @@ const hubItems = [
   { 
     icon: Wallet, 
     label: 'My Wallet', 
-    href: '/alpha/bank',
+    href: '/dashboard/bank',
     color: 'from-amber-400 to-amber-500'
   },
   { 
     icon: ArrowUpDown, 
     label: 'Exchange', 
-    href: '/alpha/bank',
+    href: '/dashboard/bank',
     color: 'from-amber-400 to-orange-500'
   },
   { 
     icon: Send, 
     label: 'Transfer', 
-    href: '/alpha/bank',
+    href: '/dashboard/bank',
     color: 'from-orange-400 to-amber-500'
   },
   { 
     icon: Zap, 
     label: 'Missions', 
-    href: '/alpha/market',
+    href: '/dashboard/market',
     color: 'from-amber-500 to-yellow-400'
   },
   { 
     icon: Landmark, 
     label: 'Lending', 
-    href: '/alpha/finance',
+    href: '/dashboard/finance',
     color: 'from-yellow-400 to-amber-400'
   },
 ];
