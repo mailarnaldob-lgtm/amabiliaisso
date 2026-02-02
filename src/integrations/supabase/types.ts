@@ -83,6 +83,42 @@ export type Database = {
         }
         Relationships: []
       }
+      elite_vaults: {
+        Row: {
+          available_balance: number | null
+          created_at: string | null
+          frozen_collateral: number
+          id: string
+          is_active: boolean | null
+          last_yield_accrual: string | null
+          total_balance: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          available_balance?: number | null
+          created_at?: string | null
+          frozen_collateral?: number
+          id?: string
+          is_active?: boolean | null
+          last_yield_accrual?: string | null
+          total_balance?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          available_balance?: number | null
+          created_at?: string | null
+          frozen_collateral?: number
+          id?: string
+          is_active?: boolean | null
+          last_yield_accrual?: string | null
+          total_balance?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       loan_transactions: {
         Row: {
           amount: number
@@ -478,6 +514,44 @@ export type Database = {
         }
         Relationships: []
       }
+      vault_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          transaction_type: string
+          user_id: string
+          vault_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          transaction_type: string
+          user_id: string
+          vault_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          transaction_type?: string
+          user_id?: string
+          vault_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_transactions_vault_id_fkey"
+            columns: ["vault_id"]
+            isOneToOne: false
+            referencedRelation: "elite_vaults"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -567,6 +641,7 @@ export type Database = {
         Args: { p_admin_id: string; p_submission_id: string }
         Returns: Json
       }
+      calculate_vault_yield: { Args: never; Returns: Json }
       cash_in_with_lock: {
         Args: {
           p_amount: number
@@ -666,6 +741,14 @@ export type Database = {
           p_to_type: Database["public"]["Enums"]["wallet_type"]
           p_user_id: string
         }
+        Returns: Json
+      }
+      vault_deposit: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: Json
+      }
+      vault_withdraw: {
+        Args: { p_amount: number; p_user_id: string }
         Returns: Json
       }
       verify_commission_credited: {

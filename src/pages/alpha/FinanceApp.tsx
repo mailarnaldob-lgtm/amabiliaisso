@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, TrendingDown, Clock, Shield, Users, Percent, Calendar, Lock, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Shield, Percent, Calendar, Lock, CheckCircle2 } from 'lucide-react';
 import { formatAlpha } from '@/lib/utils';
 import { RiskDisclosureModal } from '@/components/alpha/RiskDisclosureModal';
 import { LoanCountdownTimer } from '@/components/alpha/LoanCountdownTimer';
 import { CircuitBreakerIndicator } from '@/components/alpha/CircuitBreakerIndicator';
 import { DebtorRescuePanel } from '@/components/alpha/DebtorRescuePanel';
 import { useReferredUsersCount } from '@/hooks/useReferrals';
+import { EliteVaultCard } from '@/components/vault/EliteVaultCard';
+import { useTierAccess } from '@/components/tier';
 
 // Live loan marketplace data - fetched from database in production
 const lendOffers = [{
@@ -84,9 +86,10 @@ export default function FinanceApp() {
     amount: number;
   } | null>(null);
   const [showDebtorView, setShowDebtorView] = useState(false);
+  const { canAccessElite } = useTierAccess();
 
   // Real qualification check: user needs 3+ referred users
-  const { data: referralCount = 0, isLoading: isLoadingReferrals } = useReferredUsersCount();
+  const { data: referralCount = 0 } = useReferredUsersCount();
   const qualificationMet = referralCount >= REQUIRED_REFERRALS;
 
   const handleLendClick = (amount: number) => {
@@ -120,6 +123,13 @@ export default function FinanceApp() {
 
   return (
     <AlphaLayout title="P2P Finance" subtitle="Smart Credit Protocol">
+      {/* Elite Vault Card - Only visible to Elite members */}
+      {canAccessElite && (
+        <div className="mb-6">
+          <EliteVaultCard />
+        </div>
+      )}
+      
       {/* Circuit Breaker Status */}
       <CircuitBreakerIndicator reserveRatio={115} />
 
