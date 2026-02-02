@@ -2,6 +2,7 @@ import { MemberLayout } from '@/components/layouts/MemberLayout';
 import { ResponsiveWalletEngine } from '@/components/dashboard/ResponsiveWalletEngine';
 import { StickyTradingTicker } from '@/components/dashboard/StickyTradingTicker';
 import { PendingRequestsCard } from '@/components/dashboard/PendingRequestsCard';
+import { TransactionStatusNotifier } from '@/components/dashboard/TransactionStatusNotifier';
 import { useAppStore, MEMBERSHIP_TIERS, ARMY_LEVELS } from '@/stores/appStore';
 import { Badge } from '@/components/ui/badge';
 import { useTierAccess } from '@/components/tier';
@@ -9,6 +10,7 @@ import { TrendingUp, Users, Crown, Shield } from 'lucide-react';
 import { formatAlpha } from '@/lib/utils';
 import { useOptimisticWallets } from '@/hooks/useOptimisticWallets';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+
 export default function Dashboard() {
   const { userName, membershipTier, armyLevel, referralCode, wallets } = useAppStore();
   const tierInfo = MEMBERSHIP_TIERS[membershipTier];
@@ -113,6 +115,9 @@ export default function Dashboard() {
 
       {/* Mobile Trading Ticker */}
       <StickyTradingTicker />
+
+      {/* Transaction Status Notifier - V9.4 */}
+      <TransactionStatusNotifier />
     </MemberLayout>
   );
 }
