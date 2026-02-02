@@ -287,8 +287,8 @@ export default function Auth() {
           <div className="space-y-4 w-full">
             <FeatureCard 
               icon={CreditCard} 
-              title="₱600 Activation" 
-              description="One-time fee to unlock all features" 
+              title="₱300 Basic Activation" 
+              description="One-time fee to unlock the platform" 
               delay={0.5}
             />
             <FeatureCard 

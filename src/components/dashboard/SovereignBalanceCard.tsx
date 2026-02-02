@@ -12,10 +12,9 @@ interface SovereignBalanceCardProps {
 export function SovereignBalanceCard({ 
   totalBalance, 
   isSyncing = false,
-  vaultYield = 0.01 // 1% daily yield
+  vaultYield = 0.03 // 3% weekly yield
 }: SovereignBalanceCardProps) {
-  const dailyYieldAmount = totalBalance * vaultYield;
-  const weeklyYieldAmount = dailyYieldAmount * 7;
+  const weeklyYieldAmount = totalBalance * vaultYield;
 
   return (
     <motion.div
@@ -84,14 +83,14 @@ export function SovereignBalanceCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-emerald-400" />
-            <span className="text-sm text-muted-foreground">Projected Yield</span>
+            <span className="text-sm text-muted-foreground">P2P Lending Yield</span>
           </div>
           <div className="text-right">
             <p className="text-sm font-bold text-emerald-400 font-mono">
               +₳{formatAlpha(weeklyYieldAmount)}/week
             </p>
             <p className="text-[10px] text-muted-foreground font-mono">
-              1% daily • Vault members only
+              3% weekly • Elite members only
             </p>
           </div>
         </div>

@@ -113,15 +113,17 @@ export default function MemberDashboard() {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative haptic-press"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FFD700]" />
-            </Button>
-            <Button 
+            <Link to="/dashboard/transactions">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative haptic-press"
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FFD700]" />
+              </Button>
+            </Link>
+            <Button
               variant="ghost" 
               size="icon" 
               onClick={handleRefresh} 
@@ -213,7 +215,7 @@ export default function MemberDashboard() {
         <SovereignBalanceCard 
           totalBalance={totalBalance} 
           isSyncing={isSyncing}
-          vaultYield={canAccessElite ? 0.01 : 0}
+          vaultYield={canAccessElite ? 0.03 : 0}
         />
 
         {/* GRID: Active Assignments + Wallet Breakdown */}
@@ -266,7 +268,7 @@ export default function MemberDashboard() {
               <div>
                 <h3 className="text-lg font-bold text-foreground mb-1">Unlock Elite Privileges</h3>
                 <p className="text-sm text-muted-foreground">
-                  Access P2P lending, 1% daily vault yield, and priority support
+                  Access P2P lending, 3% weekly yield, and priority support
                 </p>
               </div>
               <Link to="/dashboard/upgrade">
