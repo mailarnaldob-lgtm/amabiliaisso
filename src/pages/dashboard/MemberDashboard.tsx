@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   RefreshCw, AlertTriangle, Crown, Zap, Star, 
-  CreditCard, Bell, Copy, CheckCheck
+  CreditCard, Bell, Copy, CheckCheck, LogOut
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn, formatAlpha } from '@/lib/utils';
@@ -23,7 +23,7 @@ import { SovereignBalanceCard } from '@/components/dashboard/SovereignBalanceCar
 import { AlphaLoader } from '@/components/ui/AlphaLoader';
 
 export default function MemberDashboard() {
-  const { signOut } = useAuth();
+  const { secureSignOut, isLoggingOut } = useAuth();
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfile();
   const { wallets, isFallback, isLoading: walletsLoading, refetch: refetchWallets, totalBalance } = useWallets();
   const { totalReferrals, totalEarnings } = useReferralStats();
@@ -107,15 +107,15 @@ export default function MemberDashboard() {
           </Link>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Link to="/dashboard/transactions">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative haptic-press hover:bg-[#FFD700]/10"
+                className="relative haptic-press hover:bg-primary/10"
               >
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FFD700]" />
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
               </Button>
             </Link>
             <Button
@@ -123,9 +123,19 @@ export default function MemberDashboard() {
               size="icon" 
               onClick={handleRefresh} 
               disabled={isRefreshing}
-              className="haptic-press hover:bg-[#FFD700]/10"
+              className="haptic-press hover:bg-primary/10"
             >
               <RefreshCw className={cn("h-5 w-5", isRefreshing && "animate-spin")} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => secureSignOut({ redirectTo: '/', clearAllData: true })}
+              disabled={isLoggingOut}
+              className="haptic-press hover:bg-destructive/10 text-destructive"
+              title="Secure Sign Out"
+            >
+              <LogOut className={cn("h-5 w-5", isLoggingOut && "animate-spin")} />
             </Button>
           </div>
         </div>
