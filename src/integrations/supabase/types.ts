@@ -128,6 +128,63 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_out_requests: {
+        Row: {
+          account_name: string
+          account_number: string
+          amount: number
+          created_at: string | null
+          fee_amount: number
+          has_active_loan: boolean | null
+          id: string
+          net_amount: number
+          payment_method: string
+          pin_verified: boolean | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          amount: number
+          created_at?: string | null
+          fee_amount?: number
+          has_active_loan?: boolean | null
+          id?: string
+          net_amount: number
+          payment_method: string
+          pin_verified?: boolean | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          amount?: number
+          created_at?: string | null
+          fee_amount?: number
+          has_active_loan?: boolean | null
+          id?: string
+          net_amount?: number
+          payment_method?: string
+          pin_verified?: boolean | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       elite_vaults: {
         Row: {
           available_balance: number | null
@@ -682,6 +739,10 @@ export type Database = {
         Args: { p_admin_id: string; p_request_id: string }
         Returns: Json
       }
+      approve_cash_out_request: {
+        Args: { p_admin_id: string; p_request_id: string }
+        Returns: Json
+      }
       approve_membership_payment: {
         Args: { p_admin_id: string; p_payment_id: string }
         Returns: Json
@@ -725,6 +786,10 @@ export type Database = {
           p_total_budget: number
           p_user_id: string
         }
+        Returns: Json
+      }
+      flag_cash_out_request: {
+        Args: { p_admin_id: string; p_request_id: string }
         Returns: Json
       }
       generate_referral_code: { Args: never; Returns: string }
@@ -772,6 +837,10 @@ export type Database = {
       }
       process_expired_loans: { Args: never; Returns: Json }
       reject_cash_in_request: {
+        Args: { p_admin_id: string; p_reason?: string; p_request_id: string }
+        Returns: Json
+      }
+      reject_cash_out_request: {
         Args: { p_admin_id: string; p_reason?: string; p_request_id: string }
         Returns: Json
       }
