@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { SovereignBottomNav } from '@/components/navigation/SovereignBottomNav';
 import { Settings, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SovereignSidebar } from '@/components/dashboard/SovereignSidebar';
 
 /**
  * Alpha Layout - V8.4
@@ -25,14 +26,19 @@ export function AlphaLayout({ children, title, subtitle }: AlphaLayoutProps) {
       {title && (
         <header className="sticky top-0 z-40 border-b border-[#FFD700]/20 bg-card/95 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 h-16">
-            <div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#FFD700]" />
-                <h1 className="text-lg font-semibold text-foreground tracking-tight">{title}</h1>
+            <div className="flex items-center gap-3">
+              {/* 3-line burger menu (member dashboard sidebar) */}
+              <SovereignSidebar />
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#FFD700]" />
+                  <h1 className="text-lg font-semibold text-foreground tracking-tight">{title}</h1>
+                </div>
+                {subtitle && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+                )}
               </div>
-              {subtitle && (
-                <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
-              )}
             </div>
             <div className="flex items-center gap-2">
               <Link to="/dashboard/transactions" className="p-2 rounded-lg hover:bg-[#FFD700]/10 transition-colors haptic-press relative">
