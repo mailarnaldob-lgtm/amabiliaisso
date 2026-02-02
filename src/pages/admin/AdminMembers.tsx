@@ -1,63 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Users, 
-  CreditCard, 
-  LogOut, 
-  LayoutDashboard, 
-  Search, 
-  Shield, 
-  FileCheck,
-  Eye,
-  Settings,
-  DollarSign,
-  ArrowLeft,
-  Loader2
-} from 'lucide-react';
+import { Users, Search, Loader2, Shield, Crown, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
-import { initAdminSession, clearAdminSession, getAdminInfoSync } from '@/lib/adminSession';
-
-const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/task-proofs', label: 'Activity Proofs', icon: FileCheck },
-  { href: '/admin/members', label: 'Members', icon: Users },
-  { href: '/admin/payments', label: 'Payments', icon: CreditCard },
-  { href: '/admin/commissions', label: 'Commissions', icon: DollarSign },
-  { href: '/admin/god-eye', label: 'God-Eye Panel', icon: Eye },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
-];
+import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
 
 export default function AdminMembers() {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; role: string } | null>(null);
-
-  useEffect(() => {
-    const init = async () => {
-      const isAdmin = await initAdminSession();
-      if (!isAdmin) {
-        navigate('/admin/login');
-        return;
-      }
-      setAdminInfo(getAdminInfoSync());
-      setIsInitialized(true);
-    };
-    init();
-  }, [navigate]);
-
-  const handleLogout = () => {
-    clearAdminSession();
-    navigate('/');
-  };
 
   const { data: members, isLoading } = useQuery({
     queryKey: ['admin-members'],
@@ -69,7 +22,6 @@ export default function AdminMembers() {
       if (error) throw error;
       return data;
     },
-    enabled: isInitialized,
   });
 
   const filteredMembers = members?.filter(m =>
@@ -77,126 +29,115 @@ export default function AdminMembers() {
     m.referral_code.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  const getTierIcon = (tier: string | null) => {
+    switch (tier) {
+      case 'elite': return <Crown className="h-3 w-3" />;
+      case 'pro': return <Shield className="h-3 w-3" />;
+      default: return <UserCheck className="h-3 w-3" />;
+    }
+  };
+
+  const getTierClass = (tier: string | null) => {
+    switch (tier) {
+      case 'elite': return 'bg-amber-500/10 text-amber-500 border-amber-500/30';
+      case 'pro': return 'bg-primary/10 text-primary border-primary/30';
+      default: return 'bg-muted text-muted-foreground border-muted';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
-        <div className="p-6 border-b border-border">
-          <Link to="/admin" className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-primary">Admin Panel</span>
-          </Link>
-          {adminInfo && (
-            <p className="text-sm text-muted-foreground mt-2">{adminInfo.email}</p>
-          )}
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => (
-            <Link key={item.href} to={item.href}>
-              <Button
-                variant={location.pathname === item.href ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-2"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Button>
-            </Link>
-          ))}
-        </nav>
-        
-        <div className="p-4 border-t border-border space-y-2">
-          <Link to="/dashboard">
-            <Button variant="outline" className="w-full gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to App
-            </Button>
-          </Link>
-          <Button variant="ghost" className="w-full gap-2" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" /> Logout
-          </Button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold">Members</h2>
-            <p className="text-muted-foreground">View and manage all registered members</p>
-          </div>
-          <div className="relative w-64">
+    <AdminPageWrapper 
+      title="MEMBER REGISTRY" 
+      description="View and manage all registered members"
+    >
+      {() => (
+        <div className="space-y-6">
+          {/* Search Bar */}
+          <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-              placeholder="Search members..." 
-              className="pl-10" 
+              placeholder="Search members by name or referral code..." 
+              className="pl-10 bg-card/50 border-primary/10 focus:border-primary/30 transition-colors" 
               value={search} 
               onChange={(e) => setSearch(e.target.value)} 
             />
           </div>
-        </div>
 
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              All Members ({filteredMembers?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Tier</TableHead>
-                    <TableHead>KYC</TableHead>
-                    <TableHead>Referral Code</TableHead>
-                    <TableHead>Joined</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredMembers?.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell className="font-medium">{member.full_name}</TableCell>
-                      <TableCell>{member.phone || '-'}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {member.membership_tier || 'basic'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {member.is_kyc_verified ? (
-                          <Badge className="bg-emerald-500">Verified</Badge>
-                        ) : (
-                          <Badge variant="secondary">Pending</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-mono">{member.referral_code}</TableCell>
-                      <TableCell>
-                        {member.created_at ? format(new Date(member.created_at), 'MMM dd, yyyy') : '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+          {/* Members Table */}
+          <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 font-mono">
+                <Users className="h-5 w-5 text-primary" />
+                All Members 
+                <Badge variant="outline" className="ml-2 border-primary/30 text-primary">
+                  {filteredMembers?.length || 0}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="rounded-lg border border-primary/10 overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-primary/5 hover:bg-primary/5">
+                        <TableHead className="text-muted-foreground font-mono">Name</TableHead>
+                        <TableHead className="text-muted-foreground font-mono">Phone</TableHead>
+                        <TableHead className="text-muted-foreground font-mono">Tier</TableHead>
+                        <TableHead className="text-muted-foreground font-mono">KYC</TableHead>
+                        <TableHead className="text-muted-foreground font-mono">Referral Code</TableHead>
+                        <TableHead className="text-muted-foreground font-mono">Joined</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredMembers?.map((member) => (
+                        <TableRow 
+                          key={member.id} 
+                          className="border-primary/5 hover:bg-primary/5 transition-colors"
+                        >
+                          <TableCell className="font-medium text-foreground">{member.full_name}</TableCell>
+                          <TableCell className="text-muted-foreground font-mono text-sm">
+                            {member.phone || '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline" 
+                              className={`capitalize flex items-center gap-1 w-fit ${getTierClass(member.membership_tier)}`}
+                            >
+                              {getTierIcon(member.membership_tier)}
+                              {member.membership_tier || 'basic'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {member.is_kyc_verified ? (
+                              <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/30">
+                                Verified
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-muted-foreground border-muted">
+                                Pending
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-mono text-primary text-sm">
+                            {member.referral_code}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-sm">
+                            {member.created_at ? format(new Date(member.created_at), 'MMM dd, yyyy') : '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </AdminPageWrapper>
   );
 }

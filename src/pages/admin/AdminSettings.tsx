@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,42 +10,22 @@ import { useToast } from '@/hooks/use-toast';
 import { usePaymentMethods, useUpdatePaymentMethods, useUploadQRCode, PaymentMethod } from '@/hooks/usePaymentMethods';
 import { TaskManagementPanel } from '@/components/admin/TaskManagementPanel';
 import { AdminNotificationCenter } from '@/components/admin/AdminNotificationCenter';
+import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
 import { 
-  Users, 
-  CreditCard, 
-  LogOut, 
-  LayoutDashboard, 
-  Shield, 
-  FileCheck,
-  Eye,
-  Settings,
-  DollarSign,
-  ArrowLeft,
-  Loader2,
   QrCode,
   Upload,
   Trash2,
   Save,
-  ImageIcon
+  ImageIcon,
+  Loader2,
+  Shield,
+  Bell,
+  Building2,
+  Zap
 } from 'lucide-react';
-import { initAdminSession, clearAdminSession, getAdminInfoSync } from '@/lib/adminSession';
-
-const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/task-proofs', label: 'Activity Proofs', icon: FileCheck },
-  { href: '/admin/members', label: 'Members', icon: Users },
-  { href: '/admin/payments', label: 'Payments', icon: CreditCard },
-  { href: '/admin/commissions', label: 'Commissions', icon: DollarSign },
-  { href: '/admin/god-eye', label: 'God-Eye Panel', icon: Eye },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
-];
 
 export default function AdminSettings() {
-  const location = useLocation();
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; role: string } | null>(null);
   
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [orderAlerts, setOrderAlerts] = useState(true);
@@ -64,24 +43,6 @@ export default function AdminSettings() {
       setEditedMethods(paymentMethods);
     }
   }, [paymentMethods]);
-
-  useEffect(() => {
-    const init = async () => {
-      const isAdmin = await initAdminSession();
-      if (!isAdmin) {
-        navigate('/admin/login');
-        return;
-      }
-      setAdminInfo(getAdminInfoSync());
-      setIsInitialized(true);
-    };
-    init();
-  }, [navigate]);
-
-  const handleLogout = () => {
-    clearAdminSession();
-    navigate('/');
-  };
 
   const handleSave = () => {
     toast({
@@ -126,72 +87,22 @@ export default function AdminSettings() {
     await updatePaymentMethods.mutateAsync(editedMethods);
   };
 
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
-        <div className="p-6 border-b border-border">
-          <Link to="/admin" className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-primary">Admin Panel</span>
-          </Link>
-          {adminInfo && (
-            <p className="text-sm text-muted-foreground mt-2">{adminInfo.email}</p>
-          )}
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => (
-            <Link key={item.href} to={item.href}>
-              <Button
-                variant={location.pathname === item.href ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-2"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Button>
-            </Link>
-          ))}
-        </nav>
-        
-        <div className="p-4 border-t border-border space-y-2">
-          <Link to="/dashboard">
-            <Button variant="outline" className="w-full gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to App
-            </Button>
-          </Link>
-          <Button variant="ghost" className="w-full gap-2" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" /> Logout
-          </Button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-8 overflow-auto">
-        <div className="space-y-6 max-w-4xl">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Settings</h2>
-            <p className="text-muted-foreground">Manage platform settings and payment configuration</p>
-          </div>
-
+    <AdminPageWrapper 
+      title="SYSTEM CONFIGURATION" 
+      description="Manage platform settings and payment configuration"
+    >
+      {() => (
+        <div className="space-y-8 max-w-4xl">
           {/* Notification Center */}
           <AdminNotificationCenter />
 
           {/* Exchanger Payment & QR Codes Configuration */}
-          <Card className="border-primary/20 bg-gradient-to-br from-card to-primary/5">
+          <Card className="border-primary/10 bg-gradient-to-br from-card to-primary/5 backdrop-blur-sm">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-xl">
+                  <CardTitle className="flex items-center gap-3 text-xl font-mono">
                     <QrCode className="h-6 w-6 text-primary" />
                     Exchanger Payment & QR Codes
                   </CardTitle>
@@ -199,7 +110,8 @@ export default function AdminSettings() {
                     Configure payment receiver accounts and upload QR codes for the PHP → Alpha exchanger system
                   </CardDescription>
                 </div>
-                <Badge variant="outline" className="border-primary text-primary">
+                <Badge variant="outline" className="border-primary/30 text-primary">
+                  <Zap className="h-3 w-3 mr-1" />
                   Exchanger Config
                 </Badge>
               </div>
@@ -215,8 +127,8 @@ export default function AdminSettings() {
               ) : (
                 <>
                   {/* Instructions */}
-                  <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                  <div className="bg-primary/5 rounded-lg p-4 border border-primary/10">
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-foreground">
                       <Shield className="h-4 w-4 text-primary" />
                       How to Configure Exchanger QR Codes
                     </h4>
@@ -231,13 +143,16 @@ export default function AdminSettings() {
                   {/* Payment Methods Grid */}
                   <div className="grid gap-6">
                     {editedMethods.map((method, index) => (
-                      <div key={method.id} className="border border-border rounded-xl p-6 bg-card hover:border-primary/30 transition-colors">
+                      <div 
+                        key={method.id} 
+                        className="border border-primary/10 rounded-xl p-6 bg-card/50 hover:border-primary/30 transition-all duration-300"
+                      >
                         <div className="flex items-center justify-between mb-4">
                           <Badge className="bg-primary/10 text-primary border-primary/20 text-base px-3 py-1">
                             {method.name}
                           </Badge>
                           {method.qrCodeUrl && (
-                            <Badge variant="outline" className="text-primary border-primary/30">
+                            <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10">
                               QR Active
                             </Badge>
                           )}
@@ -247,51 +162,57 @@ export default function AdminSettings() {
                           {/* Account Details */}
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <Label htmlFor={`name-${index}`} className="text-sm font-medium">Display Name</Label>
+                              <Label htmlFor={`name-${index}`} className="text-sm font-medium text-muted-foreground">
+                                Display Name
+                              </Label>
                               <Input
                                 id={`name-${index}`}
                                 value={method.name}
                                 onChange={(e) => handleMethodChange(index, 'name', e.target.value)}
-                                className="bg-background"
+                                className="bg-background border-primary/10 focus:border-primary/30"
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`number-${index}`} className="text-sm font-medium">Account Number / Mobile</Label>
+                              <Label htmlFor={`number-${index}`} className="text-sm font-medium text-muted-foreground">
+                                Account Number / Mobile
+                              </Label>
                               <Input
                                 id={`number-${index}`}
                                 value={method.number}
                                 onChange={(e) => handleMethodChange(index, 'number', e.target.value)}
                                 placeholder="e.g., 09171234567"
-                                className="bg-background font-mono"
+                                className="bg-background font-mono border-primary/10 focus:border-primary/30"
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`accountName-${index}`} className="text-sm font-medium">Account Holder Name</Label>
+                              <Label htmlFor={`accountName-${index}`} className="text-sm font-medium text-muted-foreground">
+                                Account Holder Name
+                              </Label>
                               <Input
                                 id={`accountName-${index}`}
                                 value={method.accountName}
                                 onChange={(e) => handleMethodChange(index, 'accountName', e.target.value)}
                                 placeholder="e.g., Amabilia Network"
-                                className="bg-background"
+                                className="bg-background border-primary/10 focus:border-primary/30"
                               />
                             </div>
                           </div>
 
                           {/* QR Code Upload */}
                           <div className="space-y-3">
-                            <Label className="text-sm font-medium">QR Code Image</Label>
-                            <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors bg-muted/30">
+                            <Label className="text-sm font-medium text-muted-foreground">QR Code Image</Label>
+                            <div className="border-2 border-dashed border-primary/20 rounded-xl p-6 text-center hover:border-primary/40 transition-colors bg-primary/5">
                               {method.qrCodeUrl ? (
                                 <div className="space-y-4">
                                   <div className="relative inline-block">
                                     <img 
                                       src={method.qrCodeUrl} 
                                       alt={`${method.name} QR Code`}
-                                      className="w-40 h-40 mx-auto rounded-xl object-cover border border-border shadow-lg"
+                                      className="w-40 h-40 mx-auto rounded-xl object-cover border border-primary/20 shadow-lg"
                                     />
                                     <div className="absolute -top-2 -right-2">
-                                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                                        <span className="text-primary-foreground text-xs">✓</span>
+                                      <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                                        <span className="text-white text-xs">✓</span>
                                       </div>
                                     </div>
                                   </div>
@@ -306,7 +227,7 @@ export default function AdminSettings() {
                                           if (file) handleQRUpload(index, file);
                                         }}
                                       />
-                                      <Button variant="outline" size="sm" asChild>
+                                      <Button variant="outline" size="sm" asChild className="border-primary/30 hover:bg-primary/10">
                                         <span>
                                           <Upload className="h-4 w-4 mr-1" />
                                           Replace
@@ -314,8 +235,9 @@ export default function AdminSettings() {
                                       </Button>
                                     </label>
                                     <Button 
-                                      variant="destructive" 
+                                      variant="outline" 
                                       size="sm"
+                                      className="border-destructive/30 text-destructive hover:bg-destructive/10"
                                       onClick={() => handleRemoveQR(index)}
                                     >
                                       <Trash2 className="h-4 w-4 mr-1" />
@@ -342,7 +264,7 @@ export default function AdminSettings() {
                                       </div>
                                     ) : (
                                       <>
-                                        <div className="w-16 h-16 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                                        <div className="w-16 h-16 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-3 border border-primary/20">
                                           <ImageIcon className="h-8 w-8 text-primary" />
                                         </div>
                                         <p className="text-sm font-medium text-foreground">
@@ -367,7 +289,7 @@ export default function AdminSettings() {
                   <Button 
                     onClick={handleSavePaymentMethods}
                     disabled={updatePaymentMethods.isPending}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg font-mono"
                   >
                     {updatePaymentMethods.isPending ? (
                       <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -385,37 +307,56 @@ export default function AdminSettings() {
           <TaskManagementPanel />
 
           {/* Platform Settings */}
-          <Card>
+          <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Platform Information</CardTitle>
+              <CardTitle className="flex items-center gap-3 font-mono">
+                <Building2 className="h-5 w-5 text-primary" />
+                Platform Information
+              </CardTitle>
               <CardDescription>Basic information about the platform</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="platformName">Platform Name</Label>
-                <Input id="platformName" defaultValue="AMABILIA Network" />
+                <Label htmlFor="platformName" className="text-muted-foreground">Platform Name</Label>
+                <Input 
+                  id="platformName" 
+                  defaultValue="AMABILIA Network" 
+                  className="bg-background border-primary/10 focus:border-primary/30 font-mono"
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="platformEmail">Contact Email</Label>
-                <Input id="platformEmail" type="email" defaultValue="admin@amabilianetwork.com" />
+                <Label htmlFor="platformEmail" className="text-muted-foreground">Contact Email</Label>
+                <Input 
+                  id="platformEmail" 
+                  type="email" 
+                  defaultValue="admin@amabilianetwork.com" 
+                  className="bg-background border-primary/10 focus:border-primary/30"
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="platformPhone">Support Number</Label>
-                <Input id="platformPhone" defaultValue="+63 917 123 4567" />
+                <Label htmlFor="platformPhone" className="text-muted-foreground">Support Number</Label>
+                <Input 
+                  id="platformPhone" 
+                  defaultValue="+63 917 123 4567" 
+                  className="bg-background border-primary/10 focus:border-primary/30 font-mono"
+                />
               </div>
             </CardContent>
           </Card>
 
           {/* Notification Settings */}
-          <Card>
+          <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Notifications</CardTitle>
+              <CardTitle className="flex items-center gap-3 font-mono">
+                <Bell className="h-5 w-5 text-primary" />
+                Notifications
+              </CardTitle>
               <CardDescription>Configure how you receive alerts</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/10">
                 <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
+                  <Label className="text-foreground">Email Notifications</Label>
                   <p className="text-sm text-muted-foreground">
                     Receive email updates about platform activity
                   </p>
@@ -426,11 +367,11 @@ export default function AdminSettings() {
                 />
               </div>
               
-              <Separator />
+              <Separator className="bg-primary/10" />
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/10">
                 <div className="space-y-0.5">
-                  <Label>New Member Alerts</Label>
+                  <Label className="text-foreground">New Member Alerts</Label>
                   <p className="text-sm text-muted-foreground">
                     Get notified when new members join
                   </p>
@@ -441,11 +382,11 @@ export default function AdminSettings() {
                 />
               </div>
               
-              <Separator />
+              <Separator className="bg-primary/10" />
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/10">
                 <div className="space-y-0.5">
-                  <Label>System Health Alerts</Label>
+                  <Label className="text-foreground">System Health Alerts</Label>
                   <p className="text-sm text-muted-foreground">
                     Get notified when system issues arise
                   </p>
@@ -458,9 +399,15 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
 
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button 
+            onClick={handleSave}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg font-mono"
+          >
+            <Save className="h-5 w-5 mr-2" />
+            Save All Changes
+          </Button>
         </div>
-      </main>
-    </div>
+      )}
+    </AdminPageWrapper>
   );
 }

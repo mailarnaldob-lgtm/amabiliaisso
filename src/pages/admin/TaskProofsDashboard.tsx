@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -14,21 +13,14 @@ import {
   XCircle, 
   Clock, 
   Loader2, 
-  LogOut, 
   RefreshCw,
   ExternalLink,
   FileText,
-  Shield,
-  LayoutDashboard,
-  Users,
-  CreditCard,
-  DollarSign,
-  Eye,
-  Settings,
-  FileCheck,
-  ArrowLeft
+  Activity,
+  Coins,
+  Target
 } from 'lucide-react';
-import { initAdminSession, clearAdminSession, getAdminInfoSync } from '@/lib/adminSession';
+import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
 
 interface TaskSubmission {
   id: string;
@@ -45,43 +37,10 @@ interface TaskSubmission {
   };
 }
 
-const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/task-proofs', label: 'Activity Proofs', icon: FileCheck },
-  { href: '/admin/members', label: 'Members', icon: Users },
-  { href: '/admin/payments', label: 'Payments', icon: CreditCard },
-  { href: '/admin/commissions', label: 'Commissions', icon: DollarSign },
-  { href: '/admin/god-eye', label: 'God-Eye Panel', icon: Eye },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
-];
-
 export default function TaskProofsDashboard() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
   const queryClient = useQueryClient();
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [adminInfo, setAdminInfo] = useState<{ id: string; email: string; role: string } | null>(null);
   const [activeTab, setActiveTab] = useState('pending');
-
-  // Initialize admin session on mount
-  useEffect(() => {
-    const init = async () => {
-      const isAdmin = await initAdminSession();
-      if (!isAdmin) {
-        navigate('/admin/login');
-        return;
-      }
-      setAdminInfo(getAdminInfoSync());
-      setIsInitialized(true);
-    };
-    init();
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    clearAdminSession();
-    navigate('/');
-  };
 
   // Fetch task submissions from Supabase
   const { data: submissions, isLoading, refetch } = useQuery({
@@ -99,7 +58,6 @@ export default function TaskProofsDashboard() {
       if (error) throw error;
       return data as TaskSubmission[];
     },
-    enabled: isInitialized,
   });
 
   // Use server-side RPC for task approval
@@ -179,11 +137,11 @@ export default function TaskProofsDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600"><Clock className="w-3 h-3 mr-1" /> Pending</Badge>;
+        return <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/30"><Clock className="w-3 h-3 mr-1" /> Pending</Badge>;
       case 'approved':
-        return <Badge variant="outline" className="text-green-600 border-green-600"><CheckCircle className="w-3 h-3 mr-1" /> Approved</Badge>;
+        return <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/30"><CheckCircle className="w-3 h-3 mr-1" /> Approved</Badge>;
       case 'rejected':
-        return <Badge variant="outline" className="text-red-600 border-red-600"><XCircle className="w-3 h-3 mr-1" /> Rejected</Badge>;
+        return <Badge className="bg-destructive/10 text-destructive border border-destructive/30"><XCircle className="w-3 h-3 mr-1" /> Rejected</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -191,206 +149,183 @@ export default function TaskProofsDashboard() {
 
   const pendingCount = submissions?.filter(s => s.status === 'pending').length || 0;
 
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
-        <div className="p-6 border-b border-border">
-          <Link to="/admin" className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-primary">Admin Panel</span>
-          </Link>
-          {adminInfo && (
-            <p className="text-sm text-muted-foreground mt-2">{adminInfo.email}</p>
-          )}
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => (
-            <Link key={item.href} to={item.href}>
-              <Button
-                variant={location.pathname === item.href ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-2"
+    <AdminPageWrapper 
+      title="ACTIVITY PROOFS LEDGER" 
+      description="Review and approve submitted task proofs"
+    >
+      {() => (
+        <div className="space-y-8">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-amber-500/10 bg-gradient-to-br from-card to-amber-500/5 hover:border-amber-500/30 transition-all duration-300">
+              <CardHeader className="pb-2">
+                <CardDescription className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-amber-500" />
+                  Pending Review
+                </CardDescription>
+                <CardTitle className="text-4xl font-mono text-amber-500">{pendingCount}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className="border-primary/10 bg-gradient-to-br from-card to-primary/5 hover:border-primary/30 transition-all duration-300">
+              <CardHeader className="pb-2">
+                <CardDescription className="flex items-center gap-2">
+                  <Target className="h-4 w-4 text-primary" />
+                  Total Submissions
+                </CardDescription>
+                <CardTitle className="text-4xl font-mono text-foreground">{submissions?.length || 0}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className="border-emerald-500/10 bg-gradient-to-br from-card to-emerald-500/5 hover:border-emerald-500/30 transition-all duration-300">
+              <CardHeader className="pb-2">
+                <CardDescription className="flex items-center gap-2">
+                  <Coins className="h-4 w-4 text-emerald-500" />
+                  Total Rewards
+                </CardDescription>
+                <CardTitle className="text-4xl font-mono text-emerald-500">
+                  ₳{submissions?.reduce((sum, s) => sum + (s.reward_amount || s.task?.reward || 0), 0).toLocaleString()}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+
+          {/* Task Proofs Table */}
+          <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="font-mono">Task Submissions</CardTitle>
+                <CardDescription>Review and approve submitted task proofs</CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => refetch()} 
+                disabled={isLoading}
+                className="border-primary/30 hover:bg-primary/10"
               >
-                <item.icon className="h-4 w-4" />
-                {item.label}
+                <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
               </Button>
-            </Link>
-          ))}
-        </nav>
-        
-        <div className="p-4 border-t border-border space-y-2">
-          <Link to="/dashboard">
-            <Button variant="outline" className="w-full gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to App
-            </Button>
-          </Link>
-          <Button variant="ghost" className="w-full gap-2" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" /> Logout
-          </Button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold">Task Proofs Dashboard</h2>
-          <p className="text-muted-foreground">Review and approve submitted task proofs</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Pending Review</CardDescription>
-              <CardTitle className="text-3xl text-yellow-600">{pendingCount}</CardTitle>
             </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Total Submissions</CardDescription>
-              <CardTitle className="text-3xl">{submissions?.length || 0}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Total Rewards</CardDescription>
-              <CardTitle className="text-3xl">
-                ₳{submissions?.reduce((sum, s) => sum + (s.reward_amount || s.task?.reward || 0), 0).toLocaleString()}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
+            <CardContent>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="mb-4 bg-primary/5 border border-primary/10">
+                  <TabsTrigger value="pending" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                    Pending {pendingCount > 0 && (
+                      <Badge className="ml-2 bg-destructive/20 text-destructive border border-destructive/30">
+                        {pendingCount}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="approved" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                    Approved
+                  </TabsTrigger>
+                  <TabsTrigger value="rejected" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                    Rejected
+                  </TabsTrigger>
+                </TabsList>
 
-        {/* Task Proofs Table */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Task Submissions</CardTitle>
-              <CardDescription>Review and approve submitted task proofs</CardDescription>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="pending">
-                  Pending {pendingCount > 0 && <Badge className="ml-2" variant="destructive">{pendingCount}</Badge>}
-                </TabsTrigger>
-                <TabsTrigger value="approved">Approved</TabsTrigger>
-                <TabsTrigger value="rejected">Rejected</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={activeTab}>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-                  </div>
-                ) : !submissions?.length ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No {activeTab} submissions found</p>
-                  </div>
-                ) : (
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Task</TableHead>
-                          <TableHead>Proof Type</TableHead>
-                          <TableHead>Proof</TableHead>
-                          <TableHead>Reward</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Submitted</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {submissions.map((submission) => (
-                          <TableRow key={submission.id}>
-                            <TableCell className="font-mono text-sm">
-                              #{submission.id.slice(0, 8)}
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                <p className="font-medium">{submission.task?.title || 'Unknown Task'}</p>
-                              </div>
-                            </TableCell>
-                            <TableCell className="capitalize">{submission.proof_type}</TableCell>
-                            <TableCell>
-                              {submission.proof_url ? (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleViewProof(submission.proof_url)}
-                                >
-                                  <ExternalLink className="w-4 h-4 mr-1" />
-                                  View
-                                </Button>
-                              ) : (
-                                <span className="text-muted-foreground text-sm">No proof</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              ₳{(submission.reward_amount || submission.task?.reward || 0).toLocaleString()}
-                            </TableCell>
-                            <TableCell>{getStatusBadge(submission.status)}</TableCell>
-                            <TableCell className="text-sm text-muted-foreground">
-                              {new Date(submission.submitted_at).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell>
-                              {submission.status === 'pending' && (
-                                <div className="flex gap-2">
-                                  <Button 
-                                    size="sm" 
-                                    onClick={() => approveSubmission.mutate({ submissionId: submission.id })}
-                                    disabled={approveSubmission.isPending}
-                                  >
-                                    {approveSubmission.isPending ? (
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                      <>
-                                        <CheckCircle className="w-4 h-4 mr-1" />
-                                        Approve
-                                      </>
-                                    )}
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="text-destructive"
-                                    onClick={() => rejectSubmission.mutate({ submissionId: submission.id })}
-                                    disabled={rejectSubmission.isPending}
-                                  >
-                                    <XCircle className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              )}
-                            </TableCell>
+                <TabsContent value={activeTab}>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                  ) : !submissions?.length ? (
+                    <div className="text-center py-12">
+                      <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+                      <p className="text-muted-foreground">No {activeTab} submissions found</p>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-primary/10 overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-primary/5 hover:bg-primary/5">
+                            <TableHead className="text-muted-foreground font-mono">ID</TableHead>
+                            <TableHead className="text-muted-foreground font-mono">Task</TableHead>
+                            <TableHead className="text-muted-foreground font-mono">Proof Type</TableHead>
+                            <TableHead className="text-muted-foreground font-mono">Proof</TableHead>
+                            <TableHead className="text-muted-foreground font-mono">Reward</TableHead>
+                            <TableHead className="text-muted-foreground font-mono">Status</TableHead>
+                            <TableHead className="text-muted-foreground font-mono">Submitted</TableHead>
+                            <TableHead className="text-muted-foreground font-mono">Actions</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+                        </TableHeader>
+                        <TableBody>
+                          {submissions.map((submission) => (
+                            <TableRow 
+                              key={submission.id}
+                              className="border-primary/5 hover:bg-primary/5 transition-colors"
+                            >
+                              <TableCell className="font-mono text-sm text-muted-foreground">
+                                #{submission.id.slice(0, 8)}
+                              </TableCell>
+                              <TableCell>
+                                <p className="font-medium text-foreground">{submission.task?.title || 'Unknown Task'}</p>
+                              </TableCell>
+                              <TableCell className="capitalize text-muted-foreground">{submission.proof_type}</TableCell>
+                              <TableCell>
+                                {submission.proof_url ? (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    className="text-primary hover:text-primary hover:bg-primary/10"
+                                    onClick={() => handleViewProof(submission.proof_url)}
+                                  >
+                                    <ExternalLink className="w-4 h-4 mr-1" />
+                                    View
+                                  </Button>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">No proof</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="font-mono font-medium text-primary">
+                                ₳{(submission.reward_amount || submission.task?.reward || 0).toLocaleString()}
+                              </TableCell>
+                              <TableCell>{getStatusBadge(submission.status)}</TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {new Date(submission.submitted_at).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell>
+                                {submission.status === 'pending' && (
+                                  <div className="flex gap-2">
+                                    <Button 
+                                      size="sm" 
+                                      className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/20"
+                                      onClick={() => approveSubmission.mutate({ submissionId: submission.id })}
+                                      disabled={approveSubmission.isPending}
+                                    >
+                                      {approveSubmission.isPending ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                      ) : (
+                                        <>
+                                          <CheckCircle className="w-4 h-4 mr-1" />
+                                          Approve
+                                        </>
+                                      )}
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      className="bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive/20"
+                                      onClick={() => rejectSubmission.mutate({ submissionId: submission.id })}
+                                      disabled={rejectSubmission.isPending}
+                                    >
+                                      <XCircle className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </AdminPageWrapper>
   );
 }
