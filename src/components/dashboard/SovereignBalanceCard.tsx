@@ -12,9 +12,9 @@ interface SovereignBalanceCardProps {
 export function SovereignBalanceCard({ 
   totalBalance, 
   isSyncing = false,
-  vaultYield = 0.03 // 3% weekly yield
+  vaultYield = 0.01 // 1% DAILY yield (per Alpha Ecosystem Blueprint V8.0)
 }: SovereignBalanceCardProps) {
-  const weeklyYieldAmount = totalBalance * vaultYield;
+  const dailyYieldAmount = totalBalance * vaultYield;
 
   return (
     <motion.div
@@ -83,14 +83,14 @@ export function SovereignBalanceCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-emerald-400" />
-            <span className="text-sm text-muted-foreground">P2P Lending Yield</span>
+            <span className="text-sm text-muted-foreground">Vault Yield</span>
           </div>
           <div className="text-right">
             <p className="text-sm font-bold text-emerald-400 font-mono">
-              +₳{formatAlpha(weeklyYieldAmount)}/week
+              +₳{formatAlpha(dailyYieldAmount)}/day
             </p>
             <p className="text-[10px] text-muted-foreground font-mono">
-              3% weekly • Elite members only
+              1% daily • Elite members only
             </p>
           </div>
         </div>

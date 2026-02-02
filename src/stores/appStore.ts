@@ -210,26 +210,22 @@ export const ARMY_LEVELS: Record<ArmyLevel, { name: string; minTasks: number; ic
   elite_operator: { name: 'VPA Elite Operator', minTasks: 500, icon: '👑' },
 };
 
-// Membership tier configuration - accurate business logic
-// Note: null tier = FREE ACCOUNT (no payment), basic/pro/elite require monthly subscriptions
-// Subscription cycle: 30 days per renewal
-export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: number; cycle: string; features: string[] }> = {
+// Membership tier configuration - accurate business logic per Alpha Ecosystem Blueprint V8.0
+// ONE-TIME activation fees | Vault yield: 1% DAILY for Elite members
+export const MEMBERSHIP_TIERS: Record<MembershipTier, { name: string; cost: number; features: string[] }> = {
   basic: {
     name: 'Basic',
-    cost: 300, // ₱300/month
-    cycle: 'Monthly',
-    features: ['50% Referral Commission', 'Access to Community Platform', '30-Day Access Cycle'],
+    cost: 300, // ₱300 one-time
+    features: ['50% Referral Commission', 'Access to Community Platform'],
   },
   pro: {
     name: 'Pro',
-    cost: 600, // ₱600/month
-    cycle: 'Monthly',
-    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Training Access', '30-Day Access Cycle'],
+    cost: 600, // ₱600 one-time
+    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Training Access'],
   },
   elite: {
     name: 'Elite',
-    cost: 900, // ₱900/month
-    cycle: 'Monthly',
-    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'Credit Marketplace (P2P Lending)', 'KYC Verification', 'VIP Support', '30-Day Access Cycle'],
+    cost: 900, // ₱900 one-time
+    features: ['50% Referral Commission', 'Activity-Based Credits (VPA)', 'P2P Credit Marketplace', '1% Daily Vault Yield', 'VIP Support'],
   },
 };

@@ -8,19 +8,19 @@ const tiers = [
     sublabel: 'Per referral'
   },
   {
-    label: 'Service Maintenance',
+    label: 'Basic Activation',
     value: '₱300',
-    sublabel: 'Monthly'
+    sublabel: 'One-time'
   },
   {
-    label: 'Wallet Types',
-    value: '3',
-    sublabel: 'Task, Royalty, Main'
+    label: 'Elite Vault Yield',
+    value: '1%',
+    sublabel: 'Daily'
   },
   {
     label: 'P2P Lending',
-    value: '3%',
-    sublabel: 'Weekly yield'
+    value: '28',
+    sublabel: 'Day terms'
   }
 ];
 

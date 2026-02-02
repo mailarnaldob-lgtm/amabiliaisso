@@ -14,11 +14,6 @@ export interface Profile {
   avatar_url: string | null;
   created_at: string | null;
   updated_at: string | null;
-  // Subscription tracking fields
-  subscription_status: 'inactive' | 'active' | 'expired' | 'grace_period' | null;
-  subscription_expires_at: string | null;
-  last_renewal_at: string | null;
-  renewal_cycle: 'monthly' | 'quarterly' | 'annual' | null;
   isFallback?: boolean;
 }
 
@@ -68,11 +63,6 @@ export function useProfile() {
           avatar_url: profileData.avatar_url || null,
           created_at: profileData.created_at || null,
           updated_at: profileData.updated_at || null,
-          // Subscription fields
-          subscription_status: (profileData as Record<string, unknown>).subscription_status as Profile['subscription_status'] || 'inactive',
-          subscription_expires_at: (profileData as Record<string, unknown>).subscription_expires_at as string || null,
-          last_renewal_at: (profileData as Record<string, unknown>).last_renewal_at as string || null,
-          renewal_cycle: (profileData as Record<string, unknown>).renewal_cycle as Profile['renewal_cycle'] || 'monthly',
           isFallback: false,
         };
 
@@ -109,10 +99,6 @@ function createFallbackProfile(user: { id: string; email?: string; user_metadata
     avatar_url: null,
     created_at: user.created_at || null,
     updated_at: null,
-    subscription_status: 'inactive',
-    subscription_expires_at: null,
-    last_renewal_at: null,
-    renewal_cycle: 'monthly',
     isFallback,
   };
 }
