@@ -6,11 +6,11 @@ const corsHeaders = {
 }
 
 /**
- * DAILY VAULT YIELD EDGE FUNCTION
- * Blueprint V8.0 Specification:
- * - Elite members earn 1% DAILY yield on their vault balance
+ * DAILY VAULT YIELD EDGE FUNCTION - Blueprint V8.0
+ * Uses dedicated elite_vaults table for Elite members
+ * - 1% DAILY yield on vault total_balance (including frozen collateral)
  * - Runs as a cron job every day at midnight UTC
- * - Uses atomic transactions to prevent race conditions
+ * - Uses atomic RPC function for yield calculation
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -23,134 +23,30 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    console.log('Starting Daily Vault Yield calculation...')
+    console.log('[DAILY-VAULT-YIELD] Starting vault yield calculation...')
 
-    // Get all Elite members with their main wallet balances
-    const { data: eliteMembers, error: membersError } = await supabase
-      .from('profiles')
-      .select(`
-        id,
-        full_name,
-        membership_tier
-      `)
-      .eq('membership_tier', 'elite')
+    // Use the atomic RPC function to calculate and distribute yields
+    const { data: result, error: rpcError } = await supabase.rpc('calculate_vault_yield')
 
-    if (membersError) {
-      console.error('Error fetching elite members:', membersError)
-      throw new Error(`Failed to fetch elite members: ${membersError.message}`)
+    if (rpcError) {
+      console.error('[DAILY-VAULT-YIELD] RPC error:', rpcError)
+      throw new Error(`Failed to calculate vault yield: ${rpcError.message}`)
     }
 
-    if (!eliteMembers || eliteMembers.length === 0) {
-      console.log('No elite members found for yield calculation')
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'No elite members found',
-          processed: 0 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    console.log(`Found ${eliteMembers.length} elite members`)
-
-    let processedCount = 0
-    let totalYieldDistributed = 0
-    const errors: string[] = []
-
-    // Process each elite member
-    for (const member of eliteMembers) {
-      try {
-        // Get the member's main wallet balance
-        const { data: wallet, error: walletError } = await supabase
-          .from('wallets')
-          .select('id, balance')
-          .eq('user_id', member.id)
-          .eq('wallet_type', 'main')
-          .single()
-
-        if (walletError || !wallet) {
-          console.error(`Wallet not found for member ${member.id}:`, walletError)
-          errors.push(`Member ${member.id}: Wallet not found`)
-          continue
-        }
-
-        const currentBalance = wallet.balance || 0
-        
-        // Skip if balance is 0 or negative
-        if (currentBalance <= 0) {
-          console.log(`Skipping member ${member.id}: Balance is ${currentBalance}`)
-          continue
-        }
-
-        // Calculate 1% daily yield (floor to whole peso as per Whole Peso Mandate)
-        const dailyYield = Math.floor(currentBalance * 0.01)
-
-        // Skip if yield rounds to 0
-        if (dailyYield <= 0) {
-          console.log(`Skipping member ${member.id}: Yield rounds to 0`)
-          continue
-        }
-
-        // Credit the yield to their main wallet atomically
-        const newBalance = currentBalance + dailyYield
-
-        const { error: updateError } = await supabase
-          .from('wallets')
-          .update({ 
-            balance: newBalance,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', wallet.id)
-
-        if (updateError) {
-          console.error(`Failed to update wallet for member ${member.id}:`, updateError)
-          errors.push(`Member ${member.id}: Failed to credit yield`)
-          continue
-        }
-
-        // Log the transaction
-        const { error: txError } = await supabase
-          .from('wallet_transactions')
-          .insert({
-            wallet_id: wallet.id,
-            user_id: member.id,
-            amount: dailyYield,
-            transaction_type: 'vault_yield',
-            description: `1% Daily Vault Yield (Balance: ₳${currentBalance.toLocaleString()})`
-          })
-
-        if (txError) {
-          console.error(`Failed to log transaction for member ${member.id}:`, txError)
-          // Don't fail the whole operation, yield was already credited
-        }
-
-        processedCount++
-        totalYieldDistributed += dailyYield
-        console.log(`Credited ₳${dailyYield} yield to member ${member.id}`)
-
-      } catch (memberError) {
-        console.error(`Error processing member ${member.id}:`, memberError)
-        errors.push(`Member ${member.id}: ${memberError}`)
-      }
-    }
-
-    console.log(`Daily Vault Yield complete: Processed ${processedCount} members, distributed ₳${totalYieldDistributed}`)
+    console.log(`[DAILY-VAULT-YIELD] Complete: Processed ${result?.processed || 0} vaults, distributed ₳${result?.total_yield_distributed || 0}`)
 
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Daily Vault Yield calculation complete',
-        processed: processedCount,
-        totalEliteMembers: eliteMembers.length,
-        totalYieldDistributed,
-        errors: errors.length > 0 ? errors : undefined
+        processed: result?.processed || 0,
+        totalYieldDistributed: result?.total_yield_distributed || 0
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Daily Vault Yield error:', error)
+    console.error('[DAILY-VAULT-YIELD] Error:', error)
     return new Response(
       JSON.stringify({ 
         success: false, 
