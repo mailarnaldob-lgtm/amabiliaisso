@@ -86,73 +86,82 @@ export default function MarketApp() {
     <AlphaLayout 
       title="₳LPHA MARKET" 
       subtitle="VPA Missions"
-      appColor="from-emerald-500 to-teal-600"
+      appColor="from-accent to-accent/70"
     >
-      {/* Daily Progress */}
-      <Card className="mb-6 overflow-hidden">
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-5 text-white">
+      {/* Daily Progress - Terminal Style */}
+      <Card className="mb-6 overflow-hidden bg-slate/80 border-accent/20 backdrop-blur-xl">
+        <div className="bg-gradient-to-br from-accent/20 to-accent/5 p-5 border-b border-accent/10">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm opacity-80">Your Progress</p>
-              <p className="text-2xl font-bold">{stats.totalCompleted} Missions Completed</p>
+              <p className="text-xs text-platinum/60 font-mono uppercase tracking-widest">YOUR_PROGRESS</p>
+              <p className="text-2xl font-bold text-platinum font-display mt-1">{stats.totalCompleted} <span className="text-accent">Missions</span></p>
             </div>
             <div className="text-right">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2 text-amber-400">
                 <Clock className="h-4 w-4" />
-                <span className="font-bold">{stats.totalPending} Pending</span>
+                <span className="font-mono font-bold">{stats.totalPending} PENDING</span>
               </div>
             </div>
           </div>
           <Progress 
             value={stats.totalCompleted > 0 ? 100 : 0} 
-            className="h-2 bg-white/20" 
+            className="h-1.5 bg-obsidian/50" 
           />
         </div>
-        <CardContent className="p-4">
+        <CardContent className="p-4 bg-obsidian/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-amber-500" />
-              <span className="text-sm text-muted-foreground">Total Credits Earned:</span>
+              <Trophy className="h-5 w-5 text-accent" />
+              <span className="text-sm text-platinum/60 font-mono">TOTAL_CREDITS:</span>
             </div>
-            <span className="font-bold text-foreground">₳{formatAlpha(stats.totalCreditsEarned)}</span>
+            <span className="font-bold text-accent font-mono text-lg">₳{formatAlpha(stats.totalCreditsEarned)}</span>
           </div>
         </CardContent>
       </Card>
 
-      {/* Mission Status Tabs */}
+      {/* Mission Status Tabs - Obsidian Style */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="available" className="gap-1 text-xs">
+        <TabsList className="grid w-full grid-cols-3 bg-slate/80 border border-platinum/10 p-1">
+          <TabsTrigger 
+            value="available" 
+            className="gap-1 text-xs font-mono data-[state=active]:bg-accent/20 data-[state=active]:text-accent"
+          >
             <Target className="h-3 w-3" />
             Available
             {availableTasks.length > 0 && (
-              <Badge className="ml-1 h-4 w-4 p-0 text-[10px] bg-emerald-500">
+              <Badge className="ml-1 h-4 min-w-4 p-0 text-[10px] bg-accent text-obsidian">
                 {availableTasks.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="pending" className="gap-1 text-xs">
+          <TabsTrigger 
+            value="pending" 
+            className="gap-1 text-xs font-mono data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400"
+          >
             <Clock className="h-3 w-3" />
             Pending
             {pendingSubmissions.length > 0 && (
-              <Badge className="ml-1 h-4 w-4 p-0 text-[10px] bg-amber-500">
+              <Badge className="ml-1 h-4 min-w-4 p-0 text-[10px] bg-amber-500 text-obsidian">
                 {pendingSubmissions.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="completed" className="gap-1 text-xs">
+          <TabsTrigger 
+            value="completed" 
+            className="gap-1 text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400"
+          >
             <CheckCircle2 className="h-3 w-3" />
-            Completed
+            Done
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="available">
-          {/* Mission Categories */}
-          <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
+          {/* Mission Categories - Pill Style */}
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4 scrollbar-hide">
             {categories.map((cat) => (
               <CategoryPill 
                 key={cat}
-                label={cat === 'all' ? 'All' : cat} 
+                label={cat === 'all' ? 'ALL' : cat.toUpperCase()} 
                 active={activeCategory === cat}
                 onClick={() => setActiveCategory(cat)}
               />
@@ -163,18 +172,18 @@ export default function MarketApp() {
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <Card key={i}>
+                <Card key={i} className="bg-slate/60 border-platinum/10">
                   <CardContent className="p-4">
-                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full bg-platinum/5" />
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : availableTasks.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Target className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No available missions</p>
-              <p className="text-xs mt-1">Check back later for new missions!</p>
+            <div className="text-center py-12 text-platinum/40">
+              <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p className="font-mono">NO_MISSIONS_AVAILABLE</p>
+              <p className="text-xs mt-1 font-mono">Check back later for new missions</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -192,38 +201,38 @@ export default function MarketApp() {
         <TabsContent value="pending">
           <div className="space-y-3">
             <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
-              <p className="text-xs text-amber-600 flex items-center gap-2">
+              <p className="text-xs text-amber-400 flex items-center gap-2 font-mono">
                 <Timer className="h-4 w-4" />
-                Proofs are reviewed within 48 hours by admin.
+                PROOFS_REVIEWED_WITHIN_48H
               </p>
             </div>
             
             {pendingSubmissions.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Clock className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>No pending submissions</p>
+              <div className="text-center py-12 text-platinum/40">
+                <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-mono">NO_PENDING_SUBMISSIONS</p>
               </div>
             ) : (
               pendingSubmissions.map((submission) => (
-                <Card key={submission.id}>
+                <Card key={submission.id} className="bg-slate/60 border-amber-500/20">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-amber-500/10">
-                          <FileCheck className="h-5 w-5 text-amber-500" />
+                        <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                          <FileCheck className="h-5 w-5 text-amber-400" />
                         </div>
                         <div>
-                          <p className="font-medium">{submission.task?.title || 'Task'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Submitted {formatDistanceToNow(new Date(submission.submitted_at), { addSuffix: true })}
+                          <p className="font-medium text-platinum">{submission.task?.title || 'Task'}</p>
+                          <p className="text-xs text-platinum/50 font-mono">
+                            {formatDistanceToNow(new Date(submission.submitted_at), { addSuffix: true })}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">₳{submission.task?.reward || 0}</p>
-                        <Badge variant="outline" className="text-amber-600 border-amber-500/30">
+                        <p className="font-bold font-mono text-accent">₳{submission.task?.reward || 0}</p>
+                        <Badge variant="outline" className="text-amber-400 border-amber-500/30 font-mono text-[10px]">
                           <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                          Pending
+                          PENDING
                         </Badge>
                       </div>
                     </div>
@@ -235,18 +244,18 @@ export default function MarketApp() {
             {/* Show rejected submissions */}
             {rejectedSubmissions.length > 0 && (
               <>
-                <h4 className="text-sm font-medium text-muted-foreground mt-4">Rejected</h4>
+                <h4 className="text-sm font-mono text-platinum/50 mt-6 mb-2">REJECTED</h4>
                 {rejectedSubmissions.map((submission) => (
-                  <Card key={submission.id} className="border-destructive/30">
+                  <Card key={submission.id} className="bg-slate/60 border-destructive/30">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-xl bg-destructive/10">
+                          <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/20">
                             <XCircle className="h-5 w-5 text-destructive" />
                           </div>
                           <div>
-                            <p className="font-medium">{submission.task?.title || 'Task'}</p>
-                            <p className="text-xs text-destructive">
+                            <p className="font-medium text-platinum">{submission.task?.title || 'Task'}</p>
+                            <p className="text-xs text-destructive font-mono">
                               {submission.rejection_reason || 'Submission rejected'}
                             </p>
                           </div>
@@ -263,34 +272,36 @@ export default function MarketApp() {
         <TabsContent value="completed">
           <div className="space-y-3">
             {completedSubmissions.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle2 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>No completed missions yet</p>
-                <p className="text-xs mt-1">Complete missions to earn credits!</p>
+              <div className="text-center py-12 text-platinum/40">
+                <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-mono">NO_COMPLETED_MISSIONS</p>
+                <p className="text-xs mt-1 font-mono">Complete missions to earn credits</p>
               </div>
             ) : (
               completedSubmissions.map((submission) => (
-                <Card key={submission.id}>
+                <Card key={submission.id} className="bg-slate/60 border-emerald-500/20">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-emerald-500/10">
-                          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                        <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                         </div>
                         <div>
-                          <p className="font-medium">{submission.task?.title || 'Task'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Approved {submission.reviewed_at 
+                          <p className="font-medium text-platinum">{submission.task?.title || 'Task'}</p>
+                          <p className="text-xs text-platinum/50 font-mono">
+                            {submission.reviewed_at 
                               ? formatDistanceToNow(new Date(submission.reviewed_at), { addSuffix: true })
-                              : 'recently'}
+                              : 'Recently'}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-emerald-500">
+                        <p className="font-bold text-emerald-400 font-mono">
                           +₳{submission.reward_amount || submission.task?.reward || 0}
                         </p>
-                        <Badge className="bg-emerald-500 text-[10px]">Approved</Badge>
+                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] font-mono">
+                          APPROVED
+                        </Badge>
                       </div>
                     </div>
                   </CardContent>
@@ -301,29 +312,38 @@ export default function MarketApp() {
         </TabsContent>
       </Tabs>
 
-      {/* Escrow Info */}
-      <Card className="mt-4 bg-muted/30">
+      {/* VPA Mission Flow - Terminal Card */}
+      <Card className="mt-6 bg-slate/60 border-platinum/10">
         <CardContent className="p-4">
-          <h4 className="font-medium mb-2 flex items-center gap-2">
-            <Zap className="h-4 w-4 text-primary" />
-            VPA Mission Flow
+          <h4 className="font-medium mb-3 flex items-center gap-2 text-platinum font-mono">
+            <Zap className="h-4 w-4 text-accent" />
+            VPA_MISSION_FLOW
           </h4>
-          <ul className="text-xs text-muted-foreground space-y-1">
-            <li>1. Select an available mission</li>
-            <li>2. Complete the task requirements</li>
-            <li>3. Submit proof (screenshot or link)</li>
-            <li>4. Admin reviews within 48 hours</li>
-            <li>5. Credits added to Task Wallet on approval</li>
+          <ul className="text-xs text-platinum/60 space-y-1.5 font-mono">
+            <li className="flex items-center gap-2">
+              <span className="text-accent">01.</span> Select an available mission
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-accent">02.</span> Complete the task requirements
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-accent">03.</span> Submit proof (screenshot or link)
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-accent">04.</span> Admin reviews within 48 hours
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-accent">05.</span> Credits added to Task Wallet
+            </li>
           </ul>
         </CardContent>
       </Card>
 
       {/* Disclaimer */}
-      <div className="mt-8 p-4 rounded-xl bg-muted/30 border border-border">
-        <p className="text-xs text-muted-foreground text-center">
+      <div className="mt-8 p-4 rounded-lg bg-obsidian/80 border border-platinum/10">
+        <p className="text-xs text-platinum/40 text-center font-mono">
           VPA missions are voluntary participation activities. 
-          Credits are for platform use only and cannot be converted to money.
-          All proofs are logged immutably for audit.
+          Credits are for platform use only. All proofs are logged immutably.
         </p>
       </div>
 
@@ -341,10 +361,10 @@ function CategoryPill({ label, active, onClick }: { label: string; active?: bool
   return (
     <button 
       onClick={onClick}
-      className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+      className={`px-4 py-1.5 rounded text-xs font-mono font-medium whitespace-nowrap transition-all duration-150 active:scale-95 ${
         active 
-          ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white' 
-          : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          ? 'bg-accent text-obsidian shadow-glow-cyan' 
+          : 'bg-slate/60 text-platinum/60 border border-platinum/10 hover:border-accent/30 hover:text-platinum'
       }`}
     >
       {label}
@@ -365,11 +385,11 @@ function MissionCard({ task, onStart }: { task: Task; onStart: () => void }) {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Easy': return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
-      case 'Medium': return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
-      case 'Hard': return 'bg-red-500/10 text-red-600 border-red-500/20';
-      case 'Special': return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
-      default: return 'bg-muted text-muted-foreground';
+      case 'Easy': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      case 'Medium': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case 'Hard': return 'bg-red-500/10 text-red-400 border-red-500/20';
+      case 'Special': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+      default: return 'bg-slate text-platinum/60';
     }
   };
 
@@ -386,43 +406,44 @@ function MissionCard({ task, onStart }: { task: Task; onStart: () => void }) {
   const ProofIcon = getProofIcon(task.proof_type);
 
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-all">
+    <Card className="overflow-hidden bg-slate/60 border-platinum/10 hover:border-accent/30 transition-all duration-150 hover:-translate-y-0.5">
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 mt-0.5">
-              <Target className="h-5 w-5 text-white" />
+            <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 mt-0.5">
+              <Target className="h-5 w-5 text-accent" />
             </div>
             <div>
-              <p className="font-medium text-foreground">{task.title}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{task.description}</p>
+              <p className="font-medium text-platinum">{task.title}</p>
+              <p className="text-xs text-platinum/50 mt-0.5">{task.description}</p>
             </div>
           </div>
-          <Badge className={getDifficultyColor(difficulty)} variant="outline">
-            {difficulty}
+          <Badge className={`${getDifficultyColor(difficulty)} border font-mono text-[10px]`} variant="outline">
+            {difficulty.toUpperCase()}
           </Badge>
         </div>
         
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs text-platinum/50 font-mono">
             <span className="flex items-center gap-1">
-              <Star className="h-3 w-3 text-amber-500" />
+              <Star className="h-3 w-3 text-accent" />
               ₳{task.reward}
             </span>
             <span className="flex items-center gap-1">
               <ProofIcon className="h-3 w-3" />
               {task.proof_type}
             </span>
-            <Badge variant="outline" className="text-[10px]">
-              {task.category}
+            <Badge variant="outline" className="text-[10px] border-platinum/20 text-platinum/50">
+              {task.category.toUpperCase()}
             </Badge>
           </div>
           <Button 
             size="sm" 
             variant="outline"
             onClick={onStart}
+            className="font-mono text-xs border-accent/30 text-accent hover:bg-accent/10 hover:border-accent active:scale-95 transition-all duration-150"
           >
-            Start
+            START
           </Button>
         </div>
       </CardContent>
