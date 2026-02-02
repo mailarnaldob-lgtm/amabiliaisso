@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Wallet, ArrowUpRight, ArrowDownLeft, RefreshCw, History, Send, Clock, CheckCircle2, Coins, CreditCard, Banknote, AlertCircle } from 'lucide-react';
 import { formatAlpha } from '@/lib/utils';
 import { useAppStore } from '@/stores/appStore';
-import { ExchangerModal } from '@/components/alpha/ExchangerModal';
+import { SovereignExchangerModal } from '@/components/alpha/SovereignExchangerModal';
 import { MoneyTransferWizard } from '@/components/alpha/MoneyTransferWizard';
 import { UserStateIndicator, UserLifecycleFlow } from '@/components/alpha/UserStateIndicator';
 import { useOptimisticWallets } from '@/hooks/useOptimisticWallets';
@@ -292,7 +292,7 @@ export default function BankApp() {
       </div>
 
       {/* Exchanger Modal */}
-      <ExchangerModal open={exchangerOpen} onOpenChange={setExchangerOpen} />
+      <SovereignExchangerModal open={exchangerOpen} onOpenChange={setExchangerOpen} />
       
       {/* Money Transfer Wizard */}
       <MoneyTransferWizard isOpen={transferOpen} onClose={() => setTransferOpen(false)} />
