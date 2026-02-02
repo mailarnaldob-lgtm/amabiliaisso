@@ -20,9 +20,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify user is authenticated
+    // Verify user is authenticated (JWT validation)
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return new Response(
         JSON.stringify({ error: "Unauthorized Sovereign Access" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -39,9 +39,12 @@ Deno.serve(async (req) => {
       }
     );
 
-    // Verify the user's JWT is valid
-    const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
-    if (authError || !user) {
+    // Validate token claims (stronger than getUser() for JWT verification)
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token);
+
+    const userId = claimsData?.claims?.sub;
+    if (claimsError || !userId) {
       return new Response(
         JSON.stringify({ error: "Invalid Sovereign Credentials" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
