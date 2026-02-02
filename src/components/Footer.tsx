@@ -1,10 +1,14 @@
 import { motion } from "framer-motion";
-import { Shield, Scale, Landmark, Lock, CheckCircle, Globe, Building } from "lucide-react";
+import { Shield, Scale, Landmark, Lock, CheckCircle, Globe, Building, Home, LayoutDashboard } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 /**
  * Footer V8.5 - Banking-Grade Enterprise Footer
  * Used on About/Contact pages (non-landing)
- * All links scroll to top (display only)
+ * Features: Return to Home + Back to Dashboard buttons
+ * All other links scroll to top (display only)
  */
 
 const scrollToTop = (e: React.MouseEvent) => {
@@ -37,6 +41,17 @@ const certifications = [
 ];
 
 export function Footer() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleDashboardClick = () => {
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <footer 
       className="relative pt-16 pb-8 px-6 lg:px-8"
@@ -52,6 +67,46 @@ export function Footer() {
       />
 
       <div className="container mx-auto max-w-6xl">
+        {/* Quick Navigation Buttons */}
+        <motion.div 
+          className="flex flex-wrap justify-center gap-4 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <Link to="/">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button 
+                className="px-6 py-3 text-sm rounded-md font-semibold text-black tracking-wide flex items-center gap-2"
+                style={{
+                  background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                  boxShadow: '0 0 20px hsl(45 100% 51% / 0.3)'
+                }}
+              >
+                <Home className="w-4 h-4" />
+                RETURN TO HOME
+              </Button>
+            </motion.div>
+          </Link>
+
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Button 
+              onClick={handleDashboardClick}
+              className="px-6 py-3 text-sm rounded-md font-semibold tracking-wide flex items-center gap-2"
+              style={{
+                background: 'linear-gradient(135deg, hsl(45 100% 51% / 0.15) 0%, hsl(45 100% 51% / 0.05) 100%)',
+                border: '1px solid hsl(45 100% 51% / 0.3)',
+                color: '#FFD700',
+                boxShadow: '0 0 15px hsl(45 100% 51% / 0.15)'
+              }}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              BACK TO DASHBOARD
+            </Button>
+          </motion.div>
+        </motion.div>
+
         {/* Main Footer Grid */}
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12"
@@ -159,14 +214,6 @@ export function Footer() {
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
         >
-          {/* Copyright */}
-          <p 
-            className="text-xs text-muted-foreground tracking-wide text-center sm:text-left"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-          >
-            © 2026 Amabilia Alpha Ecosystem. All Rights Reserved.
-          </p>
-
           {/* Regulatory Notice */}
           <div className="flex items-center gap-4 text-[10px] text-muted-foreground/60">
             <span className="flex items-center gap-1">
@@ -178,6 +225,17 @@ export function Footer() {
               Sovereign Licensed
             </span>
           </div>
+
+          {/* Copyright - Center */}
+          <p 
+            className="text-xs text-muted-foreground tracking-wide text-center"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            © 2026 Amabilia Alpha Ecosystem. All Rights Reserved.
+          </p>
+
+          {/* Spacer for symmetry */}
+          <div className="hidden sm:block w-[180px]" />
         </motion.div>
 
         {/* Disclaimer */}
