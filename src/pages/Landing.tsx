@@ -8,14 +8,17 @@ import { ArrowRight, Lock, Globe, Zap, Users, TrendingUp, Shield, Wallet, BarCha
 const POWER_STATEMENT = "We engineered a self-sustaining financial architecture that integrated incentivized mission economies with autonomous P2P compounding, successfully bridging the gap between high-velocity liquidity and long-term exponential growth for the global individual.";
 
 // Countdown Timer Component - 2026 Obsidian Theme
-function CountdownTimer({ targetDate }: { targetDate: Date }) {
+function CountdownTimer({
+  targetDate
+}: {
+  targetDate: Date;
+}) {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0
   });
-
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -26,18 +29,15 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
       }
       setTimeLeft({
         days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((distance % (1000 * 60)) / 1000)
+        hours: Math.floor(distance % (1000 * 60 * 60 * 24) / (1000 * 60 * 60)),
+        minutes: Math.floor(distance % (1000 * 60 * 60) / (1000 * 60)),
+        seconds: Math.floor(distance % (1000 * 60) / 1000)
       });
     }, 1000);
     return () => clearInterval(timer);
   }, [targetDate]);
-
-  return (
-    <div className="flex items-center justify-center gap-3 sm:gap-4">
-      {Object.entries(timeLeft).map(([unit, value]) => (
-        <div key={unit} className="text-center">
+  return <div className="flex items-center justify-center gap-3 sm:gap-4">
+      {Object.entries(timeLeft).map(([unit, value]) => <div key={unit} className="text-center">
           <div className="bg-card/80 backdrop-blur-sm border border-primary/30 rounded px-4 sm:px-5 py-3 min-w-[70px] sm:min-w-[85px] cyan-glow-sm">
             <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary font-mono tracking-wider">
               {String(value).padStart(2, '0')}
@@ -46,27 +46,26 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
           <span className="text-[10px] sm:text-xs text-muted-foreground mt-2 block uppercase tracking-[0.2em] font-medium">
             {unit}
           </span>
-        </div>
-      ))}
-    </div>
-  );
+        </div>)}
+    </div>;
 }
 
 // 3D Abstract Monolith Component
-function AbstractMonolith({ className = "", delay = 0 }: { className?: string; delay?: number }) {
-  return (
-    <div 
-      className={`perspective-1200 ${className}`}
-      style={{ animationDelay: `${delay}s` }}
-    >
-      <div 
-        className="preserve-3d transition-all duration-500 hover:scale-105 animate-float"
-        style={{
-          background: 'linear-gradient(135deg, hsl(220 23% 12%) 0%, hsl(220 23% 6%) 100%)',
-          boxShadow: '0 40px 80px hsl(0 0% 0% / 0.6), 0 0 60px hsl(191 100% 50% / 0.15)',
-          border: '1px solid hsl(215 25% 91% / 0.1)',
-        }}
-      >
+function AbstractMonolith({
+  className = "",
+  delay = 0
+}: {
+  className?: string;
+  delay?: number;
+}) {
+  return <div className={`perspective-1200 ${className}`} style={{
+    animationDelay: `${delay}s`
+  }}>
+      <div className="preserve-3d transition-all duration-500 hover:scale-105 animate-float" style={{
+      background: 'linear-gradient(135deg, hsl(220 23% 12%) 0%, hsl(220 23% 6%) 100%)',
+      boxShadow: '0 40px 80px hsl(0 0% 0% / 0.6), 0 0 60px hsl(191 100% 50% / 0.15)',
+      border: '1px solid hsl(215 25% 91% / 0.1)'
+    }}>
         {/* Glowing Cyan Circuit Lines */}
         <div className="absolute inset-0 overflow-hidden rounded">
           <div className="absolute top-4 left-4 w-24 h-[1px] bg-gradient-to-r from-primary/60 to-transparent" />
@@ -76,22 +75,20 @@ function AbstractMonolith({ className = "", delay = 0 }: { className?: string; d
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary/40 cyan-glow-sm" />
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
 
 // Feature Card Component - 2026 Titanium Style
-function FeatureCard({ 
-  icon: Icon, 
-  title, 
-  description 
-}: { 
-  icon: React.ElementType; 
-  title: string; 
+function FeatureCard({
+  icon: Icon,
+  title,
+  description
+}: {
+  icon: React.ElementType;
+  title: string;
   description: string;
 }) {
-  return (
-    <div className="titanium-card p-6 relative widget-hover">
+  return <div className="titanium-card p-6 relative widget-hover">
       <div className="flex items-start gap-4">
         <div className="p-3 rounded bg-primary/10 border border-primary/20">
           <Icon className="h-5 w-5 text-primary" />
@@ -101,17 +98,13 @@ function FeatureCard({
           <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
-
 export default function Landing() {
   // Founding Alpha window ends 30 days from now
   const foundingEndDate = new Date();
   foundingEndDate.setDate(foundingEndDate.getDate() + 30);
-
-  return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+  return <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Animated Background Atmosphere - 2026 Obsidian with Cyan nodes */}
       <div className="bg-atmosphere" />
       
@@ -154,7 +147,7 @@ export default function Landing() {
               </div>
               
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]">
-                <span className="platinum-text">Next-Generation</span>
+                <span className="platinum-text bg-black text-[#f4c162]">Next-Generation</span>
                 <br />
                 <span className="text-foreground">Financial Architecture</span>
               </h1>
@@ -179,18 +172,9 @@ export default function Landing() {
             
             {/* Right: 3D Abstract Monoliths */}
             <div className="relative h-[400px] lg:h-[500px] hidden lg:block">
-              <AbstractMonolith 
-                className="absolute top-0 right-0 w-48 h-64 rounded" 
-                delay={0} 
-              />
-              <AbstractMonolith 
-                className="absolute top-20 right-32 w-40 h-56 rounded animate-float-delayed" 
-                delay={0.5} 
-              />
-              <AbstractMonolith 
-                className="absolute bottom-0 right-16 w-52 h-48 rounded animate-float-slow" 
-                delay={1} 
-              />
+              <AbstractMonolith className="absolute top-0 right-0 w-48 h-64 rounded" delay={0} />
+              <AbstractMonolith className="absolute top-20 right-32 w-40 h-56 rounded animate-float-delayed" delay={0.5} />
+              <AbstractMonolith className="absolute bottom-0 right-16 w-52 h-48 rounded animate-float-slow" delay={1} />
             </div>
           </div>
         </div>
@@ -209,36 +193,12 @@ export default function Landing() {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FeatureCard 
-              icon={Wallet}
-              title="Triple Wallet System"
-              description="Task, Royalty, and Main wallets for organized earnings with real-time balance syncing."
-            />
-            <FeatureCard 
-              icon={TrendingUp}
-              title="P2P Lending Protocol"
-              description="Autonomous peer-to-peer lending with configurable terms and automated escrow."
-            />
-            <FeatureCard 
-              icon={Users}
-              title="Referral Engine"
-              description="50% commission on every membership with multi-tier tracking and instant payouts."
-            />
-            <FeatureCard 
-              icon={Zap}
-              title="Mission Economy"
-              description="Incentivized task completion with verified proof submission and instant rewards."
-            />
-            <FeatureCard 
-              icon={BarChart3}
-              title="Liquidity Exchange"
-              description="High-velocity cash-in/cash-out with multiple payment method integrations."
-            />
-            <FeatureCard 
-              icon={Shield}
-              title="Enterprise Security"
-              description="Bank-grade encryption, row-level security, and comprehensive audit trails."
-            />
+            <FeatureCard icon={Wallet} title="Triple Wallet System" description="Task, Royalty, and Main wallets for organized earnings with real-time balance syncing." />
+            <FeatureCard icon={TrendingUp} title="P2P Lending Protocol" description="Autonomous peer-to-peer lending with configurable terms and automated escrow." />
+            <FeatureCard icon={Users} title="Referral Engine" description="50% commission on every membership with multi-tier tracking and instant payouts." />
+            <FeatureCard icon={Zap} title="Mission Economy" description="Incentivized task completion with verified proof submission and instant rewards." />
+            <FeatureCard icon={BarChart3} title="Liquidity Exchange" description="High-velocity cash-in/cash-out with multiple payment method integrations." />
+            <FeatureCard icon={Shield} title="Enterprise Security" description="Bank-grade encryption, row-level security, and comprehensive audit trails." />
           </div>
         </div>
       </section>
@@ -277,13 +237,23 @@ export default function Landing() {
       <section className="py-20 sm:py-28 px-6 lg:px-8">
         <div className="container mx-auto max-w-5xl">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { label: 'Commission Rate', value: '50%', sublabel: 'Per referral' },
-              { label: 'Activation Cost', value: '₱600', sublabel: 'One-time' },
-              { label: 'Wallet Types', value: '3', sublabel: 'Task, Royalty, Main' },
-              { label: 'Lending Terms', value: '7-30', sublabel: 'Days flexible' },
-            ].map((stat, idx) => (
-              <Card key={idx} className="bg-card border-border widget-hover">
+            {[{
+            label: 'Commission Rate',
+            value: '50%',
+            sublabel: 'Per referral'
+          }, {
+            label: 'Activation Cost',
+            value: '₱600',
+            sublabel: 'One-time'
+          }, {
+            label: 'Wallet Types',
+            value: '3',
+            sublabel: 'Task, Royalty, Main'
+          }, {
+            label: 'Lending Terms',
+            value: '7-30',
+            sublabel: 'Days flexible'
+          }].map((stat, idx) => <Card key={idx} className="bg-card border-border widget-hover">
                 <CardContent className="p-6 text-center">
                   <p className="text-3xl sm:text-4xl font-bold font-mono text-primary text-glow-cyan mb-2">
                     {stat.value}
@@ -291,8 +261,7 @@ export default function Landing() {
                   <p className="text-sm font-medium text-foreground mb-1">{stat.label}</p>
                   <p className="text-xs text-muted-foreground">{stat.sublabel}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -355,6 +324,5 @@ export default function Landing() {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
