@@ -59,3 +59,12 @@ verify_jwt = false
 
 [functions.get-payment-methods]
 verify_jwt = false
+
+[functions.verify-abc-access]
+verify_jwt = false
+
+[functions.vault-deposit]
+verify_jwt = false
+
+[functions.vault-withdraw]
+verify_jwt = false
