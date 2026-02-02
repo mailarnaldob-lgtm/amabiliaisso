@@ -109,6 +109,24 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // SOVEREIGN V9.4: Rate limiting - 20 task submissions per hour
+    const { data: rateLimitResult, error: rateLimitError } = await supabaseAdmin.rpc('enforce_rate_limit', {
+      p_user_id: userId,
+      p_endpoint: 'submit-task-proof',
+      p_limit: 20,
+      p_window_minutes: 60
+    });
+
+    if (rateLimitError) {
+      console.error('[SUBMIT-TASK] Rate limit check error:', rateLimitError);
+    } else if (rateLimitResult) {
+      console.warn(`[SUBMIT-TASK] Rate limit exceeded for user ${userId}`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Too many task submissions. Please wait 1 hour.', code: 'ERR_RATE_001' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Check if task exists and is active
     const { data: task, error: taskError } = await supabaseAdmin
       .from('tasks')
