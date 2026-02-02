@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -110,6 +110,30 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
   const { secureSignOut, isLoggingOut } = useAuth();
   const { data: profile } = useProfile();
   const { toast } = useToast();
+
+  // Refs for scroll-to-active behavior
+  const navContainerRef = useRef<HTMLElement>(null);
+  const activeItemRef = useRef<HTMLAnchorElement>(null);
+
+  // Scroll to active item when sidebar opens
+  const scrollToActiveItem = useCallback(() => {
+    if (activeItemRef.current && navContainerRef.current) {
+      // Small delay to ensure the sidebar animation has started
+      setTimeout(() => {
+        activeItemRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 350); // After sidebar slide-in animation
+    }
+  }, []);
+
+  // Trigger scroll when sidebar opens
+  useEffect(() => {
+    if (isOpen) {
+      scrollToActiveItem();
+    }
+  }, [isOpen, scrollToActiveItem]);
 
   // Settings states
   const [darkMode, setDarkMode] = useState(true);
@@ -319,7 +343,7 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
             </motion.div>
 
             {/* Navigation Items with stagger animation */}
-            <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-4">
+            <nav ref={navContainerRef} className="flex-1 overflow-y-auto px-3 pb-3 space-y-4 scroll-smooth">
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
@@ -343,6 +367,7 @@ export function SovereignSidebar({ className }: SovereignSidebarProps) {
                       return (
                         <Link
                           key={item.path + item.label}
+                          ref={isActive ? activeItemRef : undefined}
                           to={item.path}
                           onClick={() => setIsOpen(false)}
                           className={cn(
