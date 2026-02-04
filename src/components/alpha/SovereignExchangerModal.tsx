@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SuccessConfetti } from '@/components/ui/success-confetti';
 import { 
   ArrowRight, 
   QrCode, 
@@ -32,7 +33,8 @@ import {
   Building2,
   Shield,
   Loader2,
-  WifiOff
+  WifiOff,
+  Sparkles
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usePaymentMethodsPolling, PaymentMethod } from '@/hooks/usePaymentMethodsPolling';
@@ -57,6 +59,8 @@ export function SovereignExchangerModal({ open, onOpenChange }: SovereignExchang
   const [referenceNumber, setReferenceNumber] = useState('');
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [qrLoadFailed, setQrLoadFailed] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -158,6 +162,7 @@ export function SovereignExchangerModal({ open, onOpenChange }: SovereignExchang
       }
 
       setStep('pending');
+      setShowConfetti(true);
       toast({
         title: 'Proof Submitted',
         description: 'Your payment is pending admin review',
@@ -182,6 +187,8 @@ export function SovereignExchangerModal({ open, onOpenChange }: SovereignExchang
     setReferenceNumber('');
     setProofFile(null);
     setIsSubmitting(false);
+    setQrLoadFailed(false);
+    setShowConfetti(false);
   }, []);
 
   // Get payment method icon
@@ -362,25 +369,26 @@ export function SovereignExchangerModal({ open, onOpenChange }: SovereignExchang
                 </div>
 
                 {/* QR Code or Account Details */}
-                {selectedMethod.qrCodeUrl ? (
+                {selectedMethod.qrCodeUrl && !qrLoadFailed ? (
                   <div className="text-center space-y-3">
                     <div className="w-48 h-48 mx-auto rounded-xl overflow-hidden border border-border">
                       <img 
                         src={selectedMethod.qrCodeUrl} 
                         alt={`${selectedMethod.name} QR Code`}
                         className="w-full h-full object-contain bg-white"
-                        onError={(e) => {
-                          // Fallback if QR image fails to load
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement!.innerHTML = `
-                            <div class="w-full h-full flex items-center justify-center bg-muted">
-                              <span class="text-muted-foreground text-sm">QR Not Available</span>
-                            </div>
-                          `;
-                        }}
+                        onError={() => setQrLoadFailed(true)}
                       />
                     </div>
                     <p className="text-sm text-muted-foreground">Scan to Pay</p>
+                  </div>
+                ) : selectedMethod.qrCodeUrl && qrLoadFailed ? (
+                  <div className="text-center space-y-3">
+                    <div className="w-48 h-48 mx-auto rounded-xl overflow-hidden border border-border">
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <span className="text-muted-foreground text-sm">QR Not Available</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Use account details below</p>
                   </div>
                 ) : (
                   <div className="bg-muted/50 rounded-lg p-4 text-center">
@@ -522,62 +530,85 @@ export function SovereignExchangerModal({ open, onOpenChange }: SovereignExchang
 
         {/* Step 4: Pending State */}
         {step === 'pending' && (
-          <div className="text-center space-y-4 py-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-amber-500/10 flex items-center justify-center animate-pulse">
-              <Clock className="h-8 w-8 text-amber-500" />
+          <>
+            {/* Celebratory Confetti */}
+            <SuccessConfetti 
+              isActive={showConfetti} 
+              variant="golden"
+              particleCount={50}
+              duration={3500}
+            />
+            
+            <div className="text-center space-y-4 py-4 relative z-10">
+              <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center">
+                <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-foreground">🎉 Submission Successful!</h3>
+                <p className="text-sm text-muted-foreground">Awaiting Admin Review</p>
+              </div>
+              <Card className="bg-primary/5 border-primary/20">
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Amount</span>
+                    <span className="font-mono font-bold text-primary">₱{phpAmount.toLocaleString()} → ₳{Math.floor(alphaAmount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Reference</span>
+                    <span className="font-mono text-xs truncate max-w-[150px]">{referenceNumber}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Status</span>
+                    <Badge variant="outline" className="text-amber-500 border-amber-500/30">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Pending Review
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+              <p className="text-xs text-muted-foreground">
+                You'll receive a notification when approved
+              </p>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Close
+              </Button>
             </div>
-            <div>
-              <h3 className="font-bold text-lg">Conversion Pending</h3>
-              <p className="text-sm text-muted-foreground">Awaiting Admin Review</p>
-            </div>
-            <Card className="bg-muted/30">
-              <CardContent className="p-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Amount</span>
-                  <span className="font-mono">₱{phpAmount.toLocaleString()} → ₳{Math.floor(alphaAmount).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Reference</span>
-                  <span className="font-mono text-xs truncate max-w-[150px]">{referenceNumber}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Status</span>
-                  <Badge variant="outline" className="text-amber-600 border-amber-500/30">
-                    <Clock className="h-3 w-3 mr-1" />
-                    Pending
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-            <p className="text-xs text-muted-foreground">
-              You'll receive a notification when approved
-            </p>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Close
-            </Button>
-          </div>
+          </>
         )}
 
         {/* Step 5: Complete */}
         {step === 'complete' && (
-          <div className="text-center space-y-4 py-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+          <>
+            {/* Celebratory Confetti for approval */}
+            <SuccessConfetti 
+              isActive={step === 'complete'} 
+              variant="golden"
+              particleCount={70}
+              duration={4000}
+            />
+            
+            <div className="text-center space-y-4 py-4 relative z-10">
+              <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border-2 border-emerald-500/30 flex items-center justify-center">
+                <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-foreground">🎊 Conversion Complete!</h3>
+                <p className="text-3xl font-mono font-bold text-primary mt-2">
+                  ₳{Math.floor(alphaAmount).toLocaleString()}
+                </p>
+                <p className="text-sm text-muted-foreground">credited to your wallet</p>
+              </div>
+              <Button 
+                className="bg-gradient-to-r from-primary to-primary/80"
+                onClick={() => {
+                  resetModal();
+                  onOpenChange(false);
+                }}
+              >
+                Done
+              </Button>
             </div>
-            <div>
-              <h3 className="font-bold text-lg">Conversion Complete!</h3>
-              <p className="text-3xl font-mono font-bold text-primary mt-2">
-                ₳{Math.floor(alphaAmount).toLocaleString()}
-              </p>
-              <p className="text-sm text-muted-foreground">credited to your wallet</p>
-            </div>
-            <Button onClick={() => {
-              resetModal();
-              onOpenChange(false);
-            }}>
-              Done
-            </Button>
-          </div>
+          </>
         )}
 
         {/* System Notice */}
