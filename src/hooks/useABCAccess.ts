@@ -46,18 +46,29 @@ export function useABCAccess() {
         };
       }
 
-      const { data, error } = await supabase.functions.invoke('verify-abc-access');
+      try {
+        const { data, error } = await supabase.functions.invoke('verify-abc-access');
 
-      // Handle the response - even 403 responses contain valid access data
-      // The edge function returns success:true with qualified:false for non-elite users
-      if (data && typeof data === 'object' && 'success' in data) {
-        // Valid response from edge function (could be 200 or 403)
-        return data as ABCAccessResponse;
-      }
+        // Edge function now always returns 200 for valid checks
+        if (data && typeof data === 'object' && 'success' in data) {
+          return data as ABCAccessResponse;
+        }
 
-      if (error) {
-        console.error('ABC access verification failed:', error);
-        // Return fallback only for actual network/system errors
+        if (error) {
+          console.error('[ABC Access] Verification error:', error.message);
+          return {
+            success: false,
+            qualified: false,
+            accessLevel: 'locked',
+            tier: null,
+            isElite: false,
+            referrals: { qualified: 0, required: 3, met: false },
+            vault: { exists: false, balance: 0, frozen: 0, active: false },
+            message: 'Access verification failed',
+          };
+        }
+
+        // Fallback for unexpected response
         return {
           success: false,
           qualified: false,
@@ -66,26 +77,26 @@ export function useABCAccess() {
           isElite: false,
           referrals: { qualified: 0, required: 3, met: false },
           vault: { exists: false, balance: 0, frozen: 0, active: false },
-          message: 'Access verification failed',
-          error: error.message,
+          message: 'Unexpected response',
+        };
+      } catch (networkError) {
+        console.error('[ABC Access] Network error:', networkError);
+        return {
+          success: false,
+          qualified: false,
+          accessLevel: 'locked',
+          tier: null,
+          isElite: false,
+          referrals: { qualified: 0, required: 3, met: false },
+          vault: { exists: false, balance: 0, frozen: 0, active: false },
+          message: 'Network error',
         };
       }
-
-      // Fallback for unexpected response format
-      return {
-        success: false,
-        qualified: false,
-        accessLevel: 'locked',
-        tier: null,
-        isElite: false,
-        referrals: { qualified: 0, required: 3, met: false },
-        vault: { exists: false, balance: 0, frozen: 0, active: false },
-        message: 'Unexpected response format',
-      };
     },
     enabled: !!user,
-    staleTime: 30 * 1000, // Cache for 30 seconds
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: true,
+    throwOnError: false,
   });
 }
 

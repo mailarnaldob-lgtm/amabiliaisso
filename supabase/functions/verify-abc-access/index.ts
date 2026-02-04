@@ -118,6 +118,9 @@ Deno.serve(async (req) => {
       denialMessage = `Elite Status Verified: Enroll ${remaining} more EXPERT partner${remaining > 1 ? 's' : ''} to unlock full Alpha Banking privileges.`;
     }
 
+    // IMPORTANT: Always return 200 for valid access checks (even if denied)
+    // The response body contains qualified:false for non-elite users
+    // This prevents Supabase client from treating it as an error
     return new Response(
       JSON.stringify({
         success: true,
@@ -145,7 +148,7 @@ Deno.serve(async (req) => {
           ? 'Full access granted to Alpha Bankers Cooperative'
           : denialMessage,
       }),
-      { status: qualified ? 200 : 403, headers: corsHeaders }
+      { status: 200, headers: corsHeaders }  // Always 200 for valid checks
     );
 
   } catch (error) {
