@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, Shield, AlertTriangle, Plus, Loader2, Clock, CheckCircle, Lock, Eye } from 'lucide-react';
+import { TrendingUp, Shield, AlertTriangle, Plus, Loader2, Clock, CheckCircle, Lock, Eye, Crown } from 'lucide-react';
 import { cn, formatAlpha } from '@/lib/utils';
 import { useWallets } from '@/hooks/useWallets';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,8 +19,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQueryClient } from '@tanstack/react-query';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { TierGate, useTierAccess } from '@/components/tier';
-import { LockedFeature } from '@/components/tier/LockedFeature';
+import { useTierAccess } from '@/components/tier';
+import { EliteUpgradeGate } from '@/components/alpha/EliteUpgradeGate';
+import { useABCAccess } from '@/hooks/useABCAccess';
 
 interface Loan {
   id: string;
@@ -42,11 +43,20 @@ interface LoanOfferCardProps {
   onTakeOffer: (offer: Loan) => void;
   isLoading: boolean;
   isReadOnly?: boolean;
+  onLockedAction?: () => void;
 }
 
-function LoanOfferCard({ offer, onTakeOffer, isLoading, isReadOnly = false }: LoanOfferCardProps) {
+function LoanOfferCard({ offer, onTakeOffer, isLoading, isReadOnly = false, onLockedAction }: LoanOfferCardProps) {
   const interest = offer.principal_amount * (offer.interest_rate / 100);
   const totalRepayment = offer.principal_amount + interest;
+
+  const handleClick = () => {
+    if (isReadOnly && onLockedAction) {
+      onLockedAction();
+    } else {
+      onTakeOffer(offer);
+    }
+  };
 
   return (
     <div className="glass-card rounded-xl p-4 space-y-4">
@@ -87,15 +97,15 @@ function LoanOfferCard({ offer, onTakeOffer, isLoading, isReadOnly = false }: Lo
 
       {isReadOnly ? (
         <Button
-          disabled
-          className="w-full bg-muted text-muted-foreground cursor-not-allowed"
+          onClick={handleClick}
+          className="w-full bg-gradient-to-r from-alpha/80 via-amber-500/80 to-yellow-400/80 text-alpha-foreground hover:from-alpha hover:via-amber-500 hover:to-yellow-400"
         >
-          <Lock className="w-4 h-4 mr-2" />
-          PRO+ Required to Accept
+          <Crown className="w-4 h-4 mr-2" />
+          Unlock to Accept Offer
         </Button>
       ) : (
         <Button
-          onClick={() => onTakeOffer(offer)}
+          onClick={handleClick}
           disabled={isLoading}
           className="w-full alpha-gradient text-alpha-foreground"
         >
@@ -529,37 +539,60 @@ function RepaymentModal({ isOpen, onClose, loan, onSuccess }: RepaymentModalProp
 export function AlphaP2PCreditsMarketplace() {
   const { user } = useAuth();
   const { wallets, getBalance } = useWallets();
-  const { canAccessExpert } = useTierAccess();
+  const { canAccessElite } = useTierAccess();
+  const { data: abcAccess } = useABCAccess();
   const queryClient = useQueryClient();
   
   const [availableOffers, setAvailableOffers] = useState<Loan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [takingOfferId, setTakingOfferId] = useState<string | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [upgradeGateOpen, setUpgradeGateOpen] = useState(false);
+  const [blockedFeature, setBlockedFeature] = useState({ name: '', description: '' });
 
   const mainBalance = getBalance('main');
   
-  // Read-only mode for non-PRO users - they can VIEW but not INTERACT
-  const isReadOnly = !canAccessExpert;
+  // Check if user is qualified for ABC (Elite + 3 Expert referrals)
+  const isQualified = abcAccess?.qualified === true;
+  
+  // Read-only mode for non-qualified users - they can VIEW but not INTERACT
+  const isReadOnly = !isQualified;
 
   const fetchOffers = async () => {
     try {
-      setAvailableOffers([]);
+      // Fetch all pending offers for marketplace view (all authenticated users can see)
+      const { data, error } = await supabase
+        .from('loans')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Failed to fetch offers:', error);
+        setAvailableOffers([]);
+      } else {
+        // Filter out user's own offers
+        const otherOffers = (data || []).filter(loan => loan.lender_id !== user?.id);
+        setAvailableOffers(otherOffers as Loan[]);
+      }
     } catch (err) {
       console.error('Failed to fetch offers:', err);
+      setAvailableOffers([]);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOffers();
+    if (user) {
+      fetchOffers();
+    }
   }, [user?.id]);
 
   const handleTakeOffer = async (offer: Loan) => {
     // Block interactions in read-only mode
     if (isReadOnly) {
-      toast.error('Upgrade to PRO to access this feature');
+      showUpgradeGate('Accept Credit Offer', 'Borrow ₳ from verified Elite lenders at fixed 3% interest');
       return;
     }
     
@@ -594,30 +627,44 @@ export function AlphaP2PCreditsMarketplace() {
     queryClient.invalidateQueries({ queryKey: ['wallets'] });
   };
 
-  const handleBlockedAction = () => {
-    toast.error('Upgrade to PRO to access ALPHA P2P Credits');
+  const showUpgradeGate = (featureName: string, description?: string) => {
+    setBlockedFeature({ name: featureName, description: description || '' });
+    setUpgradeGateOpen(true);
   };
 
   return (
     <div className="space-y-6">
-      {/* Read-Only Banner for non-PRO users */}
+      {/* Elite Upgrade Gate Modal */}
+      <EliteUpgradeGate
+        isOpen={upgradeGateOpen}
+        onClose={() => setUpgradeGateOpen(false)}
+        featureName={blockedFeature.name}
+        featureDescription={blockedFeature.description}
+      />
+
+      {/* Read-Only Banner for non-qualified users */}
       {isReadOnly && (
-        <div className="p-4 rounded-xl bg-warning/10 border border-warning/30 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0">
-            <Eye className="h-5 w-5 text-warning" />
+        <div className="p-4 rounded-xl bg-gradient-to-r from-alpha/10 via-amber-500/10 to-yellow-400/10 border border-alpha/30 flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-alpha/30 to-amber-500/30 flex items-center justify-center flex-shrink-0">
+            <Eye className="h-6 w-6 text-alpha" />
           </div>
           <div className="flex-1">
-            <p className="font-medium text-foreground text-sm">Read-Only Mode</p>
+            <p className="font-semibold text-foreground text-sm flex items-center gap-2">
+              <Crown className="w-4 h-4 text-alpha" />
+              Preview Mode
+            </p>
             <p className="text-xs text-muted-foreground">
-              You can view the marketplace but interactions are disabled. Upgrade to PRO or ELITE to participate.
+              View the marketplace, but unlock ELITE to lend or borrow. 
+              {abcAccess?.tier && ` Your tier: ${abcAccess.tier.toUpperCase()}`}
             </p>
           </div>
           <Button 
             size="sm" 
-            className="alpha-gradient text-alpha-foreground flex-shrink-0"
-            onClick={() => window.location.href = '/dashboard/upgrade'}
+            className="bg-gradient-to-r from-alpha via-amber-500 to-yellow-400 text-alpha-foreground flex-shrink-0 shadow-lg shadow-alpha/20"
+            onClick={() => showUpgradeGate('Alpha Bankers Cooperative', 'Full access to P2P lending, vault deposits, and passive yields')}
           >
-            Upgrade
+            <Crown className="w-4 h-4 mr-1" />
+            Unlock
           </Button>
         </div>
       )}
@@ -653,7 +700,7 @@ export function AlphaP2PCreditsMarketplace() {
             onClick={(e) => {
               if (isReadOnly) {
                 e.preventDefault();
-                handleBlockedAction();
+                showUpgradeGate('My Credits', 'View and manage your lending portfolio');
               }
             }}
           >
@@ -663,21 +710,23 @@ export function AlphaP2PCreditsMarketplace() {
         </TabsList>
 
         <TabsContent value="marketplace" className="space-y-4 mt-4">
-          {/* Post Offer Button - Disabled in read-only mode */}
+          {/* Post Offer Button */}
           <Button
-            onClick={isReadOnly ? handleBlockedAction : () => setCreateModalOpen(true)}
-            disabled={isReadOnly}
+            onClick={isReadOnly 
+              ? () => showUpgradeGate('Post Credit Offer', 'Lend your ₳ to earn 3% interest with collateral protection')
+              : () => setCreateModalOpen(true)
+            }
             className={cn(
               "w-full",
               isReadOnly 
-                ? "bg-muted text-muted-foreground cursor-not-allowed" 
+                ? "bg-gradient-to-r from-alpha/80 via-amber-500/80 to-yellow-400/80 hover:from-alpha hover:via-amber-500 hover:to-yellow-400 text-alpha-foreground" 
                 : "alpha-gradient text-alpha-foreground"
             )}
           >
             {isReadOnly ? (
               <>
-                <Lock className="h-4 w-4 mr-2" />
-                PRO+ Required to Post Offers
+                <Crown className="h-4 w-4 mr-2" />
+                Unlock to Post Credit Offers
               </>
             ) : (
               <>
@@ -701,6 +750,7 @@ export function AlphaP2PCreditsMarketplace() {
                   onTakeOffer={handleTakeOffer}
                   isLoading={takingOfferId === offer.id}
                   isReadOnly={isReadOnly}
+                  onLockedAction={() => showUpgradeGate('Accept Credit Offer', 'Borrow ₳ from verified Elite lenders')}
                 />
               ))}
             </div>
@@ -710,7 +760,7 @@ export function AlphaP2PCreditsMarketplace() {
               <p className="text-muted-foreground mb-2">No credit offers available</p>
               <p className="text-xs text-muted-foreground">
                 {isReadOnly 
-                  ? 'Upgrade to PRO to post your first credit offer!'
+                  ? 'Upgrade to ELITE to post your first credit offer!'
                   : 'Be the first to post a credit offer!'
                 }
               </p>
@@ -721,16 +771,19 @@ export function AlphaP2PCreditsMarketplace() {
         <TabsContent value="my-credits" className="mt-4">
           {isReadOnly ? (
             <div className="p-8 text-center">
-              <Lock className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">Feature Locked</p>
-              <p className="text-xs text-muted-foreground mb-4">
-                Upgrade to PRO to view and manage your credits
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-alpha/20 to-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                <Crown className="h-8 w-8 text-alpha" />
+              </div>
+              <p className="font-semibold text-foreground mb-2">ELITE Feature</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Upgrade to view and manage your credits portfolio
               </p>
               <Button 
-                className="alpha-gradient text-alpha-foreground"
-                onClick={() => window.location.href = '/dashboard/upgrade'}
+                className="bg-gradient-to-r from-alpha via-amber-500 to-yellow-400 text-alpha-foreground shadow-lg shadow-alpha/20"
+                onClick={() => showUpgradeGate('My Credits Portfolio', 'Track your lending investments and borrowing history')}
               >
-                Upgrade Now
+                <Crown className="w-4 h-4 mr-2" />
+                Unlock Now
               </Button>
             </div>
           ) : user ? (
