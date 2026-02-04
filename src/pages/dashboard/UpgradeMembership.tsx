@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { SuccessConfetti } from '@/components/ui/success-confetti';
 import { 
   ArrowLeft,
   ArrowRight,
@@ -217,43 +218,120 @@ export default function UpgradeMembership() {
     await submitPayment.mutateAsync();
   };
 
+  // Determine confetti variant based on selected tier
+  const confettiVariant = selectedTier === 'elite' ? 'golden' : 'default';
+
   // Success State
   if (submitted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', damping: 20 }}
-          className="text-center max-w-md"
-        >
+      <>
+        {/* Celebratory Confetti */}
+        <SuccessConfetti 
+          isActive={submitted} 
+          variant={confettiVariant}
+          particleCount={selectedTier === 'elite' ? 80 : 60}
+          duration={4000}
+        />
+        
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', damping: 15 }}
-            className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 flex items-center justify-center"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', damping: 20, delay: 0.3 }}
+            className="text-center max-w-md relative z-10"
           >
-            <Check className="h-12 w-12 text-primary" />
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.5, type: 'spring', damping: 12, stiffness: 200 }}
+              className={`w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center ${
+                selectedTier === 'elite' 
+                  ? 'bg-gradient-to-br from-[#FFD700]/30 to-amber-500/10 border-2 border-[#FFD700]/50 shadow-[0_0_40px_rgba(255,215,0,0.3)]' 
+                  : 'bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30'
+              }`}
+            >
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{ 
+                  duration: 1.5, 
+                  repeat: Infinity,
+                  repeatType: 'reverse',
+                }}
+              >
+                {selectedTier === 'elite' ? (
+                  <Crown className="h-12 w-12 text-[#FFD700]" />
+                ) : (
+                  <Check className="h-12 w-12 text-primary" />
+                )}
+              </motion.div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <h1 className={`text-2xl font-bold mb-2 ${
+                selectedTier === 'elite' ? 'text-[#FFD700]' : 'text-foreground'
+              }`}>
+                {selectedTier === 'elite' ? '🎉 Elite Upgrade Submitted!' : 'Payment Submitted!'}
+              </h1>
+              <p className="text-muted-foreground mb-6">
+                Your upgrade to <span className={`font-semibold ${
+                  selectedTier === 'elite' ? 'text-[#FFD700]' : 'text-primary'
+                }`}>{selectedTierData?.name}</span> is pending verification. You'll be notified once approved.
+              </p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className={`p-4 rounded-lg border mb-6 ${
+                selectedTier === 'elite' 
+                  ? 'bg-[#FFD700]/5 border-[#FFD700]/30' 
+                  : 'bg-muted/30 border-border'
+              }`}
+            >
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Amount</span>
+                <span className={`font-mono font-bold ${
+                  selectedTier === 'elite' ? 'text-[#FFD700]' : 'text-primary'
+                }`}>₳{selectedTierData?.price.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm mt-2">
+                <span className="text-muted-foreground">Reference</span>
+                <span className="font-mono text-foreground">{referenceNumber}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm mt-2">
+                <span className="text-muted-foreground">Status</span>
+                <Badge variant="outline" className="text-amber-500 border-amber-500/30">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  Pending Review
+                </Badge>
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.1 }}
+            >
+              <Link to="/dashboard">
+                <Button className={`w-full ${
+                  selectedTier === 'elite' 
+                    ? 'bg-gradient-to-r from-[#FFD700] to-amber-500 text-black hover:from-amber-500 hover:to-[#FFD700]' 
+                    : ''
+                }`}>
+                  Return to Dashboard
+                </Button>
+              </Link>
+            </motion.div>
           </motion.div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Payment Submitted!</h1>
-          <p className="text-muted-foreground mb-6">
-            Your upgrade to <span className="text-primary font-semibold">{selectedTierData?.name}</span> is pending verification. You'll be notified once approved.
-          </p>
-          <div className="p-4 rounded-lg bg-muted/30 border border-border mb-6">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Amount</span>
-              <span className="font-mono font-bold text-primary">₳{selectedTierData?.price.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm mt-2">
-              <span className="text-muted-foreground">Reference</span>
-              <span className="font-mono text-foreground">{referenceNumber}</span>
-            </div>
-          </div>
-          <Link to="/dashboard">
-            <Button className="w-full">Return to Dashboard</Button>
-          </Link>
-        </motion.div>
-      </div>
+        </div>
+      </>
     );
   }
 
