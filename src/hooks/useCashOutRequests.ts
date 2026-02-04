@@ -119,9 +119,15 @@ export function useApproveCashOut() {
 
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      // Invalidate admin views
       queryClient.invalidateQueries({ queryKey: ['admin-pending-cash-out-requests'] });
       queryClient.invalidateQueries({ queryKey: ['admin-cash-out-stats'] });
+      // Force invalidate all wallet queries to ensure member sees updated balance
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      // Invalidate user's transaction history
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] });
+      console.log('[CashOut] Approved - wallet cache invalidated, amount:', result.amount);
     },
   });
 }
