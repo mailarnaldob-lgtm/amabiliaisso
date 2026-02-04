@@ -23,6 +23,7 @@ const FinanceApp = lazy(() => import("./pages/alpha/FinanceApp"));
 const GrowthApp = lazy(() => import("./pages/alpha/GrowthApp"));
 const SettingsApp = lazy(() => import("./pages/alpha/SettingsApp"));
 const AdsApp = lazy(() => import("./pages/alpha/AdsApp"));
+const CommandCenterApp = lazy(() => import("./pages/alpha/CommandCenterApp"));
 
 // Member dashboard pages - Lazy loaded
 const MemberDashboard = lazy(() => import("./pages/dashboard/MemberDashboard"));
@@ -96,6 +97,9 @@ const App = () => (
                 
                 {/* App #5: ADS - Ad Wizard (PRO+) */}
                 <Route path="/dashboard/ads" element={<ProtectedRoute><AdsApp /></ProtectedRoute>} />
+                
+                {/* App #6: COMMAND CENTER - Dual-Column High-Velocity Interface */}
+                <Route path="/dashboard/command" element={<ProtectedRoute><CommandCenterApp /></ProtectedRoute>} />
                 
                 {/* Settings */}
                 <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsApp /></ProtectedRoute>} />

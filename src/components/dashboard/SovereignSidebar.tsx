@@ -5,7 +5,8 @@ import {
   Menu, X, Home, History, Users, Settings, Shield, 
   FileText, HelpCircle, LogOut, ChevronRight, Crown,
   Copy, Share2, Bell, Lock, Moon, Globe, CreditCard,
-  Smartphone, ChevronDown, Target, Landmark, TrendingUp, MapPin
+  Smartphone, ChevronDown, Target, Landmark, TrendingUp, MapPin,
+  Columns, Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -63,7 +64,8 @@ const navSections: NavSection[] = [
     title: 'Apps',
     items: [
       { icon: TrendingUp, label: 'Sovereign Bank', path: '/dashboard/bank', description: 'Wallet & Exchanger' },
-      { icon: Target, label: 'Global Assignments', path: '/dashboard/market', description: 'VPA Missions' },
+      { icon: Columns, label: 'Command Center', path: '/dashboard/command', description: 'Missions + Ads Hub', badge: 'NEW' },
+      { icon: Zap, label: 'Global Assignments', path: '/dashboard/market', description: 'VPA Missions' },
       { icon: Landmark, label: 'Alpha Bankers', path: '/dashboard/finance', description: 'P2P Lending' },
       { icon: Users, label: 'Royalty Network', path: '/dashboard/growth', description: 'Team & Referrals' },
       { icon: Crown, label: 'Ad Wizard', path: '/dashboard/ads', description: 'Create ad campaigns', badge: 'PRO+' },
