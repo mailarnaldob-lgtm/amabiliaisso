@@ -64,7 +64,6 @@ const navSections: NavSection[] = [
     title: 'Apps',
     items: [
       { icon: TrendingUp, label: 'Sovereign Bank', path: '/dashboard/bank', description: 'Wallet & Exchanger' },
-      { icon: Columns, label: 'Command Center', path: '/dashboard/command', description: 'Missions + Ads Hub', badge: 'NEW' },
       { icon: Zap, label: 'Global Assignments', path: '/dashboard/market', description: 'VPA Missions' },
       { icon: Landmark, label: 'Alpha Bankers', path: '/dashboard/finance', description: 'P2P Lending' },
       { icon: Users, label: 'Royalty Network', path: '/dashboard/growth', description: 'Team & Referrals' },
