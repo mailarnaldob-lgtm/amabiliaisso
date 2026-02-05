@@ -1,17 +1,14 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-}
+import { corsHeaders, verifyCronSecret, log, logError } from '../_shared/api-utils.ts'
 
 /**
- * 28-DAY AUTO-REPAYMENT EDGE FUNCTION (V8.5 - ATOMIC)
+ * 28-DAY AUTO-REPAYMENT EDGE FUNCTION - SOVEREIGN V10.0
  * Blueprint V8.0 Specification:
  * - Uses atomic RPC function `process_expired_loans()` for race-condition-free processing
  * - Advisory lock prevents concurrent execution
  * - FOR UPDATE SKIP LOCKED ensures safe row-level processing
  * - Runs as a cron job daily at 00:01 UTC
+ * - PROTECTED: Requires CRON_SECRET header for authentication
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -19,22 +16,29 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // SOVEREIGN V10.0: Verify CRON_SECRET header (critical security)
+    const authError = verifyCronSecret(req, 'AUTO-LOAN-REPAYMENT');
+    if (authError) {
+      return authError;
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    console.log('[AUTO-REPAYMENT] Starting atomic loan processing...')
+    log('AUTO-LOAN-REPAYMENT', 'Starting atomic loan processing (authenticated cron job)')
 
     // Call the atomic RPC function that handles all race conditions
     const { data: result, error: rpcError } = await supabase.rpc('process_expired_loans')
 
     if (rpcError) {
-      console.error('[AUTO-REPAYMENT] RPC error:', rpcError)
+      logError('AUTO-LOAN-REPAYMENT', 'RPC error', rpcError)
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'ERR_SYSTEM_001'
+          error: 'ERR_SYSTEM_001',
+          message: 'Service temporarily unavailable'
         }),
         { 
           status: 500,
@@ -44,11 +48,12 @@ Deno.serve(async (req) => {
     }
 
     if (!result?.success) {
-      console.error('[AUTO-REPAYMENT] Process failed:', result?.error)
+      logError('AUTO-LOAN-REPAYMENT', 'Process failed', result?.error)
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: result?.error || 'ERR_SYSTEM_002'
+          error: result?.error || 'ERR_SYSTEM_002',
+          message: 'Operation failed'
         }),
         { 
           status: 500,
@@ -57,7 +62,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log(`[AUTO-REPAYMENT] Complete: ${result.repaid_count} repaid, ${result.defaulted_count} defaulted, ₳${result.total_repaid} total`)
+    log('AUTO-LOAN-REPAYMENT', `Complete: ${result.repaid_count} repaid, ${result.defaulted_count} defaulted, ₳${result.total_repaid} total`)
 
     return new Response(
       JSON.stringify({
@@ -71,11 +76,12 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('[AUTO-REPAYMENT] Error:', error)
+    logError('AUTO-LOAN-REPAYMENT', 'Unexpected error', error)
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: 'ERR_SYSTEM_001'
+        error: 'ERR_SYSTEM_001',
+        message: 'Service temporarily unavailable'
       }),
       { 
         status: 500,
