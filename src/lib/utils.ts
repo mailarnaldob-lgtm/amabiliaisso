@@ -34,3 +34,21 @@ export function formatCountdown(dueDate: Date): string {
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
 }
+
+// Security: Mask sensitive data to show only last 4 characters
+export function maskSensitive(value: string, visibleChars = 4): string {
+  if (!value || value.length <= visibleChars) return value;
+  const masked = '•'.repeat(Math.min(value.length - visibleChars, 8));
+  return masked + value.slice(-visibleChars);
+}
+
+// Security: Mask account numbers for display (shows last 4 digits)
+export function maskAccountNumber(accountNumber: string): string {
+  return maskSensitive(accountNumber, 4);
+}
+
+// Security: Mask phone numbers for display (shows last 4 digits)
+export function maskPhoneNumber(phone: string): string {
+  if (!phone) return '';
+  return maskSensitive(phone.replace(/\D/g, ''), 4);
+}
