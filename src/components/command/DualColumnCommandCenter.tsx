@@ -258,12 +258,12 @@ export function DualColumnCommandCenter() {
 
       {/* Dual Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Column 1: Operative Mission Hub */}
+        {/* Column 1: Mission Control Center */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target className="h-5 w-5 text-[#FFD700]" />
-              <h2 className="font-bold text-foreground">Operative Mission Hub</h2>
+              <h2 className="font-bold text-foreground">Mission Control Center</h2>
             </div>
             <Badge className="bg-[#FFD700]/20 text-[#FFD700] border-[#FFD700]/30">
               EARN ₳
@@ -337,19 +337,19 @@ export function DualColumnCommandCenter() {
           )}
         </div>
 
-        {/* Column 2: Sovereign Ad Engine */}
+        {/* Column 2: Traffic Intelligence Engine */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Megaphone className="h-5 w-5 text-amber-400" />
-              <h2 className="font-bold text-foreground">Sovereign Ad Engine</h2>
+              <h2 className="font-bold text-foreground">Traffic Intelligence Engine</h2>
             </div>
             <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
               DEPLOY ₳
             </Badge>
           </div>
 
-          <TierGate requiredTier="pro" featureName="Sovereign Ad Engine">
+          <TierGate requiredTier="pro" featureName="Traffic Intelligence Engine">
             {/* Ad Package Grid - Platform Selection */}
             <div className="mb-4">
               <AdPackageGrid 
