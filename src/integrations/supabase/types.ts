@@ -745,7 +745,37 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      referral_confirmations: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          is_paid: boolean | null
+          membership_tier: Database["public"]["Enums"]["membership_tier"] | null
+          referred_id: string | null
+          referrer_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          is_paid?: boolean | null
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          referred_id?: string | null
+          referrer_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          is_paid?: boolean | null
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          referred_id?: string | null
+          referrer_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_approve_campaign: {
@@ -833,6 +863,16 @@ export type Database = {
         Returns: Json
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_my_referral_confirmations: {
+        Args: { p_user_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          is_confirmed: boolean
+          membership_tier: Database["public"]["Enums"]["membership_tier"]
+          referrer_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
