@@ -1,35 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getSafeErrorMessage } from "../_shared/error-codes.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+/**
+ * SWAP CASH-IN - SOVEREIGN V10.0
+ * Creates pending deposit requests for admin approval
+ * - Min ₱100, Max ₱50,000
+ * - JWT verification via getUser()
+ */
+
 interface CashInRequest {
   amount: number;
   payment_method: string;
   reference_number?: string;
   proof_url?: string;
-}
-
-// Safe error messages for clients
-const ERROR_MESSAGES: Record<string, string> = {
-  'INVALID_AMOUNT': 'Invalid amount provided',
-  'MIN_AMOUNT': 'Minimum cash-in amount is ₱100',
-  'MAX_AMOUNT': 'Maximum cash-in amount is ₱50,000',
-  'WALLET_NOT_FOUND': 'Wallet not found. Please contact support.',
-  'UNAUTHORIZED': 'Authentication required',
-  'UNKNOWN': 'An error occurred. Please try again.',
-};
-
-function getSafeErrorMessage(error: string): string {
-  if (error.includes('Minimum')) return ERROR_MESSAGES.MIN_AMOUNT;
-  if (error.includes('Maximum')) return ERROR_MESSAGES.MAX_AMOUNT;
-  if (error.includes('Invalid')) return ERROR_MESSAGES.INVALID_AMOUNT;
-  if (error.includes('not found')) return ERROR_MESSAGES.WALLET_NOT_FOUND;
-  if (error.includes('Unauthorized')) return ERROR_MESSAGES.UNAUTHORIZED;
-  return ERROR_MESSAGES.UNKNOWN;
 }
 
 serve(async (req) => {
@@ -41,8 +30,11 @@ serve(async (req) => {
   try {
     // Get authorization header
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Unauthorized');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_AUTH_001'), code: 'ERR_AUTH_001' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Create Supabase client with user's JWT
@@ -55,7 +47,11 @@ serve(async (req) => {
     // Get user from JWT
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
-      throw new Error('Unauthorized');
+      console.error('[CASH-IN] JWT verification failed:', userError);
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_AUTH_002'), code: 'ERR_AUTH_002' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const body = await req.json();
@@ -63,19 +59,31 @@ serve(async (req) => {
 
     // Input validation
     if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
-      throw new Error('Invalid amount');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid amount provided', code: 'ERR_INVALID_001' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (amount < 100) {
-      throw new Error('Minimum cash-in amount is ₱100');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Minimum cash-in amount is ₱100', code: 'ERR_INVALID_002' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (amount > 50000) {
-      throw new Error('Maximum cash-in amount is ₱50,000');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Maximum cash-in amount is ₱50,000', code: 'ERR_INVALID_002' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (!payment_method || typeof payment_method !== 'string') {
-      throw new Error('Invalid payment method');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid payment method', code: 'ERR_INVALID_001' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Sanitize inputs
@@ -87,7 +95,7 @@ serve(async (req) => {
       ? String(proof_url).slice(0, 500) 
       : null;
 
-    // SOVEREIGN V9.3: Create pending cash-in request instead of direct credit
+    // SOVEREIGN V10.0: Create pending cash-in request instead of direct credit
     // The request will be reviewed by an admin before funds are credited
     const { data: insertResult, error: insertError } = await supabaseClient
       .from('cash_in_requests')
@@ -104,7 +112,10 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('[CASH-IN] Insert error:', insertError);
-      throw new Error('Failed to submit request. Please try again.');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to submit request. Please try again.', code: 'ERR_SYSTEM_002' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log(`[CASH-IN] Request created: ${insertResult.id} - User ${user.id}, Amount ₳${amount}`);
@@ -130,18 +141,17 @@ serve(async (req) => {
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const safeMessage = getSafeErrorMessage(errorMessage);
-    
     console.error('[CASH-IN] Error:', errorMessage);
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: safeMessage 
+        error: getSafeErrorMessage('ERR_SYSTEM_001'),
+        code: 'ERR_SYSTEM_001'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 500 
       }
     );
   }

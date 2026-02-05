@@ -1,12 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { validateLendingPostOffer } from "../_shared/validation.ts";
+import { getSafeErrorMessage, mapDbErrorToCode } from "../_shared/error-codes.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+/**
+ * LENDING POST OFFER - SOVEREIGN V10.0
+ * Allows users to post P2P lending offers
+ * - Uses atomic RPC for race-condition-free processing
+ * - JWT verification via getClaims()
+ */
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -15,7 +22,10 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      throw new Error('Unauthorized');
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_AUTH_001'), code: 'ERR_AUTH_001' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const supabaseClient = createClient(
@@ -30,7 +40,11 @@ serve(async (req) => {
     const userId = claimsData?.claims?.sub;
 
     if (claimsError || !userId) {
-      throw new Error('Unauthorized');
+      console.error('[LENDING-POST] JWT verification failed:', claimsError);
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_AUTH_002'), code: 'ERR_AUTH_002' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Validate input with strict schema
@@ -38,7 +52,10 @@ serve(async (req) => {
     const validation = validateLendingPostOffer(rawInput);
     
     if (!validation.success) {
-      throw new Error(validation.error);
+      return new Response(
+        JSON.stringify({ success: false, error: validation.error, code: 'ERR_INVALID_001' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const { amount, termDays } = validation.data!;
@@ -61,12 +78,21 @@ serve(async (req) => {
 
     if (rpcError) {
       console.error('[LENDING] RPC error:', rpcError);
-      throw new Error('Failed to create lending offer: database error');
+      const errorCode = mapDbErrorToCode(rpcError);
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage(errorCode), code: errorCode }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Check if the database function returned an error
     if (!result?.success) {
-      throw new Error(result?.error || 'Failed to create lending offer');
+      console.error('[LENDING] Operation failed:', result?.error);
+      const errorCode = result?.error?.startsWith('ERR_') ? result.error : 'ERR_BALANCE_001';
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage(errorCode), code: errorCode }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log(`[LENDING] Offer created: ${result.loan_id}, Amount: ₳${amount}`);
@@ -93,8 +119,8 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('[LENDING] Error:', errorMessage);
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_SYSTEM_001'), code: 'ERR_SYSTEM_001' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
