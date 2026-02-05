@@ -23,30 +23,30 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { 
-    icon: Target, 
-    label: 'EARN', 
-    sublabel: 'Task Rewards',
-    path: '/dashboard/market',
+    icon: Landmark,
+    label: 'EARN',
+    sublabel: 'Task Earnings',
+    path: '/dashboard/bank',
     color: 'from-emerald-400 to-emerald-600'
   },
   { 
-    icon: Landmark, 
-    label: 'BANKING', 
-    sublabel: 'Cooperative',
-    path: '/dashboard/finance',
+    icon: Target,
+    label: 'SAVE',
+    sublabel: 'Vault Savings',
+    path: '/dashboard/market',
     color: 'from-[#FFD700] to-[#FFA500]'
   },
   { 
     icon: TrendingUp, 
-    label: 'TRANSFER', 
-    sublabel: 'Money',
-    path: '/dashboard/bank',
+    label: 'TRADE',
+    sublabel: 'P2P Trading',
+    path: '/dashboard/finance',
     color: 'from-blue-400 to-blue-600'
   },
   { 
     icon: Users, 
-    label: 'ROYALTY', 
-    sublabel: 'Network',
+    label: 'MLM',
+    sublabel: 'Referral Network',
     path: '/dashboard/growth',
     color: 'from-purple-400 to-purple-600'
   },
