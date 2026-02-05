@@ -34,8 +34,8 @@
  const primaryItems: BloomMenuItem[] = [
    { 
      icon: Target, 
-     label: 'Operative Hub', 
-     sublabel: 'VPA Missions & Earnings',
+    label: 'Mission Control', 
+    sublabel: 'Mission Control Center',
     path: '/dashboard',
      color: 'from-[#FFD700] to-[#FFA500]'
    },
@@ -48,8 +48,8 @@
    },
    { 
      icon: Megaphone, 
-     label: 'Ad Engine', 
-     sublabel: 'Deploy Capital Campaigns',
+    label: 'Traffic Engine', 
+    sublabel: 'Traffic Intelligence Engine',
      path: '/dashboard/ads',
      color: 'from-emerald-500 to-emerald-600',
      badge: 'PRO+'
