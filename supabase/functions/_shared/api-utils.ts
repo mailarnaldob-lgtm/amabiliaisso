@@ -175,44 +175,42 @@ export function logError(context: string, message: string, error?: unknown) {
 
 /**
  * Verify CRON_SECRET header for cron job endpoints
+ * Accepts either x-cron-secret header OR service role key in Authorization header
  * Returns null if valid, or an error Response if invalid
  */
 export function verifyCronSecret(req: Request, context: string): Response | null {
+  // Method 1: Check x-cron-secret header (for external cron services)
   const cronSecret = req.headers.get('x-cron-secret');
   const expectedSecret = Deno.env.get('CRON_SECRET');
   
-  // Check if CRON_SECRET is configured
-  if (!expectedSecret) {
-    console.error(`[${context}] CRON_SECRET not configured in environment`);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'ERR_SYSTEM_003',
-        message: 'Service misconfigured'
-      }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+  if (cronSecret && expectedSecret && cronSecret === expectedSecret) {
+    log(context, 'Authenticated via CRON_SECRET header');
+    return null; // Success
   }
   
-  // Verify the secret matches
-  if (cronSecret !== expectedSecret) {
-    console.warn(`[${context}] Unauthorized cron access attempt from origin: ${req.headers.get('origin') || 'unknown'}`);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'ERR_AUTH_004',
-        message: 'Unauthorized'
-      }),
-      { 
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+  // Method 2: Check for service role key in Authorization header (Supabase pg_cron standard)
+  const authHeader = req.headers.get('Authorization');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  if (authHeader && serviceRoleKey) {
+    const token = authHeader.replace('Bearer ', '');
+    if (token === serviceRoleKey) {
+      log(context, 'Authenticated via service role key');
+      return null; // Success
+    }
   }
   
-  // Secret is valid
-  return null;
+  // Neither method succeeded - unauthorized
+  console.warn(`[${context}] Unauthorized cron access attempt from origin: ${req.headers.get('origin') || 'unknown'}`);
+  return new Response(
+    JSON.stringify({ 
+      success: false, 
+      error: 'ERR_AUTH_004',
+      message: 'Unauthorized'
+    }),
+    { 
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    }
+  );
 }
