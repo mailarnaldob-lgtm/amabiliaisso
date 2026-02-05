@@ -1,62 +1,24 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Landmark, Target, TrendingUp, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BOTTOM_NAV_ITEMS } from '@/lib/navSections';
 
-interface AppSection {
-  id: string;
-  name: string;
-  icon: React.ElementType;
-  path: string;
-  color: string;
-  description: string;
-}
-
-const appSections: AppSection[] = [
-  { 
-    id: 'bank', 
-    name: 'EARN', 
-    icon: Landmark, 
-    path: '/dashboard/bank',
-    color: 'from-amber-500 to-orange-600',
-    description: 'Task Earnings'
-  },
-  { 
-    id: 'market', 
-    name: 'SAVE', 
-    icon: Target, 
-    path: '/dashboard/market',
-    color: 'from-emerald-500 to-teal-600',
-    description: 'Vault Savings'
-  },
-  { 
-    id: 'finance', 
-    name: 'TRADE', 
-    icon: TrendingUp, 
-    path: '/dashboard/finance',
-    color: 'from-blue-500 to-indigo-600',
-    description: 'P2P Trading'
-  },
-  { 
-    id: 'growth', 
-    name: 'MLM', 
-    icon: Users, 
-    path: '/dashboard/growth',
-    color: 'from-purple-500 to-pink-600',
-    description: 'Referral Network'
-  },
-];
+/**
+ * AppSwitcher - V10.0
+ * Four-pillar bottom navigation using centralized constants
+ * Source: src/lib/navSections.ts
+ */
 
 export function AppSwitcher() {
   const location = useLocation();
   const navigate = useNavigate();
 
   const getCurrentApp = () => {
-    for (const app of appSections) {
+    for (const app of BOTTOM_NAV_ITEMS) {
       if (location.pathname.startsWith(app.path)) {
         return app.id;
       }
     }
-    return 'bank'; // Default
+    return 'earn'; // Default
   };
 
   const currentApp = getCurrentApp();
@@ -64,7 +26,7 @@ export function AppSwitcher() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-bottom">
       <div className="flex items-center justify-around h-20 max-w-lg mx-auto px-2">
-        {appSections.map((app) => {
+        {BOTTOM_NAV_ITEMS.map((app) => {
           const isActive = currentApp === app.id;
           const Icon = app.icon;
           
@@ -106,4 +68,4 @@ export function AppSwitcher() {
   );
 }
 
-export { appSections };
+export { BOTTOM_NAV_ITEMS as appSections };

@@ -1,13 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Landmark, Target, TrendingUp, Users, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { BOTTOM_NAV_ITEMS } from '@/lib/navSections';
+
+/**
+ * BottomNav - V10.0
+ * Compact bottom navigation using centralized constants
+ * Source: src/lib/navSections.ts
+ */
 
 const navItems = [
-  { icon: Landmark, label: 'EARN', path: '/dashboard/bank' },
-  { icon: Target, label: 'SAVE', path: '/dashboard/market' },
-  { icon: TrendingUp, label: 'TRADE', path: '/dashboard/finance' },
-  { icon: Users, label: 'MLM', path: '/dashboard/growth' },
+  ...BOTTOM_NAV_ITEMS.map(item => ({ icon: item.icon, label: item.name, path: item.path })),
   { icon: User, label: 'Me', path: '/dashboard/profile' },
 ];
 

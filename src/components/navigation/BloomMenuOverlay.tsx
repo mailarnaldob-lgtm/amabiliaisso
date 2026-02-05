@@ -2,17 +2,17 @@
  import { motion, AnimatePresence } from 'framer-motion';
  import { useNavigate, useLocation } from 'react-router-dom';
  import { 
-   Command, X, Target, Landmark, Megaphone, Crown,
-   TrendingUp, Users, Settings, History, LogOut
+   Command, X, Settings, History, LogOut
  } from 'lucide-react';
  import { Button } from '@/components/ui/button';
  import { cn } from '@/lib/utils';
  import { useAuth } from '@/contexts/AuthContext';
  import { useProfile } from '@/hooks/useProfile';
  import { Badge } from '@/components/ui/badge';
+  import { BLOOM_PRIMARY_ITEMS, BLOOM_SECONDARY_ITEMS } from '@/lib/navSections';
  
  /**
-  * Bloom Menu Overlay - V2.0 (Sovereign Stability)
+  * Bloom Menu Overlay - V10.0 (Sovereign Stability)
   * Cinematic fullscreen overlay with scale/blur animation
   * Features:
   * - 0.3s Scale & Blur: Dashboard recedes (95% scale) while menu blurs background
@@ -20,6 +20,7 @@
   * - Large, centered Elite Icons with Alpha Gold (#FFD700) accents
   * - 0.2s fade-out on close (per Sovereign mandate)
   * - backdrop-blur-2xl Glassmorphism
+  * Source: src/lib/navSections.ts (centralized constants)
   */
  
  interface BloomMenuItem {
@@ -31,43 +32,8 @@
    badge?: string;
  }
  
- const primaryItems: BloomMenuItem[] = [
-   { 
-     icon: Target, 
-    label: 'Mission Control', 
-    sublabel: 'Mission Control Center',
-    path: '/dashboard',
-     color: 'from-[#FFD700] to-[#FFA500]'
-   },
-   { 
-     icon: Landmark, 
-     label: 'ABC Vault', 
-     sublabel: 'Alpha Bankers Cooperative',
-     path: '/dashboard/finance',
-     color: 'from-blue-500 to-blue-600'
-   },
-   { 
-     icon: Megaphone, 
-    label: 'Traffic Engine', 
-    sublabel: 'Traffic Intelligence Engine',
-     path: '/dashboard/ads',
-     color: 'from-emerald-500 to-emerald-600',
-     badge: 'PRO+'
-   },
-   { 
-     icon: Users, 
-     label: 'Profile', 
-     sublabel: 'Account & Identity',
-    path: '/dashboard/profile',
-     color: 'from-purple-500 to-purple-600'
-   },
- ];
- 
- const secondaryItems: BloomMenuItem[] = [
-  { icon: TrendingUp, label: 'EARN', sublabel: 'Task Earnings', path: '/dashboard/bank', color: 'from-amber-500 to-orange-600' },
-  { icon: Target, label: 'SAVE', sublabel: 'Vault Savings', path: '/dashboard/market', color: 'from-emerald-500 to-teal-600' },
-  { icon: Landmark, label: 'TRADE', sublabel: 'P2P Trading', path: '/dashboard/finance', color: 'from-blue-500 to-indigo-600' },
-  { icon: Crown, label: 'MLM', sublabel: 'Referral Network', path: '/dashboard/growth', color: 'from-purple-500 to-pink-600' },
+  const secondaryItems: BloomMenuItem[] = [
+   ...BLOOM_SECONDARY_ITEMS,
    { icon: History, label: 'History', sublabel: 'Transactions', path: '/dashboard/transactions', color: 'from-slate-600 to-slate-700' },
    { icon: Settings, label: 'Settings', sublabel: 'Account', path: '/dashboard/settings', color: 'from-slate-600 to-slate-700' },
  ];
@@ -191,7 +157,7 @@
  
        {/* Primary Items - Large Elite Icons */}
        <div className="grid grid-cols-2 gap-4 mb-8 max-w-sm w-full">
-         {primaryItems.map((item) => {
+          {BLOOM_PRIMARY_ITEMS.map((item) => {
            const isActive = location.pathname === item.path;
            return (
              <motion.button
