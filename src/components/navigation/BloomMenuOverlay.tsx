@@ -36,7 +36,7 @@
      icon: Target, 
      label: 'Operative Hub', 
      sublabel: 'VPA Missions & Earnings',
-     path: '/dashboard/command',
+    path: '/dashboard',
      color: 'from-[#FFD700] to-[#FFA500]'
    },
    { 
@@ -58,7 +58,7 @@
      icon: Users, 
      label: 'Profile', 
      sublabel: 'Account & Identity',
-     path: '/dashboard/my-profile',
+    path: '/dashboard/profile',
      color: 'from-purple-500 to-purple-600'
    },
  ];

@@ -16,7 +16,7 @@ const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// ₳LPHA SMART FINANCE - 4 App Architecture (now under /dashboard)
+// ₳LPHA SMART FINANCE - Command Center Architecture (now under /dashboard)
 const BankApp = lazy(() => import("./pages/alpha/BankApp"));
 const MarketApp = lazy(() => import("./pages/alpha/MarketApp"));
 const FinanceApp = lazy(() => import("./pages/alpha/FinanceApp"));
@@ -25,8 +25,7 @@ const SettingsApp = lazy(() => import("./pages/alpha/SettingsApp"));
 const AdsApp = lazy(() => import("./pages/alpha/AdsApp"));
 const CommandCenterApp = lazy(() => import("./pages/alpha/CommandCenterApp"));
 
-// Member dashboard pages - Lazy loaded
-const MemberDashboard = lazy(() => import("./pages/dashboard/MemberDashboard"));
+// Member dashboard sub-pages - Lazy loaded
 const UpgradeMembership = lazy(() => import("./pages/dashboard/UpgradeMembership"));
 const MyReferrals = lazy(() => import("./pages/dashboard/MyReferrals"));
 const Transactions = lazy(() => import("./pages/dashboard/Transactions"));
@@ -77,11 +76,11 @@ const App = () => (
                 
                 {/* ═══════════════════════════════════════════════════════════════
                     ₳LPHA SMART FINANCE - UNIFIED DASHBOARD
-                    All apps now live under /dashboard/*
+                    Command Center is the primary dashboard
                     ═══════════════════════════════════════════════════════════════ */}
                 
-                {/* Dashboard Home - Member Overview */}
-                <Route path="/dashboard" element={<ProtectedRoute><MemberDashboard /></ProtectedRoute>} />
+                {/* Dashboard Home - Command Center (Primary Hub) */}
+                <Route path="/dashboard" element={<ProtectedRoute><CommandCenterApp /></ProtectedRoute>} />
                 
                 {/* App #1: BANK - Wallet & Credits */}
                 <Route path="/dashboard/bank" element={<ProtectedRoute><BankApp /></ProtectedRoute>} />
@@ -97,9 +96,6 @@ const App = () => (
                 
                 {/* App #5: ADS - Ad Wizard (PRO+) */}
                 <Route path="/dashboard/ads" element={<ProtectedRoute><AdsApp /></ProtectedRoute>} />
-                
-                {/* App #6: COMMAND CENTER - Dual-Column High-Velocity Interface */}
-                <Route path="/dashboard/command" element={<ProtectedRoute><CommandCenterApp /></ProtectedRoute>} />
                 
                 {/* Settings */}
                 <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsApp /></ProtectedRoute>} />
@@ -121,6 +117,9 @@ const App = () => (
                 <Route path="/alpha/finance" element={<Navigate to="/dashboard/finance" replace />} />
                 <Route path="/alpha/growth" element={<Navigate to="/dashboard/growth" replace />} />
                 <Route path="/alpha/settings" element={<Navigate to="/dashboard/settings" replace />} />
+                
+                {/* Redirect old /dashboard/command to /dashboard */}
+                <Route path="/dashboard/command" element={<Navigate to="/dashboard" replace />} />
                 
                 {/* Redirect old /app/* routes to /dashboard/* */}
                 <Route path="/app" element={<Navigate to="/dashboard" replace />} />
