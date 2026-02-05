@@ -44,11 +44,11 @@ export function DashboardHeroNav() {
                 className={cn(
                   'w-12 h-12 rounded-xl flex items-center justify-center mb-3',
                   `bg-gradient-to-br ${card.gradient}`,
-                  'shadow-lg',
+                  'shadow-lg group-hover:shadow-xl group-hover:shadow-[#FFD700]/20 transition-shadow duration-300',
                   card.shadowColor
                 )}
               >
-                <card.icon className="h-6 w-6 text-white" />
+                <card.icon className="h-6 w-6 text-white drop-shadow-sm" />
               </div>
 
               {/* Labels */}
