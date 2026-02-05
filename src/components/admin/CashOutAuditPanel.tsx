@@ -22,6 +22,7 @@ import {
   useCashOutStats,
   CashOutRequest,
 } from '@/hooks/useCashOutRequests';
+import { maskAccountNumber, maskPhoneNumber } from '@/lib/utils';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -51,7 +52,6 @@ export function CashOutAuditPanel() {
   const [rejectDialog, setRejectDialog] = useState<{ id: string; name: string } | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [detailsDialog, setDetailsDialog] = useState<CashOutRequest | null>(null);
-
   const handleApprove = async (request: CashOutRequest) => {
     setProcessingId(request.id);
     try {
@@ -106,11 +106,6 @@ export function CashOutAuditPanel() {
       default:
         return <Badge variant="outline">{request.status}</Badge>;
     }
-  };
-
-  const maskAccountNumber = (num: string) => {
-    if (num.length <= 4) return num;
-    return '*'.repeat(num.length - 4) + num.slice(-4);
   };
 
   // Check if account name matches profile name (case-insensitive)
@@ -204,7 +199,7 @@ export function CashOutAuditPanel() {
                           </Badge>
                           <span className="text-muted-foreground">{request.account_name}</span>
                           <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded">
-                            {maskAccountNumber(request.account_number)}
+                            ••••{request.account_number.slice(-4)}
                           </span>
                         </div>
 
@@ -390,7 +385,7 @@ export function CashOutAuditPanel() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Account Number:</span>
-                  <span className="font-mono">{detailsDialog.account_number}</span>
+                  <span className="font-mono">{maskAccountNumber(detailsDialog.account_number)}</span>
                 </div>
               </div>
 
