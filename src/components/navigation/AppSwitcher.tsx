@@ -14,7 +14,7 @@ interface AppSection {
 const appSections: AppSection[] = [
   { 
     id: 'bank', 
-    name: 'Bank', 
+    name: 'EARN', 
     icon: Landmark, 
     path: '/dashboard/bank',
     color: 'from-amber-500 to-orange-600',
@@ -22,7 +22,7 @@ const appSections: AppSection[] = [
   },
   { 
     id: 'market', 
-    name: 'Market', 
+    name: 'SAVE', 
     icon: Target, 
     path: '/dashboard/market',
     color: 'from-emerald-500 to-teal-600',
@@ -30,7 +30,7 @@ const appSections: AppSection[] = [
   },
   { 
     id: 'finance', 
-    name: 'Finance', 
+    name: 'TRADE', 
     icon: TrendingUp, 
     path: '/dashboard/finance',
     color: 'from-blue-500 to-indigo-600',
@@ -38,7 +38,7 @@ const appSections: AppSection[] = [
   },
   { 
     id: 'growth', 
-    name: 'Growth', 
+    name: 'MLM', 
     icon: Users, 
     path: '/dashboard/growth',
     color: 'from-purple-500 to-pink-600',
