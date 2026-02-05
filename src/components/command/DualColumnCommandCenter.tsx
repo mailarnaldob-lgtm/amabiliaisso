@@ -7,10 +7,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadialProgressClock } from './RadialProgressClock';
 import { OdometerNumber } from './OdometerNumber';
 import { ExpandableCard } from './ExpandableCard';
+ import { SocialIconGrid } from './SocialIconGrid';
+ import { AlphaMissionModal } from './AlphaMissionModal';
 import { useTasks, useTaskSubmissions, Task } from '@/hooks/useTasks';
 import { useAdCampaigns, CAMPAIGN_TYPES, AdCampaign } from '@/hooks/useAdCampaigns';
 import { useProfile } from '@/hooks/useProfile';
-import { TaskSubmissionModal } from '@/components/alpha/TaskSubmissionModal';
 import { AdWizardModal } from '@/components/alpha/AdWizardModal';
 import { TierGate } from '@/components/tier/TierGate';
 import { formatAlpha, cn } from '@/lib/utils';
@@ -31,7 +32,8 @@ import {
   Eye,
   Play,
   Pause,
-  CheckCircle2
+   CheckCircle2,
+   Sparkles
 } from 'lucide-react';
 
 const POLL_INTERVAL = 15000; // 15 seconds
@@ -39,8 +41,9 @@ const POLL_INTERVAL = 15000; // 15 seconds
 export function DualColumnCommandCenter() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [taskModalOpen, setTaskModalOpen] = useState(false);
+   const [missionModalOpen, setMissionModalOpen] = useState(false);
   const [adWizardOpen, setAdWizardOpen] = useState(false);
+   const [filterPlatform, setFilterPlatform] = useState<string | null>(null);
 
   // Data hooks
   const { data: tasks, isLoading: tasksLoading, refetch: refetchTasks } = useTasks();
@@ -94,9 +97,13 @@ export function DualColumnCommandCenter() {
 
   const handleStartTask = (task: Task) => {
     setSelectedTask(task);
-    setTaskModalOpen(true);
+     setMissionModalOpen(true);
   };
 
+   const handlePlatformFilter = (platform: string) => {
+     setFilterPlatform(filterPlatform === platform ? null : platform);
+   };
+ 
   // Calculate stats
   const totalMissions = availableTasks.length;
   const totalRewards = availableTasks.reduce((sum, t) => sum + t.reward, 0);
@@ -166,6 +173,26 @@ export function DualColumnCommandCenter() {
             </Badge>
           </div>
 
+           {/* Social Icon Grid Filter */}
+           <div className="mb-4">
+             <SocialIconGrid onSelect={handlePlatformFilter} />
+             {filterPlatform && (
+               <motion.div 
+                 initial={{ opacity: 0, y: -10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="mt-2 flex items-center gap-2"
+               >
+                 <Badge 
+                   variant="outline" 
+                   className="bg-muted/50 cursor-pointer hover:bg-muted"
+                   onClick={() => setFilterPlatform(null)}
+                 >
+                   Showing: {filterPlatform.toUpperCase()} × Clear
+                 </Badge>
+               </motion.div>
+             )}
+           </div>
+ 
           {tasksLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -296,9 +323,9 @@ export function DualColumnCommandCenter() {
       </div>
 
       {/* Modals */}
-      <TaskSubmissionModal 
-        open={taskModalOpen} 
-        onOpenChange={setTaskModalOpen} 
+       <AlphaMissionModal 
+         open={missionModalOpen} 
+         onOpenChange={setMissionModalOpen} 
         task={selectedTask}
       />
       <AdWizardModal 
