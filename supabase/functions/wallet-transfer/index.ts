@@ -1,12 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { validateWalletTransfer } from "../_shared/validation.ts";
+import { getSafeErrorMessage, mapDbErrorToCode } from "../_shared/error-codes.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+/**
+ * WALLET TRANSFER - SOVEREIGN V10.0
+ * Allows users to transfer funds between their own wallets
+ * - Uses atomic RPC for race-condition-free processing
+ * - JWT verification via getClaims()
+ */
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -16,7 +23,10 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      throw new Error('Unauthorized');
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_AUTH_001'), code: 'ERR_AUTH_001' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const supabaseClient = createClient(
@@ -31,7 +41,11 @@ serve(async (req) => {
     const userId = claimsData?.claims?.sub;
 
     if (claimsError || !userId) {
-      throw new Error('Unauthorized');
+      console.error('[WALLET-TRANSFER] JWT verification failed:', claimsError);
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_AUTH_002'), code: 'ERR_AUTH_002' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Validate input with strict schema
@@ -39,7 +53,10 @@ serve(async (req) => {
     const validation = validateWalletTransfer(rawInput);
     
     if (!validation.success) {
-      throw new Error(validation.error);
+      return new Response(
+        JSON.stringify({ success: false, error: validation.error, code: 'ERR_INVALID_001' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const { from_wallet_type, to_wallet_type, amount } = validation.data!;
@@ -59,12 +76,21 @@ serve(async (req) => {
 
     if (rpcError) {
       console.error('RPC error:', rpcError);
-      throw new Error('Transfer failed: database error');
+      const errorCode = mapDbErrorToCode(rpcError);
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage(errorCode), code: errorCode }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Check if the database function returned an error
     if (!result?.success) {
-      throw new Error(result?.error || 'Transfer failed');
+      console.error('[WALLET-TRANSFER] Operation failed:', result?.error);
+      const errorCode = result?.error?.startsWith('ERR_') ? result.error : 'ERR_BALANCE_001';
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage(errorCode), code: errorCode }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log(`Transfer successful: User ${userId} moved ₳${amount} from ${from_wallet_type} to ${to_wallet_type}`);
@@ -85,8 +111,8 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Wallet transfer error:', errorMessage);
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_SYSTEM_001'), code: 'ERR_SYSTEM_001' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });

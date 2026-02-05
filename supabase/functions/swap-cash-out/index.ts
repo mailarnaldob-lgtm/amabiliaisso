@@ -1,13 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { validateCashOut } from "../_shared/validation.ts";
+import { getSafeErrorMessage } from "../_shared/error-codes.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// SOVEREIGN V9.4: Fixed fee structure per Blueprint V8.0
+/**
+ * SWAP CASH-OUT - SOVEREIGN V10.0
+ * Creates pending withdrawal requests for admin approval
+ * - ₳15 flat fee for external transfers
+ * - Rate limited: 2 requests per hour
+ * - JWT verification via getUser()
+ */
 const WITHDRAWAL_FEE_FLAT = 15; // ₳15 flat fee for external transfers
 
 serve(async (req) => {
@@ -20,7 +27,10 @@ serve(async (req) => {
     // Get authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      throw new Error('Unauthorized');
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_AUTH_001'), code: 'ERR_AUTH_001' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Create Supabase client with user's JWT
@@ -33,7 +43,11 @@ serve(async (req) => {
     // Get user from JWT
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
-      throw new Error('Unauthorized');
+      console.error('[CASH-OUT] JWT verification failed:', userError);
+      return new Response(
+        JSON.stringify({ success: false, error: getSafeErrorMessage('ERR_AUTH_002'), code: 'ERR_AUTH_002' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Validate input with strict schema
@@ -41,7 +55,10 @@ serve(async (req) => {
     const validation = validateCashOut(rawInput);
     
     if (!validation.success) {
-      throw new Error(validation.error);
+      return new Response(
+        JSON.stringify({ success: false, error: validation.error, code: 'ERR_INVALID_001' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const { amount, payment_method, account_number, account_name } = validation.data!;
@@ -54,10 +71,13 @@ serve(async (req) => {
     const netAmount = amount - feeAmount;
 
     if (netAmount <= 0) {
-      throw new Error(`Minimum withdrawal is ₳${feeAmount + 1} (after ₳${feeAmount} fee)`);
+      return new Response(
+        JSON.stringify({ success: false, error: `Minimum withdrawal is ₳${feeAmount + 1} (after ₳${feeAmount} fee)`, code: 'ERR_INVALID_002' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // SOVEREIGN V9.4: Rate limiting - 2 withdrawals per hour
+    // SOVEREIGN V10.0: Rate limiting - 2 withdrawals per hour
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -74,10 +94,13 @@ serve(async (req) => {
       console.error('[CASH-OUT] Rate limit check error:', rateLimitError);
     } else if (rateLimitResult) {
       console.warn(`[CASH-OUT] Rate limit exceeded for user ${user.id}`);
-      throw new Error('Too many withdrawal requests. Please wait 1 hour.');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Too many withdrawal requests. Please wait 1 hour.', code: 'ERR_RATE_001' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // SOVEREIGN V9.4: Create pending cash-out request instead of direct deduction
+    // SOVEREIGN V10.0: Create pending cash-out request instead of direct deduction
     // The request will be reviewed by an admin before funds are deducted
     const { data: insertResult, error: insertError } = await supabaseClient
       .from('cash_out_requests')
@@ -97,7 +120,10 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('[CASH-OUT] Insert error:', insertError);
-      throw new Error('Failed to submit request. Please try again.');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to submit request. Please try again.', code: 'ERR_SYSTEM_002' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log(`[CASH-OUT] Request created: ${insertResult.id} - User ${user.id}, Amount ₳${amount}, Net ₱${netAmount}`);
@@ -129,11 +155,12 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: errorMessage 
+        error: getSafeErrorMessage('ERR_SYSTEM_001'),
+        code: 'ERR_SYSTEM_001'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 500 
       }
     );
   }
