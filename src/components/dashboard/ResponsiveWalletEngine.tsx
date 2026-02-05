@@ -1,19 +1,18 @@
-import { useState, useEffect } from 'react';
+ import { useState } from 'react';
 import { formatAlpha } from '@/lib/utils';
 import { useTierAccess } from '@/components/tier';
 import { useWallets } from '@/hooks/useWallets';
 import { EliteButton } from '@/components/ui/elite-button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Wallet, 
-  ArrowUpDown, 
-  RefreshCw,
-  Crown,
-  TrendingUp,
-  Zap,
-  Wifi
-} from 'lucide-react';
+ import { 
+   Wallet, 
+   ArrowUpDown, 
+   RefreshCw,
+   Crown,
+   TrendingUp,
+   Zap
+ } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WalletEngineProps {
@@ -22,14 +21,14 @@ interface WalletEngineProps {
 }
 
 /**
- * 2026 Responsive Triple-Balance Wallet Engine
- * Obsidian/Cyan design with sharp corners and platinum borders
+  * 2026 Responsive Triple-Balance Wallet Engine - V9.5
+  * Obsidian/Cyan design with sharp corners and platinum borders
+  * Uses 15-second RESTful polling (Zero WebSocket dependency)
  */
 export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEngineProps) {
   const { wallets, totalBalance, isFallback, isLoading, refetch } = useWallets();
   const { canAccessElite } = useTierAccess();
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
-  const [showRealtimeSync, setShowRealtimeSync] = useState(false);
   
   const getWalletBalance = (type: string): number => {
     const wallet = wallets.find(w => 
@@ -42,13 +41,6 @@ export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEng
   const taskBalance = getWalletBalance('task');
   const royaltyBalance = getWalletBalance('royalty');
 
-  useEffect(() => {
-    if (!isFallback && wallets.length > 0) {
-      setShowRealtimeSync(true);
-      const timer = setTimeout(() => setShowRealtimeSync(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [wallets, isFallback]);
 
   return (
     <div className="space-y-4">
@@ -73,25 +65,20 @@ export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEng
               Sovereign Ledger
             </Badge>
             <div className={cn(
-              "flex items-center gap-1 text-xs transition-colors",
-              showRealtimeSync ? "text-primary" : "text-primary/70"
+             "flex items-center gap-1 text-xs text-primary/70"
             )}>
-              {showRealtimeSync ? (
-                <Wifi className="h-3 w-3 animate-pulse" />
-              ) : (
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              )}
-              {showRealtimeSync ? "SYNCING" : "LIVE"}
+             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+             {isLoading ? "SYNCING" : "LIVE"}
             </div>
           </div>
           
           <p className="text-muted-foreground text-sm mb-1">Total ₳ Credits</p>
           <div className="flex items-baseline gap-2">
             <span className="text-primary text-5xl md:text-6xl font-bold text-glow-cyan">₳</span>
-            <span className={cn(
-              "text-foreground text-4xl md:text-5xl font-bold tracking-tight font-mono transition-all",
-              showRealtimeSync && "animate-pulse"
-            )}>
+           <span className={cn(
+             "text-foreground text-4xl md:text-5xl font-bold tracking-tight font-mono transition-all",
+             isLoading && "animate-pulse"
+           )}>
               {formatAlpha(totalBalance)}
             </span>
           </div>
@@ -110,7 +97,7 @@ export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEng
           balance={mainBalance}
           isSelected={selectedWallet === 'main'}
           onClick={() => setSelectedWallet(selectedWallet === 'main' ? null : 'main')}
-          isSyncing={showRealtimeSync}
+         isSyncing={isLoading}
         />
         
         <WalletTile
@@ -119,7 +106,7 @@ export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEng
           balance={taskBalance}
           isSelected={selectedWallet === 'task'}
           onClick={() => setSelectedWallet(selectedWallet === 'task' ? null : 'task')}
-          isSyncing={showRealtimeSync}
+         isSyncing={isLoading}
         />
         
         <WalletTile
@@ -129,7 +116,7 @@ export function ResponsiveWalletEngine({ onTransfer, isTransferring }: WalletEng
           isLocked={!canAccessElite}
           isSelected={selectedWallet === 'royalty'}
           onClick={() => canAccessElite && setSelectedWallet(selectedWallet === 'royalty' ? null : 'royalty')}
-          isSyncing={showRealtimeSync}
+         isSyncing={isLoading}
         />
       </div>
 

@@ -1,9 +1,9 @@
- import { useState, useCallback } from 'react';
+ import { useCallback } from 'react';
  import { motion, AnimatePresence } from 'framer-motion';
  import { useNavigate, useLocation } from 'react-router-dom';
  import { 
    Command, X, Target, Landmark, Megaphone, Crown,
-   Zap, TrendingUp, Users, Settings, History, LogOut
+   TrendingUp, Users, Settings, History, LogOut
  } from 'lucide-react';
  import { Button } from '@/components/ui/button';
  import { cn } from '@/lib/utils';
@@ -12,12 +12,14 @@
  import { Badge } from '@/components/ui/badge';
  
  /**
-  * Bloom Menu Overlay - V1.0
+  * Bloom Menu Overlay - V2.0 (Sovereign Stability)
   * Cinematic fullscreen overlay with scale/blur animation
   * Features:
   * - 0.3s Scale & Blur: Dashboard recedes (95% scale) while menu blurs background
-  * - Large, centered Elite Icons
-  * - backdrop-blur-xl Glassmorphism with Alpha Gold border accents
+  * - Obsidian Black (#050505) at 85% opacity
+  * - Large, centered Elite Icons with Alpha Gold (#FFD700) accents
+  * - 0.2s fade-out on close (per Sovereign mandate)
+  * - backdrop-blur-2xl Glassmorphism
   */
  
  interface BloomMenuItem {
@@ -53,18 +55,18 @@
      badge: 'PRO+'
    },
    { 
-     icon: Crown, 
-     label: 'Governance', 
-     sublabel: 'Royalty Network & Team',
-     path: '/dashboard/growth',
+     icon: Users, 
+     label: 'Profile', 
+     sublabel: 'Account & Identity',
+     path: '/dashboard/my-profile',
      color: 'from-purple-500 to-purple-600'
    },
  ];
  
  const secondaryItems: BloomMenuItem[] = [
    { icon: TrendingUp, label: 'Bank', sublabel: 'Wallet & Exchange', path: '/dashboard/bank', color: 'from-slate-600 to-slate-700' },
+   { icon: Crown, label: 'Royalty', sublabel: 'Network & Team', path: '/dashboard/growth', color: 'from-slate-600 to-slate-700' },
    { icon: History, label: 'History', sublabel: 'Transactions', path: '/dashboard/transactions', color: 'from-slate-600 to-slate-700' },
-   { icon: Users, label: 'Network', sublabel: 'Referrals', path: '/dashboard/referrals', color: 'from-slate-600 to-slate-700' },
    { icon: Settings, label: 'Settings', sublabel: 'Account', path: '/dashboard/settings', color: 'from-slate-600 to-slate-700' },
  ];
  
@@ -77,7 +79,7 @@
    },
    exit: { 
      opacity: 0,
-     transition: { duration: 0.25, ease: [0.4, 0, 1, 1] }
+     transition: { duration: 0.2, ease: [0.4, 0, 1, 1] }
    }
  };
  
@@ -319,7 +321,8 @@
            initial="hidden"
            animate="visible"
            exit="exit"
-           className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xl"
+           className="fixed inset-0 z-50 backdrop-blur-2xl"
+           style={{ backgroundColor: 'rgba(5, 5, 5, 0.85)' }}
            onClick={(e) => {
              if (e.target === e.currentTarget) onClose();
            }}
