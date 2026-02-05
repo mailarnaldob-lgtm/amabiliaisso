@@ -11,6 +11,7 @@ export const ERROR_CODES = {
   ERR_AUTH_001: 'Authentication required',
   ERR_AUTH_002: 'Session expired or invalid',
   ERR_AUTH_003: 'Insufficient permissions',
+  ERR_AUTH_004: 'Cron authorization required',
   
   // Balance Errors
   ERR_BALANCE_001: 'Transaction failed',
@@ -29,10 +30,14 @@ export const ERROR_CODES = {
   // System Errors
   ERR_SYSTEM_001: 'Service temporarily unavailable',
   ERR_SYSTEM_002: 'Operation failed',
+  ERR_SYSTEM_003: 'Service misconfigured',
   
   // Loan Errors
   ERR_LOAN_001: 'Loan unavailable',
   ERR_LOAN_002: 'Loan operation failed',
+  
+  // Rate Limit Errors
+  ERR_RATE_001: 'Too many requests',
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;

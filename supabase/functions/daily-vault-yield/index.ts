@@ -1,16 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-}
+import { corsHeaders, verifyCronSecret, log, logError } from '../_shared/api-utils.ts'
 
 /**
- * DAILY VAULT YIELD EDGE FUNCTION - Blueprint V8.0
+ * DAILY VAULT YIELD EDGE FUNCTION - SOVEREIGN V10.0
  * Uses dedicated elite_vaults table for Elite members
  * - 1% DAILY yield on vault total_balance (including frozen collateral)
  * - Runs as a cron job every day at midnight UTC
  * - Uses atomic RPC function for yield calculation
+ * - PROTECTED: Requires CRON_SECRET header for authentication
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -18,22 +15,28 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // SOVEREIGN V10.0: Verify CRON_SECRET header (critical security)
+    const authError = verifyCronSecret(req, 'DAILY-VAULT-YIELD');
+    if (authError) {
+      return authError;
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    console.log('[DAILY-VAULT-YIELD] Starting vault yield calculation...')
+    log('DAILY-VAULT-YIELD', 'Starting vault yield calculation (authenticated cron job)')
 
     // Use the atomic RPC function to calculate and distribute yields
     const { data: result, error: rpcError } = await supabase.rpc('calculate_vault_yield')
 
     if (rpcError) {
-      console.error('[DAILY-VAULT-YIELD] RPC error:', rpcError)
+      logError('DAILY-VAULT-YIELD', 'RPC error', rpcError)
       throw new Error(`Failed to calculate vault yield: ${rpcError.message}`)
     }
 
-    console.log(`[DAILY-VAULT-YIELD] Complete: Processed ${result?.processed || 0} vaults, distributed ₳${result?.total_yield_distributed || 0}`)
+    log('DAILY-VAULT-YIELD', `Complete: Processed ${result?.processed || 0} vaults, distributed ₳${result?.total_yield_distributed || 0}`)
 
     return new Response(
       JSON.stringify({
@@ -46,11 +49,12 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('[DAILY-VAULT-YIELD] Error:', error)
+    logError('DAILY-VAULT-YIELD', 'Unexpected error', error)
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: 'ERR_SYSTEM_001',
+        message: 'Service temporarily unavailable'
       }),
       { 
         status: 500,
