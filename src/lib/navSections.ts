@@ -210,3 +210,19 @@
      ],
    },
  ];
+
+// ============================================
+// DESIGN SYSTEM: ALPHA GOLD ACCENT COLORS
+// ============================================
+// Primary Gold: #FFD700 (Alpha Gold)
+// Secondary Gold: #FFA500 (Amber accent)
+// Gold gradient: from-[#FFD700] to-[#FFA500]
+// 
+// Usage Guidelines:
+// - Active nav items: text-[#FFD700]
+// - Active indicators: bg-[#FFD700]
+// - Hover states: hover:bg-[#FFD700]/10, hover:border-[#FFD700]/30
+// - Shadows: shadow-[#FFD700]/20 or shadow-[#FFD700]/30
+// - Badges: border-[#FFD700]/30 text-[#FFD700]
+// - Gradients: bg-gradient-to-br from-[#FFD700] to-[#FFA500]
+// ============================================

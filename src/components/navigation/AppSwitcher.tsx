@@ -37,7 +37,7 @@ export function AppSwitcher() {
               className={cn(
                 'flex flex-col items-center justify-center flex-1 h-full py-2 rounded-xl transition-all duration-200',
                 isActive 
-                  ? 'scale-105' 
+                  ? 'scale-105 text-[#FFD700]' 
                   : 'text-muted-foreground hover:text-foreground opacity-60 hover:opacity-100'
               )}
             >
@@ -56,7 +56,7 @@ export function AppSwitcher() {
               </div>
               <span className={cn(
                 'text-[10px] font-medium',
-                isActive ? 'text-foreground' : 'text-muted-foreground'
+                isActive ? 'text-[#FFD700] font-semibold' : 'text-muted-foreground'
               )}>
                 {app.name}
               </span>
