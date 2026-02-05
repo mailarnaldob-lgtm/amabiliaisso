@@ -19,8 +19,8 @@ interface HubItem {
 }
 const hubItems: HubItem[] = [{
   icon: Wallet,
-  label: 'My Wallet',
-  description: 'View all balances',
+  label: 'EARN Hub',
+  description: 'Task Earnings',
   href: '/dashboard/bank',
   color: 'from-[#FFD700] to-[#FFA500]'
 }, {
@@ -37,21 +37,21 @@ const hubItems: HubItem[] = [{
   color: 'from-blue-400 to-blue-600'
 }, {
   icon: Target,
-  label: 'Assignments',
-  description: 'VPA missions',
+  label: 'SAVE Hub',
+  description: 'Vault Savings',
   href: '/dashboard/market',
   color: 'from-purple-400 to-purple-600'
 }, {
   icon: Landmark,
-  label: 'Lending',
-  description: 'P2P Credit Protocol',
+  label: 'TRADE Hub',
+  description: 'P2P Trading',
   href: '/dashboard/finance',
   color: 'from-cyan-400 to-cyan-600'
 }, {
   icon: Megaphone,
-  label: 'Ad Wizard',
-  description: 'Create campaigns',
-  href: '/dashboard/ads',
+  label: 'MLM Hub',
+  description: 'Referral Network',
+  href: '/dashboard/growth',
   color: 'from-orange-400 to-red-500'
 }];
 export function AlphaCoinHub() {
