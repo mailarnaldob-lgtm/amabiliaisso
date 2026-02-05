@@ -44,6 +44,7 @@ import {
   TASK_CATEGORIES,
   REQUIRED_LEVELS,
   PROOF_TYPES,
+  PLATFORM_CATEGORIES,
 } from '@/hooks/useAdminTasks';
 import {
   Target,

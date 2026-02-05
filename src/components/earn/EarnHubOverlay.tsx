@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Target, CheckCircle2, Clock, Award, Zap, Upload, 
   ExternalLink, Info, FileCheck, AlertCircle, Star,
-  Youtube, Facebook, Play, Users
+  Youtube, Facebook, Play, Users, Music, Camera
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -39,20 +39,22 @@ interface EarnHubOverlayProps {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PHILIPPINE BRAND MISSIONS - 20 ACTIVE TASKS
+// PHILIPPINE BRAND MISSIONS - 40 ACTIVE TASKS (FB, YT, TikTok, Instagram)
 // ═══════════════════════════════════════════════════════════════════════════
+
+export type MissionPlatform = 'facebook' | 'youtube' | 'tiktok' | 'instagram';
 
 export interface PhilippineMission {
   id: string;
   title: string;
   description: string;
-  category: 'facebook' | 'youtube';
+  category: MissionPlatform;
   brand: string;
   action: string;
   reward: number;
   proof_type: 'screenshot' | 'link';
   target_url: string;
-  icon: 'facebook' | 'youtube';
+  icon: MissionPlatform;
   is_active: boolean;
 }
 
@@ -324,6 +326,274 @@ export const PHILIPPINE_MISSIONS: PhilippineMission[] = [
     icon: 'youtube',
     is_active: true,
   },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // TIKTOK MISSIONS (10 Tasks - Viral Reach & Follow) - V12.0 EXPANSION
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'ph-tt-001',
+    title: 'FoodPanda PH',
+    description: 'Follow FoodPanda PH and heart their latest video',
+    category: 'tiktok',
+    brand: 'FoodPanda PH',
+    action: 'Follow & Heart Video',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@foodpanda_ph',
+    icon: 'tiktok',
+    is_active: true,
+  },
+  {
+    id: 'ph-tt-002',
+    title: 'Vice Cosmetics',
+    description: 'Heart the latest clip on Vice Cosmetics TikTok',
+    category: 'tiktok',
+    brand: 'Vice Cosmetics',
+    action: 'Heart Latest Clip',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@vicecosmetics',
+    icon: 'tiktok',
+    is_active: true,
+  },
+  {
+    id: 'ph-tt-003',
+    title: 'Smart Communications',
+    description: 'Follow Smart Communications TikTok account',
+    category: 'tiktok',
+    brand: 'Smart',
+    action: 'Follow Account',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@smartcommunications',
+    icon: 'tiktok',
+    is_active: true,
+  },
+  {
+    id: 'ph-tt-004',
+    title: 'BDO Unibank',
+    description: 'Watch any tip video on BDO Unibank TikTok',
+    category: 'tiktok',
+    brand: 'BDO Unibank',
+    action: 'Watch Tip Video',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@bdounibank',
+    icon: 'tiktok',
+    is_active: true,
+  },
+  {
+    id: 'ph-tt-005',
+    title: 'Chowking',
+    description: 'Follow Chowking and heart any video',
+    category: 'tiktok',
+    brand: 'Chowking',
+    action: 'Follow & Heart',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@chowkingph',
+    icon: 'tiktok',
+    is_active: true,
+  },
+  {
+    id: 'ph-tt-006',
+    title: 'Mang Inasal',
+    description: 'Follow Mang Inasal TikTok account',
+    category: 'tiktok',
+    brand: 'Mang Inasal',
+    action: 'Follow Account',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@manginasalph',
+    icon: 'tiktok',
+    is_active: true,
+  },
+  {
+    id: 'ph-tt-007',
+    title: 'Grab Philippines',
+    description: 'Heart the latest promo video on Grab Philippines',
+    category: 'tiktok',
+    brand: 'Grab PH',
+    action: 'Heart Latest Promo',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@grabph',
+    icon: 'tiktok',
+    is_active: true,
+  },
+  {
+    id: 'ph-tt-008',
+    title: 'Maya PH',
+    description: 'Follow Maya PH TikTok account',
+    category: 'tiktok',
+    brand: 'Maya PH',
+    action: 'Follow Account',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@mayaph',
+    icon: 'tiktok',
+    is_active: true,
+  },
+  {
+    id: 'ph-tt-009',
+    title: 'Bench/ Official',
+    description: 'Heart any fashion clip on Bench TikTok',
+    category: 'tiktok',
+    brand: 'Bench/',
+    action: 'Heart Fashion Clip',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@bench',
+    icon: 'tiktok',
+    is_active: true,
+  },
+  {
+    id: 'ph-tt-010',
+    title: 'Penshoppe',
+    description: 'Follow Penshoppe TikTok account',
+    category: 'tiktok',
+    brand: 'Penshoppe',
+    action: 'Follow Account',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.tiktok.com/@penshoppe',
+    icon: 'tiktok',
+    is_active: true,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // INSTAGRAM MISSIONS (10 Tasks - Followers & Stories) - V12.0 EXPANSION
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'ph-ig-001',
+    title: 'Starbucks Philippines',
+    description: 'Follow Starbucks Philippines Instagram account',
+    category: 'instagram',
+    brand: 'Starbucks PH',
+    action: 'Follow Account',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/starbucksph/',
+    icon: 'instagram',
+    is_active: true,
+  },
+  {
+    id: 'ph-ig-002',
+    title: 'National Book Store',
+    description: 'Like the latest photo on National Book Store Instagram',
+    category: 'instagram',
+    brand: 'National Book Store',
+    action: 'Like Latest Photo',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/nationalbookstore/',
+    icon: 'instagram',
+    is_active: true,
+  },
+  {
+    id: 'ph-ig-003',
+    title: 'Uniqlo Philippines',
+    description: 'Follow Uniqlo Philippines Instagram account',
+    category: 'instagram',
+    brand: 'Uniqlo PH',
+    action: 'Follow Account',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/uniqlophofficial/',
+    icon: 'instagram',
+    is_active: true,
+  },
+  {
+    id: 'ph-ig-004',
+    title: 'H&M Philippines',
+    description: 'Like the latest post on H&M Philippines Instagram',
+    category: 'instagram',
+    brand: 'H&M PH',
+    action: 'Like Latest Post',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/hm_ph/',
+    icon: 'instagram',
+    is_active: true,
+  },
+  {
+    id: 'ph-ig-005',
+    title: 'Watsons Philippines',
+    description: 'Follow Watsons Philippines Instagram account',
+    category: 'instagram',
+    brand: 'Watsons PH',
+    action: 'Follow Account',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/waborandmixph/',
+    icon: 'instagram',
+    is_active: true,
+  },
+  {
+    id: 'ph-ig-006',
+    title: 'Sunnies Studios',
+    description: 'Like the latest post on Sunnies Studios Instagram',
+    category: 'instagram',
+    brand: 'Sunnies Studios',
+    action: 'Like Latest Post',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/sunniesstudios/',
+    icon: 'instagram',
+    is_active: true,
+  },
+  {
+    id: 'ph-ig-007',
+    title: 'Zalora PH',
+    description: 'Follow Zalora PH Instagram account',
+    category: 'instagram',
+    brand: 'Zalora PH',
+    action: 'Follow Account',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/zaborandmixph/',
+    icon: 'instagram',
+    is_active: true,
+  },
+  {
+    id: 'ph-ig-008',
+    title: 'Toyota Philippines',
+    description: 'Like the latest car post on Toyota Philippines',
+    category: 'instagram',
+    brand: 'Toyota PH',
+    action: 'Like Latest Car Post',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/toyotamotor_ph/',
+    icon: 'instagram',
+    is_active: true,
+  },
+  {
+    id: 'ph-ig-009',
+    title: 'KFC Philippines',
+    description: 'Follow KFC Philippines Instagram account',
+    category: 'instagram',
+    brand: 'KFC PH',
+    action: 'Follow Account',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/kfcphilippines/',
+    icon: 'instagram',
+    is_active: true,
+  },
+  {
+    id: 'ph-ig-010',
+    title: "Shakey's PH",
+    description: "Like the latest post on Shakey's Philippines Instagram",
+    category: 'instagram',
+    brand: "Shakey's PH",
+    action: 'Like Latest Post',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.instagram.com/shakeysph/',
+    icon: 'instagram',
+    is_active: true,
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -490,11 +760,36 @@ function PhilippineMissionCard({
   onStartMission: (mission: PhilippineMission) => void;
   isSubmitted: boolean;
 }) {
-  const IconComponent = mission.icon === 'youtube' ? Youtube : Facebook;
-  const iconBg = mission.icon === 'youtube' 
-    ? 'from-red-600/20 to-red-800/10 border-red-500/20' 
-    : 'from-blue-600/20 to-blue-800/10 border-blue-500/20';
-  const iconColor = mission.icon === 'youtube' ? 'text-red-500' : 'text-blue-500';
+  // Platform-specific styling
+  const platformConfig: Record<MissionPlatform, { icon: typeof Youtube; bg: string; color: string; actionBg: string }> = {
+    youtube: {
+      icon: Youtube,
+      bg: 'from-red-600/20 to-red-800/10 border-red-500/20',
+      color: 'text-red-500',
+      actionBg: 'bg-red-500/5 border-red-500/20 text-red-400',
+    },
+    facebook: {
+      icon: Facebook,
+      bg: 'from-blue-600/20 to-blue-800/10 border-blue-500/20',
+      color: 'text-blue-500',
+      actionBg: 'bg-blue-500/5 border-blue-500/20 text-blue-400',
+    },
+    tiktok: {
+      icon: Music, // TikTok-like icon
+      bg: 'from-cyan-400/20 to-pink-500/10 border-cyan-400/20',
+      color: 'text-cyan-400',
+      actionBg: 'bg-cyan-500/5 border-cyan-500/20 text-cyan-400',
+    },
+    instagram: {
+      icon: Camera, // Instagram-like icon
+      bg: 'from-pink-500/20 to-purple-600/10 border-pink-500/20',
+      color: 'text-pink-500',
+      actionBg: 'bg-pink-500/5 border-pink-500/20 text-pink-400',
+    },
+  };
+  
+  const config = platformConfig[mission.icon];
+  const IconComponent = config.icon;
   
   return (
     <Card className={cn(
@@ -505,10 +800,10 @@ function PhilippineMissionCard({
         <div className="flex items-start gap-4">
           <div className={cn(
             "p-3 rounded-xl bg-gradient-to-br border transition-colors",
-            iconBg,
+            config.bg,
             !isSubmitted && "group-hover:border-[#FFD700]/40"
           )}>
-            <IconComponent className={cn("h-6 w-6", iconColor)} />
+            <IconComponent className={cn("h-6 w-6", config.color)} />
           </div>
           
           <div className="flex-1 min-w-0 space-y-2">
@@ -532,12 +827,7 @@ function PhilippineMissionCard({
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs text-zinc-500">
-                <span className={cn(
-                  "px-2 py-0.5 rounded border capitalize",
-                  mission.icon === 'youtube' 
-                    ? 'bg-red-500/5 border-red-500/20 text-red-400' 
-                    : 'bg-blue-500/5 border-blue-500/20 text-blue-400'
-                )}>
+                <span className={cn("px-2 py-0.5 rounded border capitalize", config.actionBg)}>
                   {mission.action}
                 </span>
               </div>
@@ -657,7 +947,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
   const { data: submissions, isLoading: submissionsLoading, refetch: refetchSubmissions } = useTaskSubmissions();
   const stats = useTaskStats();
   
-  const [selectedPlatform, setSelectedPlatform] = useState<'all' | 'facebook' | 'youtube'>('all');
+  const [selectedPlatform, setSelectedPlatform] = useState<'all' | MissionPlatform>('all');
   const [selectedMission, setSelectedMission] = useState<PhilippineMission | null>(null);
   const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
 
@@ -681,10 +971,12 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
     ? activeMissions 
     : activeMissions.filter(m => m.category === selectedPlatform);
 
-  // Calculate total potential earnings
+  // Calculate total potential earnings and platform counts
   const totalPotentialEarnings = activeMissions.reduce((sum, m) => sum + m.reward, 0);
   const facebookCount = activeMissions.filter(m => m.category === 'facebook').length;
   const youtubeCount = activeMissions.filter(m => m.category === 'youtube').length;
+  const tiktokCount = activeMissions.filter(m => m.category === 'tiktok').length;
+  const instagramCount = activeMissions.filter(m => m.category === 'instagram').length;
 
   // Filter submissions by status
   const pendingSubmissions = submissions?.filter(s => s.status === 'pending') || [];
@@ -729,7 +1021,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                   </div>
                   <div>
                     <h1 className="text-xl font-bold text-white">EARN Hub</h1>
-                    <p className="text-xs text-zinc-500">VPA Mission Control • 20 Active Missions</p>
+                    <p className="text-xs text-zinc-500">VPA Mission Control • {activeMissions.length} Active Missions</p>
                   </div>
                 </div>
                 
@@ -743,14 +1035,16 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                 </motion.button>
               </div>
               
-              {/* Mission Counter Banner */}
+              {/* Mission Counter Banner - ALL 4 PLATFORMS */}
               <Alert className="border-[#FFD700]/30 bg-[#FFD700]/5 mb-4">
                 <FileCheck className="h-4 w-4 text-[#FFD700]" />
                 <AlertDescription className="text-xs text-zinc-300">
-                  <span className="text-[#FFD700] font-semibold">{activeMissions.length} Active Missions</span> available • 
-                  <span className="text-blue-400"> {facebookCount} Facebook</span> • 
-                  <span className="text-red-400"> {youtubeCount} YouTube</span> • 
-                  Potential: <span className="text-[#FFD700] font-mono">₳{totalPotentialEarnings}</span>
+                  <span className="text-[#FFD700] font-semibold">{activeMissions.length} Active Missions</span> • 
+                  <span className="text-blue-400"> {facebookCount} FB</span> • 
+                  <span className="text-red-400"> {youtubeCount} YT</span> • 
+                  <span className="text-cyan-400"> {tiktokCount} TikTok</span> • 
+                  <span className="text-pink-400"> {instagramCount} IG</span> • 
+                  Total: <span className="text-[#FFD700] font-mono">₳{totalPotentialEarnings}</span>
                 </AlertDescription>
               </Alert>
               
@@ -767,43 +1061,67 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                 <BusinessLogicSection />
               </div>
               
-              {/* Platform Filter Tabs */}
-              <div className="flex gap-2 mt-6 mb-4">
+              {/* Platform Filter Tabs - 4 PLATFORMS */}
+              <div className="flex flex-wrap gap-2 mt-6 mb-4">
                 <button
                   onClick={() => setSelectedPlatform('all')}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all",
+                    "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all",
                     selectedPlatform === 'all'
                       ? 'bg-[#FFD700] text-black'
                       : 'bg-[#FFD700]/10 text-zinc-400 hover:text-white hover:bg-[#FFD700]/20'
                   )}
                 >
-                  <Users className="h-4 w-4" />
+                  <Users className="h-3.5 w-3.5" />
                   All ({activeMissions.length})
                 </button>
                 <button
                   onClick={() => setSelectedPlatform('facebook')}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all",
+                    "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all",
                     selectedPlatform === 'facebook'
                       ? 'bg-blue-500 text-white'
                       : 'bg-blue-500/10 text-blue-400 hover:text-white hover:bg-blue-500/20'
                   )}
                 >
-                  <Facebook className="h-4 w-4" />
-                  Facebook ({facebookCount})
+                  <Facebook className="h-3.5 w-3.5" />
+                  FB ({facebookCount})
                 </button>
                 <button
                   onClick={() => setSelectedPlatform('youtube')}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all",
+                    "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all",
                     selectedPlatform === 'youtube'
                       ? 'bg-red-500 text-white'
                       : 'bg-red-500/10 text-red-400 hover:text-white hover:bg-red-500/20'
                   )}
                 >
-                  <Youtube className="h-4 w-4" />
-                  YouTube ({youtubeCount})
+                  <Youtube className="h-3.5 w-3.5" />
+                  YT ({youtubeCount})
+                </button>
+                <button
+                  onClick={() => setSelectedPlatform('tiktok')}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all",
+                    selectedPlatform === 'tiktok'
+                      ? 'bg-cyan-500 text-white'
+                      : 'bg-cyan-500/10 text-cyan-400 hover:text-white hover:bg-cyan-500/20'
+                  )}
+                >
+                  <Music className="h-3.5 w-3.5" />
+                  TikTok ({tiktokCount})
+                </button>
+                <button
+                  onClick={() => setSelectedPlatform('instagram')}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all",
+                    selectedPlatform === 'instagram'
+                      ? 'bg-pink-500 text-white'
+                      : 'bg-pink-500/10 text-pink-400 hover:text-white hover:bg-pink-500/20'
+                  )}
+                >
+                  <Camera className="h-3.5 w-3.5" />
+                  IG ({instagramCount})
                 </button>
               </div>
               

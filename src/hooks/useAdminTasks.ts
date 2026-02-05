@@ -158,14 +158,26 @@ export function useToggleTaskStatus() {
   });
 }
 
-// Get task categories for dropdown
+// Get task categories for dropdown - EXPANDED V12.0
 export const TASK_CATEGORIES = [
   'Social Media',
+  'Facebook',
+  'YouTube',
+  'TikTok',
+  'Instagram',
   'Content Creation',
   'Community',
   'Referral',
   'Survey',
   'Other',
+] as const;
+
+// Platform categories for EARN Hub filtering
+export const PLATFORM_CATEGORIES = [
+  { value: 'facebook', label: 'Facebook', color: '#1877F2' },
+  { value: 'youtube', label: 'YouTube', color: '#FF0000' },
+  { value: 'tiktok', label: 'TikTok', color: '#00F2EA' },
+  { value: 'instagram', label: 'Instagram', color: '#E4405F' },
 ] as const;
 
 // Get required levels for dropdown - SOVEREIGN BRANDING V8.7
