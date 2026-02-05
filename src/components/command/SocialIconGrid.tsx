@@ -2,6 +2,7 @@
  
  interface SocialIconGridProps {
    onSelect: (platform: string) => void;
+   activeFilter?: string | null;
    className?: string;
  }
  
@@ -56,7 +57,7 @@
    },
  ];
  
- export function SocialIconGrid({ onSelect, className }: SocialIconGridProps) {
+ export function SocialIconGrid({ onSelect, activeFilter, className }: SocialIconGridProps) {
    return (
      <div className={cn("grid grid-cols-4 gap-3", className)}>
        {SOCIAL_PLATFORMS.map((platform) => (
@@ -65,21 +66,40 @@
            onClick={() => onSelect(platform.id)}
            className={cn(
              "group relative flex flex-col items-center justify-center p-4 rounded-xl",
-             "border border-border/50 bg-card/50",
              "transition-all duration-200 ease-out",
-             platform.bgHover,
-             platform.borderHover,
-             "hover:scale-105 hover:shadow-lg active:scale-95"
+             "hover:scale-105 hover:shadow-lg active:scale-95",
+             activeFilter === platform.id
+               ? cn(
+                   "border-2 bg-gradient-to-br",
+                   platform.color,
+                   "text-white shadow-lg"
+                 )
+               : cn(
+                   "border border-border/50 bg-card/50",
+                   platform.bgHover,
+                   platform.borderHover
+                 )
            )}
          >
            <div className={cn(
-             "text-muted-foreground group-hover:text-foreground transition-colors",
+             "transition-colors",
+             activeFilter === platform.id 
+               ? "text-white" 
+               : "text-muted-foreground group-hover:text-foreground"
            )}>
              {platform.icon}
            </div>
-           <span className="text-[10px] text-muted-foreground mt-1.5 font-medium">
+           <span className={cn(
+             "text-[10px] mt-1.5 font-medium",
+             activeFilter === platform.id 
+               ? "text-white/90" 
+               : "text-muted-foreground"
+           )}>
              {platform.name}
            </span>
+           {activeFilter === platform.id && (
+             <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-white animate-pulse" />
+           )}
          </button>
        ))}
      </div>
