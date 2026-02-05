@@ -4,11 +4,12 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { BOTTOM_NAV_ITEMS } from '@/lib/navSections';
 import { EarnHubOverlay } from '@/components/earn';
+import { MLMHubOverlay } from '@/components/mlm';
 
 /**
- * Sovereign Bottom Navigation - V10.0
+ * Sovereign Bottom Navigation - V12.0
  * Four-pillar navigation using centralized constants
- * EARN opens as full-screen overlay; others navigate
+ * EARN and MLM open as full-screen overlays; others navigate
  * Source: src/lib/navSections.ts
  */
 
@@ -24,6 +25,7 @@ const navItems = BOTTOM_NAV_ITEMS.map(item => ({
 export function SovereignBottomNav() {
   const location = useLocation();
   const [earnOverlayOpen, setEarnOverlayOpen] = useState(false);
+  const [mlmOverlayOpen, setMlmOverlayOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -31,6 +33,9 @@ export function SovereignBottomNav() {
     if (item.id === 'earn') {
       e.preventDefault();
       setEarnOverlayOpen(true);
+    } else if (item.id === 'mlm') {
+      e.preventDefault();
+      setMlmOverlayOpen(true);
     }
     // Otherwise, let the Link component handle navigation
   };
@@ -40,7 +45,9 @@ export function SovereignBottomNav() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#FFD700]/20 bg-card/98 backdrop-blur-xl safe-area-bottom">
         <div className="flex items-stretch justify-around h-20 max-w-lg mx-auto">
           {navItems.map((item) => {
-            const active = isActive(item.path) || (item.id === 'earn' && earnOverlayOpen);
+            const active = isActive(item.path) || 
+              (item.id === 'earn' && earnOverlayOpen) ||
+              (item.id === 'mlm' && mlmOverlayOpen);
             return (
               <Link
                 key={item.path}
@@ -104,6 +111,12 @@ export function SovereignBottomNav() {
       <EarnHubOverlay 
         isOpen={earnOverlayOpen} 
         onClose={() => setEarnOverlayOpen(false)} 
+      />
+
+      {/* MLM Hub Full-Screen Overlay */}
+      <MLMHubOverlay 
+        isOpen={mlmOverlayOpen} 
+        onClose={() => setMlmOverlayOpen(false)} 
       />
     </>
   );

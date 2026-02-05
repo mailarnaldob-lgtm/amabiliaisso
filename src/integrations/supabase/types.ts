@@ -419,6 +419,51 @@ export type Database = {
         }
         Relationships: []
       }
+      network_commissions: {
+        Row: {
+          base_amount: number
+          commission_amount: number
+          commission_rate: number
+          created_at: string | null
+          credited_at: string | null
+          earner_id: string
+          id: string
+          is_credited: boolean | null
+          level_depth: number
+          source_id: string | null
+          source_type: string
+          upline_id: string
+        }
+        Insert: {
+          base_amount: number
+          commission_amount: number
+          commission_rate?: number
+          created_at?: string | null
+          credited_at?: string | null
+          earner_id: string
+          id?: string
+          is_credited?: boolean | null
+          level_depth: number
+          source_id?: string | null
+          source_type: string
+          upline_id: string
+        }
+        Update: {
+          base_amount?: number
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string | null
+          credited_at?: string | null
+          earner_id?: string
+          id?: string
+          is_credited?: boolean | null
+          level_depth?: number
+          source_id?: string | null
+          source_type?: string
+          upline_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -464,6 +509,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "network_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "profiles_referred_by_fkey"
             columns: ["referred_by"]
@@ -778,6 +830,55 @@ export type Database = {
       }
     }
     Views: {
+      network_stats: {
+        Row: {
+          created_at: string | null
+          direct_referrals: number | null
+          full_name: string | null
+          membership_tier: Database["public"]["Enums"]["membership_tier"] | null
+          total_network_earnings: number | null
+          upline_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          direct_referrals?: never
+          full_name?: string | null
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          total_network_earnings?: never
+          upline_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          direct_referrals?: never
+          full_name?: string | null
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          total_network_earnings?: never
+          upline_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["upline_id"]
+            isOneToOne: false
+            referencedRelation: "network_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["upline_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_confirmations: {
         Row: {
           created_at: string | null
@@ -882,6 +983,15 @@ export type Database = {
         }
         Returns: Json
       }
+      credit_network_commission: {
+        Args: {
+          p_base_amount: number
+          p_earner_id: string
+          p_source_id: string
+          p_source_type: string
+        }
+        Returns: Json
+      }
       enforce_rate_limit: {
         Args: {
           p_endpoint: string
@@ -896,6 +1006,20 @@ export type Database = {
         Returns: Json
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_genealogy_tree: {
+        Args: { p_max_depth?: number; p_user_id: string }
+        Returns: {
+          created_at: string
+          direct_referrals: number
+          full_name: string
+          level_depth: number
+          membership_tier: Database["public"]["Enums"]["membership_tier"]
+          network_earnings: number
+          referral_code: string
+          upline_id: string
+          user_id: string
+        }[]
+      }
       get_my_referral_confirmations: {
         Args: { p_user_id: string }
         Returns: {
@@ -906,6 +1030,7 @@ export type Database = {
           referrer_id: string
         }[]
       }
+      get_network_stats: { Args: { p_user_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

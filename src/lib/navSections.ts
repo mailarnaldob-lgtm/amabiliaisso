@@ -50,7 +50,7 @@ export const APP_PILLARS = {
     path: '/dashboard/growth',
     icon: Users,
     color: 'from-purple-500 to-pink-600',
-    isOverlay: false,
+    isOverlay: true, // Opens as full-screen overlay
   },
 } as const;
  

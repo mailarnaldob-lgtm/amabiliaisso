@@ -5,11 +5,12 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { BOTTOM_NAV_ITEMS } from '@/lib/navSections';
 import { EarnHubOverlay } from '@/components/earn';
+import { MLMHubOverlay } from '@/components/mlm';
 
 /**
- * BottomNav - V10.0
+ * BottomNav - V12.0
  * Compact bottom navigation using centralized constants
- * EARN opens as full-screen overlay; others navigate
+ * EARN and MLM open as full-screen overlays; others navigate
  * Source: src/lib/navSections.ts
  */
 
@@ -21,11 +22,15 @@ const navItems = [
 export function BottomNav() {
   const location = useLocation();
   const [earnOverlayOpen, setEarnOverlayOpen] = useState(false);
+  const [mlmOverlayOpen, setMlmOverlayOpen] = useState(false);
 
   const handleNavClick = (item: typeof navItems[number], e: React.MouseEvent) => {
     if (item.id === 'earn') {
       e.preventDefault();
       setEarnOverlayOpen(true);
+    } else if (item.id === 'mlm') {
+      e.preventDefault();
+      setMlmOverlayOpen(true);
     }
   };
 
@@ -34,7 +39,9 @@ export function BottomNav() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-bottom">
         <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path || (item.id === 'earn' && earnOverlayOpen);
+            const isActive = location.pathname === item.path || 
+              (item.id === 'earn' && earnOverlayOpen) ||
+              (item.id === 'mlm' && mlmOverlayOpen);
             return (
               <Link
                 key={item.path}
@@ -78,6 +85,12 @@ export function BottomNav() {
       <EarnHubOverlay 
         isOpen={earnOverlayOpen} 
         onClose={() => setEarnOverlayOpen(false)} 
+      />
+
+      {/* MLM Hub Full-Screen Overlay */}
+      <MLMHubOverlay 
+        isOpen={mlmOverlayOpen} 
+        onClose={() => setMlmOverlayOpen(false)} 
       />
     </>
   );
