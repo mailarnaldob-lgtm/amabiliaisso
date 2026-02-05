@@ -63,10 +63,10 @@ const navSections: NavSection[] = [
   {
     title: 'Apps',
     items: [
-      { icon: TrendingUp, label: 'Sovereign Bank', path: '/dashboard/bank', description: 'Wallet & Exchanger' },
-      { icon: Zap, label: 'Global Assignments', path: '/dashboard/market', description: 'VPA Missions' },
-      { icon: Landmark, label: 'Alpha Bankers', path: '/dashboard/finance', description: 'P2P Lending' },
-      { icon: Users, label: 'Royalty Network', path: '/dashboard/growth', description: 'Team & Referrals' },
+      { icon: TrendingUp, label: 'EARN', path: '/dashboard/bank', description: 'Task Earnings' },
+      { icon: Zap, label: 'SAVE', path: '/dashboard/market', description: 'Vault Savings' },
+      { icon: Landmark, label: 'TRADE', path: '/dashboard/finance', description: 'P2P Trading' },
+      { icon: Users, label: 'MLM', path: '/dashboard/growth', description: 'Referral Network' },
       { icon: Crown, label: 'Ad Wizard', path: '/dashboard/ads', description: 'Create ad campaigns', badge: 'PRO+' },
     ]
   },

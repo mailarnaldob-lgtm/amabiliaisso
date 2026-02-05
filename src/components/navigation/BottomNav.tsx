@@ -1,14 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Target, Landmark, TrendingUp, User } from 'lucide-react';
+import { Landmark, Target, TrendingUp, Users, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 const navItems = [
-  { icon: Home, label: 'Home', path: '/dashboard' },
-  { icon: Target, label: 'Assignments', path: '/dashboard/market' },
-  { icon: Landmark, label: 'Bank', path: '/dashboard/bank' },
-  { icon: TrendingUp, label: 'Finance', path: '/dashboard/finance' },
-  { icon: User, label: 'Profile', path: '/dashboard/profile' },
+  { icon: Landmark, label: 'EARN', path: '/dashboard/bank' },
+  { icon: Target, label: 'SAVE', path: '/dashboard/market' },
+  { icon: TrendingUp, label: 'TRADE', path: '/dashboard/finance' },
+  { icon: Users, label: 'MLM', path: '/dashboard/growth' },
+  { icon: User, label: 'Me', path: '/dashboard/profile' },
 ];
 
 export function BottomNav() {

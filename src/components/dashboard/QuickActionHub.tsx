@@ -23,38 +23,38 @@ interface QuickAction {
 const quickActions: QuickAction[] = [
   { 
     icon: PlusCircle, 
-    label: 'Top-up Wallet', 
-    path: '/dashboard/bank', 
+    label: 'EARN Hub', 
+    path: '/dashboard/bank',
     color: 'from-emerald-500 to-emerald-600',
-    description: 'Add funds to your wallet'
+    description: 'Task Earnings'
+  },
+  { 
+    icon: Target, 
+    label: 'SAVE Hub', 
+    path: '/dashboard/market',
+    color: 'from-amber-500 to-orange-600',
+    description: 'Vault Savings'
+  },
+  { 
+    icon: Briefcase, 
+    label: 'TRADE Hub', 
+    path: '/dashboard/finance',
+    color: 'from-blue-500 to-indigo-600',
+    description: 'P2P Trading'
+  },
+  { 
+    icon: Users, 
+    label: 'MLM Hub', 
+    path: '/dashboard/growth',
+    color: 'from-purple-500 to-pink-600',
+    description: 'Referral Network'
   },
   { 
     icon: ArrowDownCircle, 
     label: 'Secure Payout', 
-    path: '/dashboard/bank', 
-    color: 'from-blue-500 to-blue-600',
-    description: 'Withdraw your earnings'
-  },
-  { 
-    icon: Briefcase, 
-    label: 'Commit Capital', 
-    path: '/dashboard/finance', 
-    color: 'from-purple-500 to-purple-600',
-    description: 'P2P lending (1% daily)'
-  },
-  { 
-    icon: Users, 
-    label: 'Partner Invite', 
-    path: '/dashboard/referrals', 
-    color: 'from-orange-500 to-orange-600',
-    description: 'Earn 50% referral commission'
-  },
-  { 
-    icon: Target, 
-    label: 'Global Assignments', 
-    path: '/dashboard/market', 
-    color: 'from-cyan-500 to-cyan-600',
-    description: 'Complete tasks for rewards'
+    path: '/dashboard/bank',
+    color: 'from-red-500 to-rose-600',
+    description: 'Withdraw earnings'
   },
 ];
 
