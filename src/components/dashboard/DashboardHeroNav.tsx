@@ -1,62 +1,18 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, Landmark, TrendingUp, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DASHBOARD_HERO_CARDS } from '@/lib/navSections';
 
 /**
- * Dashboard Hero Navigation - V8.4
- * Major 4 high-visibility icons positioned side-by-side on the dashboard
- * Per Blueprint V8.0 specifications
+ * Dashboard Hero Navigation - V10.0
+ * Four-pillar hero cards using centralized constants
+ * Source: src/lib/navSections.ts
  */
-
-interface NavCard {
-  icon: React.ElementType;
-  label: string;
-  description: string;
-  path: string;
-  gradient: string;
-  shadowColor: string;
-}
-
-const navCards: NavCard[] = [
-  { 
-    icon: Target, 
-    label: 'EARN TASK REWARDS', 
-    description: 'VPA Missions',
-    path: '/dashboard/market',
-    gradient: 'from-emerald-500 to-teal-600',
-    shadowColor: 'shadow-emerald-500/30'
-  },
-  { 
-    icon: Landmark, 
-    label: 'ALPHA BANKERS', 
-    description: 'Cooperative',
-    path: '/dashboard/finance',
-    gradient: 'from-[#FFD700] to-[#FFA500]',
-    shadowColor: 'shadow-[#FFD700]/30'
-  },
-  { 
-    icon: Users, 
-    label: 'ROYALTY NETWORK', 
-    description: 'Partner Growth',
-    path: '/dashboard/growth',
-    gradient: 'from-purple-500 to-pink-600',
-    shadowColor: 'shadow-purple-500/30'
-  },
-  { 
-    icon: TrendingUp, 
-    label: 'MONEY TRANSFER', 
-    description: 'Banking Flow',
-    path: '/dashboard/bank',
-    gradient: 'from-blue-500 to-indigo-600',
-    shadowColor: 'shadow-blue-500/30'
-  },
-];
 
 export function DashboardHeroNav() {
   return (
     <div className="grid grid-cols-2 gap-3">
-      {navCards.map((card, index) => (
+      {DASHBOARD_HERO_CARDS.map((card, index) => (
         <motion.div
           key={card.path}
           initial={{ opacity: 0, y: 20 }}
@@ -97,7 +53,7 @@ export function DashboardHeroNav() {
 
               {/* Labels */}
               <h3 className="text-xs font-bold text-foreground tracking-wide mb-0.5 group-hover:text-[#FFD700] transition-colors">
-                {card.label}
+                {card.fullLabel}
               </h3>
               <p className="text-[10px] text-muted-foreground">
                 {card.description}

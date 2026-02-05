@@ -2,11 +2,10 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Menu, X, Home, History, Users, Settings, Shield, 
+  Menu, X, History, Settings, Shield, 
   FileText, HelpCircle, LogOut, ChevronRight, Crown,
   Copy, Share2, Bell, Lock, Moon, Globe, CreditCard,
-  Smartphone, ChevronDown, Target, Landmark, TrendingUp, MapPin,
-  Columns, Zap
+  Smartphone, ChevronDown, MapPin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,53 +26,33 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
+import { SIDEBAR_NAV_SECTIONS } from '@/lib/navSections';
 
 /**
- * Sovereign Sidebar - V9.0
+ * Sovereign Sidebar - V10.0
  * Enhanced burger menu with section headers + active-route indicator
  * Premium transitions & presentation
+ * Source: src/lib/navSections.ts (centralized constants)
  */
 
 interface SovereignSidebarProps {
   className?: string;
 }
 
-interface SidebarItem {
-  icon: React.ElementType;
-  label: string;
-  path: string;
-  description: string;
-  badge?: string;
-}
-
-interface NavSection {
-  title: string;
-  items: SidebarItem[];
-}
-
-// Organized navigation sections
-const navSections: NavSection[] = [
+// Extended navigation sections with additional items not in the centralized config
+const navSections = [
+  ...SIDEBAR_NAV_SECTIONS.slice(0, 1), // Main section
   {
-    title: 'Main',
+    ...SIDEBAR_NAV_SECTIONS[1], // Apps section
     items: [
-      { icon: Home, label: 'Command Center', path: '/dashboard', description: 'Your primary dashboard' },
-      { icon: History, label: 'Account History', path: '/dashboard/transactions', description: 'View all transactions' },
-    ]
-  },
-  {
-    title: 'Apps',
-    items: [
-      { icon: TrendingUp, label: 'EARN', path: '/dashboard/bank', description: 'Task Earnings' },
-      { icon: Zap, label: 'SAVE', path: '/dashboard/market', description: 'Vault Savings' },
-      { icon: Landmark, label: 'TRADE', path: '/dashboard/finance', description: 'P2P Trading' },
-      { icon: Users, label: 'MLM', path: '/dashboard/growth', description: 'Referral Network' },
-      { icon: Crown, label: 'Ad Wizard', path: '/dashboard/ads', description: 'Create ad campaigns', badge: 'PRO+' },
+      ...SIDEBAR_NAV_SECTIONS[1].items,
     ]
   },
   {
     title: 'Account',
     items: [
-      { icon: Users, label: 'Partner Network', path: '/dashboard/referrals', description: 'Manage your referrals' },
+      { icon: History, label: 'Account History', path: '/dashboard/transactions', description: 'View all transactions' },
+      ...SIDEBAR_NAV_SECTIONS[2].items,
     ]
   }
 ];

@@ -1,59 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet, ArrowUpDown, Send, Target, Landmark, X, Megaphone } from 'lucide-react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ALPHA_HUB_ITEMS } from '@/lib/navSections';
 
 /**
- * Alpha Coin Hub - V8.4
+ * Alpha Coin Hub - V10.0
  * The iconic Floating Action Button with Golden Alpha Coin design
  * Contains: Wallet, Exchange, Money Transfer, Assignments, Lending, Ad Wizard
+ * Source: src/lib/navSections.ts (centralized constants)
  */
 
-interface HubItem {
-  icon: React.ElementType;
-  label: string;
-  description: string;
-  href: string;
-  color: string;
-}
-const hubItems: HubItem[] = [{
-  icon: Wallet,
-  label: 'EARN Hub',
-  description: 'Task Earnings',
-  href: '/dashboard/bank',
-  color: 'from-[#FFD700] to-[#FFA500]'
-}, {
-  icon: ArrowUpDown,
-  label: 'Exchange',
-  description: 'Top-up or Payout',
-  href: '/dashboard/bank',
-  color: 'from-emerald-400 to-emerald-600'
-}, {
-  icon: Send,
-  label: 'Money Transfer',
-  description: '3-step banking flow',
-  href: '/dashboard/bank',
-  color: 'from-blue-400 to-blue-600'
-}, {
-  icon: Target,
-  label: 'SAVE Hub',
-  description: 'Vault Savings',
-  href: '/dashboard/market',
-  color: 'from-purple-400 to-purple-600'
-}, {
-  icon: Landmark,
-  label: 'TRADE Hub',
-  description: 'P2P Trading',
-  href: '/dashboard/finance',
-  color: 'from-cyan-400 to-cyan-600'
-}, {
-  icon: Megaphone,
-  label: 'MLM Hub',
-  description: 'Referral Network',
-  href: '/dashboard/growth',
-  color: 'from-orange-400 to-red-500'
-}];
 export function AlphaCoinHub() {
   const [isOpen, setIsOpen] = useState(false);
   return <div className="fixed bottom-24 right-4 z-40">
@@ -70,7 +28,7 @@ export function AlphaCoinHub() {
             
             {/* Menu Items */}
             <div className="absolute bottom-20 right-0 flex flex-col gap-3 items-end">
-              {hubItems.map((item, index) => <motion.div key={item.label} initial={{
+              {ALPHA_HUB_ITEMS.map((item, index) => <motion.div key={item.label} initial={{
             opacity: 0,
             x: 30,
             scale: 0.8

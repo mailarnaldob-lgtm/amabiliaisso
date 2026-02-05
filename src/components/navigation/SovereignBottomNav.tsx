@@ -1,56 +1,21 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, Landmark, TrendingUp, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BOTTOM_NAV_ITEMS } from '@/lib/navSections';
 
 /**
- * Sovereign Bottom Navigation - V8.4
- * Major 4-icon navigation as per Blueprint V8.0
- * Labels per specification:
- * - VPA: "EARN TASK REWARDS"
- * - Lending: "ALPHA BANKERS COOPERATIVE"  
- * - Growth: "ALPHA ROYALTY NETWORK"
- * - Money Transfer: "MONEY TRANSFER"
+ * Sovereign Bottom Navigation - V10.0
+ * Four-pillar navigation using centralized constants
+ * Source: src/lib/navSections.ts
  */
 
-interface NavItem {
-  icon: React.ElementType;
-  label: string;
-  sublabel: string;
-  path: string;
-  color: string;
-}
-
-const navItems: NavItem[] = [
-  { 
-    icon: Landmark,
-    label: 'EARN',
-    sublabel: 'Task Earnings',
-    path: '/dashboard/bank',
-    color: 'from-emerald-400 to-emerald-600'
-  },
-  { 
-    icon: Target,
-    label: 'SAVE',
-    sublabel: 'Vault Savings',
-    path: '/dashboard/market',
-    color: 'from-[#FFD700] to-[#FFA500]'
-  },
-  { 
-    icon: TrendingUp, 
-    label: 'TRADE',
-    sublabel: 'P2P Trading',
-    path: '/dashboard/finance',
-    color: 'from-blue-400 to-blue-600'
-  },
-  { 
-    icon: Users, 
-    label: 'MLM',
-    sublabel: 'Referral Network',
-    path: '/dashboard/growth',
-    color: 'from-purple-400 to-purple-600'
-  },
-];
+const navItems = BOTTOM_NAV_ITEMS.map(item => ({
+  icon: item.icon,
+  label: item.name,
+  sublabel: item.description,
+  path: item.path,
+  color: item.color,
+}));
 
 export function SovereignBottomNav() {
   const location = useLocation();
