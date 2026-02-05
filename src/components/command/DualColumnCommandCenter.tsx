@@ -9,6 +9,7 @@ import { RadialProgressClock } from './RadialProgressClock';
 import { OdometerNumber } from './OdometerNumber';
 import { ExpandableCard } from './ExpandableCard';
  import { SocialIconGrid } from './SocialIconGrid';
+import { AdPackageGrid } from './AdPackageGrid';
  import { AlphaMissionModal } from './AlphaMissionModal';
 import { useTasks, useTaskSubmissions, useTaskStats, Task, TaskSubmission } from '@/hooks/useTasks';
 import { useAdCampaigns, CAMPAIGN_TYPES, AdCampaign } from '@/hooks/useAdCampaigns';
@@ -50,6 +51,7 @@ export function DualColumnCommandCenter() {
    const [missionModalOpen, setMissionModalOpen] = useState(false);
   const [adWizardOpen, setAdWizardOpen] = useState(false);
    const [filterPlatform, setFilterPlatform] = useState<string | null>(null);
+  const [adPlatformFilter, setAdPlatformFilter] = useState<string | null>(null);
 
   // Data hooks
   const { data: tasks, isLoading: tasksLoading, refetch: refetchTasks } = useTasks();
@@ -105,6 +107,19 @@ export function DualColumnCommandCenter() {
     ).slice(0, 4) || [];
   }, [myCampaigns]);
 
+  // Filter active campaigns by platform
+  const filteredCampaigns = useMemo(() => {
+    if (!adPlatformFilter) return activeCampaigns;
+    const platformMappings: Record<string, string[]> = {
+      'youtube': ['youtube_watch', 'youtube_subscribe'],
+      'facebook': ['facebook_like', 'social_engagement'],
+      'instagram': ['instagram_follow', 'social_engagement'],
+      'tiktok': ['tiktok_follow', 'social_engagement']
+    };
+    const types = platformMappings[adPlatformFilter] || [];
+    return activeCampaigns.filter(c => types.some(t => c.campaign_type.includes(t)));
+  }, [activeCampaigns, adPlatformFilter]);
+
   // 15-second RESTful polling
   useEffect(() => {
     const controller = new AbortController();
@@ -135,6 +150,10 @@ export function DualColumnCommandCenter() {
    const handlePlatformFilter = (platform: string) => {
      setFilterPlatform(filterPlatform === platform ? null : platform);
    };
+
+  const handleAdPlatformFilter = (platform: string) => {
+    setAdPlatformFilter(adPlatformFilter === platform ? null : platform);
+  };
  
   // Calculate stats
   const totalMissions = availableTasks.length;
@@ -331,38 +350,35 @@ export function DualColumnCommandCenter() {
           </div>
 
           <TierGate requiredTier="pro" featureName="Sovereign Ad Engine">
-            {/* Create Campaign CTA */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4"
-            >
-              <Card 
-                className="bg-gradient-to-br from-amber-500/20 to-amber-600/10 border-amber-500/40 cursor-pointer hover:border-amber-400/60 transition-all"
-                onClick={() => setAdWizardOpen(true)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-lg bg-amber-500/20 border border-amber-500/30">
-                        <Plus className="h-5 w-5 text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground">Create Campaign</p>
-                        <p className="text-xs text-muted-foreground">Reach the VPA network</p>
-                      </div>
-                    </div>
-                    <Button 
-                      size="sm"
-                      className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      New Ad
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            {/* Ad Package Grid - Platform Selection */}
+            <div className="mb-4">
+              <AdPackageGrid 
+                onSelect={handleAdPlatformFilter} 
+                activeFilter={adPlatformFilter}
+                onCreateCampaign={() => setAdWizardOpen(true)}
+              />
+              {adPlatformFilter && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 flex items-center justify-between"
+                >
+                  <Badge 
+                    className="bg-amber-500/20 text-amber-400 border-amber-500/30"
+                  >
+                    {adPlatformFilter.charAt(0).toUpperCase() + adPlatformFilter.slice(1)} Campaigns
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => setAdPlatformFilter(null)}
+                  >
+                    Clear Filter
+                  </Button>
+                </motion.div>
+              )}
+            </div>
 
             {isLoadingMyCampaigns ? (
               <div className="space-y-3">
@@ -374,18 +390,30 @@ export function DualColumnCommandCenter() {
                   </Card>
                 ))}
               </div>
-            ) : activeCampaigns.length === 0 ? (
+            ) : filteredCampaigns.length === 0 ? (
               <Card className="bg-card border-border">
                 <CardContent className="p-8 text-center">
                   <Megaphone className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                  <p className="text-muted-foreground">No active campaigns</p>
-                  <p className="text-xs text-muted-foreground mt-1">Create your first ad</p>
+                  <p className="text-muted-foreground">
+                    {adPlatformFilter ? `No ${adPlatformFilter} campaigns` : 'No active campaigns'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {adPlatformFilter ? 'Try a different platform' : 'Create your first ad'}
+                  </p>
+                  <Button 
+                    size="sm"
+                    className="mt-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+                    onClick={() => setAdWizardOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    New Campaign
+                  </Button>
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-3">
                 <AnimatePresence>
-                  {activeCampaigns.map((campaign, index) => (
+                  {filteredCampaigns.map((campaign, index) => (
                     <motion.div
                       key={campaign.id}
                       initial={{ opacity: 0, y: 20 }}
