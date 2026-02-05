@@ -64,8 +64,8 @@
  ];
  
  const secondaryItems: BloomMenuItem[] = [
-   { icon: TrendingUp, label: 'Bank', sublabel: 'Wallet & Exchange', path: '/dashboard/bank', color: 'from-slate-600 to-slate-700' },
-   { icon: Crown, label: 'Royalty', sublabel: 'Network & Team', path: '/dashboard/growth', color: 'from-slate-600 to-slate-700' },
+  { icon: TrendingUp, label: 'EARN', sublabel: 'Task Earnings', path: '/dashboard/bank', color: 'from-slate-600 to-slate-700' },
+  { icon: Crown, label: 'MLM', sublabel: 'Referral Network', path: '/dashboard/growth', color: 'from-slate-600 to-slate-700' },
    { icon: History, label: 'History', sublabel: 'Transactions', path: '/dashboard/transactions', color: 'from-slate-600 to-slate-700' },
    { icon: Settings, label: 'Settings', sublabel: 'Account', path: '/dashboard/settings', color: 'from-slate-600 to-slate-700' },
  ];
