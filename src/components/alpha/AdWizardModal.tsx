@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,8 @@ import { useAdCampaigns, CAMPAIGN_TYPES, PROOF_TYPES, CreateCampaignInput } from
 import { useWallets } from '@/hooks/useWallets';
 import { ChevronLeft, ChevronRight, Rocket, Sparkles, AlertCircle, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+ import { OdometerNumber } from '@/components/command/OdometerNumber';
+ import { cn } from '@/lib/utils';
 
 interface AdWizardModalProps {
   isOpen: boolean;
@@ -383,15 +385,32 @@ export function AdWizardModal({ isOpen, onClose }: AdWizardModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+       <DialogContent 
+         className={cn(
+           "max-w-[90vw] max-h-[90vh] sm:max-w-lg w-full overflow-hidden",
+           "bg-background/95 backdrop-blur-xl border-amber-500/30",
+           "shadow-2xl shadow-amber-500/10"
+         )}
+       >
+         <DialogHeader className="border-b border-border/50 pb-4">
           <DialogTitle className="flex items-center gap-2">
-            <span className="text-xl">📢</span>
+             <div className="p-2 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600">
+               <Sparkles className="h-4 w-4 text-white" />
+             </div>
             <span>Ad Wizard</span>
           </DialogTitle>
+           <DialogDescription className="text-xs text-muted-foreground">
+             Deploy capital across the Sovereign Network
+           </DialogDescription>
         </DialogHeader>
 
-        <div className="mb-4">
+         <motion.div
+           initial={{ opacity: 0, scale: 0.95 }}
+           animate={{ opacity: 1, scale: 1 }}
+           transition={{ type: "spring", stiffness: 400, damping: 30, duration: 0.3 }}
+           className="space-y-4"
+         >
+         <div className="mb-2">
           <div className="flex justify-between text-xs text-muted-foreground mb-2">
             <span>Step {step} of {totalSteps}</span>
             <span>{Math.round(progress)}%</span>
@@ -399,7 +418,7 @@ export function AdWizardModal({ isOpen, onClose }: AdWizardModalProps) {
           <Progress value={progress} className="h-2" />
         </div>
 
-        <AnimatePresence mode="wait">
+         <AnimatePresence mode="wait" initial={false}>
           {renderStep()}
         </AnimatePresence>
 
@@ -435,6 +454,7 @@ export function AdWizardModal({ isOpen, onClose }: AdWizardModalProps) {
             </Button>
           )}
         </div>
+         </motion.div>
       </DialogContent>
     </Dialog>
   );
