@@ -14,41 +14,45 @@
  
  import { Landmark, Target, TrendingUp, Users, Crown, Megaphone, Wallet, ArrowUpDown, Send } from 'lucide-react';
  
- // Core four-pillar taxonomy
- export const APP_PILLARS = {
-   EARN: {
-     id: 'earn',
-     name: 'EARN',
-     description: 'Task Earnings',
-     path: '/dashboard/bank',
-     icon: Landmark,
-     color: 'from-amber-500 to-orange-600',
-   },
-   SAVE: {
-     id: 'save',
-     name: 'SAVE',
-     description: 'Vault Savings',
-     path: '/dashboard/market',
-     icon: Target,
-     color: 'from-emerald-500 to-teal-600',
-   },
-   TRADE: {
-     id: 'trade',
-     name: 'TRADE',
-     description: 'P2P Trading',
-     path: '/dashboard/finance',
-     icon: TrendingUp,
-     color: 'from-blue-500 to-indigo-600',
-   },
-   MLM: {
-     id: 'mlm',
-     name: 'MLM',
-     description: 'Referral Network',
-     path: '/dashboard/growth',
-     icon: Users,
-     color: 'from-purple-500 to-pink-600',
-   },
- } as const;
+// Core four-pillar taxonomy
+export const APP_PILLARS = {
+  EARN: {
+    id: 'earn',
+    name: 'EARN',
+    description: 'Task Earnings',
+    path: '/dashboard/bank',
+    icon: Landmark,
+    color: 'from-amber-500 to-orange-600',
+    isOverlay: true, // Opens as full-screen overlay instead of navigation
+  },
+  SAVE: {
+    id: 'save',
+    name: 'SAVE',
+    description: 'Vault Savings',
+    path: '/dashboard/market',
+    icon: Target,
+    color: 'from-emerald-500 to-teal-600',
+    isOverlay: false,
+  },
+  TRADE: {
+    id: 'trade',
+    name: 'TRADE',
+    description: 'P2P Trading',
+    path: '/dashboard/finance',
+    icon: TrendingUp,
+    color: 'from-blue-500 to-indigo-600',
+    isOverlay: false,
+  },
+  MLM: {
+    id: 'mlm',
+    name: 'MLM',
+    description: 'Referral Network',
+    path: '/dashboard/growth',
+    icon: Users,
+    color: 'from-purple-500 to-pink-600',
+    isOverlay: false,
+  },
+} as const;
  
  // Bottom navigation items (for AppSwitcher, BottomNav, SovereignBottomNav)
  export const BOTTOM_NAV_ITEMS = [
