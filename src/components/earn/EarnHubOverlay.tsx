@@ -1,6 +1,6 @@
 /**
- * EARN HUB OVERLAY - V10.0
- * Isolated full-screen overlay for Task/Mission rewards
+ * EARN HUB OVERLAY - SOVEREIGN V11.0
+ * Complete overhaul with 20 Philippine Brand Missions
  * 
  * Architecture:
  * - RESTful polling (15-second intervals)
@@ -13,7 +13,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Target, CheckCircle2, Clock, Award, Zap, Upload, ExternalLink, Info, FileCheck, AlertCircle, Star } from 'lucide-react';
+import { 
+  X, Target, CheckCircle2, Clock, Award, Zap, Upload, 
+  ExternalLink, Info, FileCheck, AlertCircle, Star,
+  Youtube, Facebook, Play, Users
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -22,7 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EliteButton } from '@/components/ui/elite-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useTasks, useTaskSubmissions, useTaskStats, Task } from '@/hooks/useTasks';
+import { useTaskSubmissions, useTaskStats } from '@/hooks/useTasks';
 import { useProfile } from '@/hooks/useProfile';
 import { ARMY_LEVELS, ArmyLevel } from '@/stores/appStore';
 import { formatDistanceToNow } from 'date-fns';
@@ -34,9 +38,298 @@ interface EarnHubOverlayProps {
   onClose: () => void;
 }
 
-const CATEGORIES = ['All', 'Social Media', 'Video Engagement', 'Content Creation', 'Content Writing', 'Networking', 'Business Development'];
+// ═══════════════════════════════════════════════════════════════════════════
+// PHILIPPINE BRAND MISSIONS - 20 ACTIVE TASKS
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Business Logic Explanation Component
+export interface PhilippineMission {
+  id: string;
+  title: string;
+  description: string;
+  category: 'facebook' | 'youtube';
+  brand: string;
+  action: string;
+  reward: number;
+  proof_type: 'screenshot' | 'link';
+  target_url: string;
+  icon: 'facebook' | 'youtube';
+  is_active: boolean;
+}
+
+export const PHILIPPINE_MISSIONS: PhilippineMission[] = [
+  // ═══════════════════════════════════════════════════════════════════════
+  // FACEBOOK MISSIONS (10 Tasks - Follow/Like)
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'ph-fb-001',
+    title: 'Coca-Cola Philippines',
+    description: 'Follow the official Coca-Cola Philippines Facebook page',
+    category: 'facebook',
+    brand: 'Coca-Cola PH',
+    action: 'Follow Page',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/CocaColaPH',
+    icon: 'facebook',
+    is_active: true,
+  },
+  {
+    id: 'ph-fb-002',
+    title: 'Jollibee',
+    description: 'Like the latest post on Jollibee\'s official Facebook page',
+    category: 'facebook',
+    brand: 'Jollibee',
+    action: 'Like Latest Post',
+    reward: 8,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/JollibeePhilippines',
+    icon: 'facebook',
+    is_active: true,
+  },
+  {
+    id: 'ph-fb-003',
+    title: 'SM Supermalls',
+    description: 'Follow SM Supermalls official Facebook page',
+    category: 'facebook',
+    brand: 'SM Supermalls',
+    action: 'Follow Page',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/saborandmix',
+    icon: 'facebook',
+    is_active: true,
+  },
+  {
+    id: 'ph-fb-004',
+    title: 'GCash',
+    description: 'Like and share any GCash Facebook post',
+    category: 'facebook',
+    brand: 'GCash',
+    action: 'Like & Share Post',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/gcaborandmix',
+    icon: 'facebook',
+    is_active: true,
+  },
+  {
+    id: 'ph-fb-005',
+    title: 'Angkas',
+    description: 'Follow Angkas official Facebook page',
+    category: 'facebook',
+    brand: 'Angkas',
+    action: 'Follow Page',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/angaborandmix',
+    icon: 'facebook',
+    is_active: true,
+  },
+  {
+    id: 'ph-fb-006',
+    title: 'Shopee PH',
+    description: 'Like any Shopee Philippines Facebook post',
+    category: 'facebook',
+    brand: 'Shopee PH',
+    action: 'Like Post',
+    reward: 8,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/ShopeePH',
+    icon: 'facebook',
+    is_active: true,
+  },
+  {
+    id: 'ph-fb-007',
+    title: 'Lazada PH',
+    description: 'Follow Lazada Philippines official Facebook page',
+    category: 'facebook',
+    brand: 'Lazada PH',
+    action: 'Follow Page',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/LazadaPhilippines',
+    icon: 'facebook',
+    is_active: true,
+  },
+  {
+    id: 'ph-fb-008',
+    title: 'Globe Telecom',
+    description: 'Like any Globe Telecom Facebook post',
+    category: 'facebook',
+    brand: 'Globe Telecom',
+    action: 'Like Post',
+    reward: 8,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/globeph',
+    icon: 'facebook',
+    is_active: true,
+  },
+  {
+    id: 'ph-fb-009',
+    title: 'Smart Communications',
+    description: 'Follow Smart Communications official Facebook page',
+    category: 'facebook',
+    brand: 'Smart',
+    action: 'Follow Page',
+    reward: 10,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/SmartCommunications',
+    icon: 'facebook',
+    is_active: true,
+  },
+  {
+    id: 'ph-fb-010',
+    title: 'Meralco',
+    description: 'Like the latest update on Meralco Facebook page',
+    category: 'facebook',
+    brand: 'Meralco',
+    action: 'Like Latest Update',
+    reward: 8,
+    proof_type: 'screenshot',
+    target_url: 'https://www.facebook.com/meralco',
+    icon: 'facebook',
+    is_active: true,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // YOUTUBE MISSIONS (10 Tasks - Subscribe/Watch)
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'ph-yt-001',
+    title: 'Vivamax',
+    description: 'Subscribe to Vivamax official YouTube channel',
+    category: 'youtube',
+    brand: 'Vivamax',
+    action: 'Subscribe Channel',
+    reward: 15,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@VivamaxPH',
+    icon: 'youtube',
+    is_active: true,
+  },
+  {
+    id: 'ph-yt-002',
+    title: 'ABS-CBN Entertainment',
+    description: 'Watch the latest video on ABS-CBN Entertainment',
+    category: 'youtube',
+    brand: 'ABS-CBN',
+    action: 'Watch Latest Video',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@ABSCBNEntertainment',
+    icon: 'youtube',
+    is_active: true,
+  },
+  {
+    id: 'ph-yt-003',
+    title: 'GMA Integrated News',
+    description: 'Subscribe to GMA Integrated News YouTube channel',
+    category: 'youtube',
+    brand: 'GMA News',
+    action: 'Subscribe Channel',
+    reward: 15,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@gaborandmix',
+    icon: 'youtube',
+    is_active: true,
+  },
+  {
+    id: 'ph-yt-004',
+    title: 'Wish 107.5',
+    description: 'Watch any performance video on Wish 107.5 channel',
+    category: 'youtube',
+    brand: 'Wish 107.5',
+    action: 'Watch Performance',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@Wish1075',
+    icon: 'youtube',
+    is_active: true,
+  },
+  {
+    id: 'ph-yt-005',
+    title: 'Cong TV',
+    description: 'Subscribe to Cong TV official YouTube channel',
+    category: 'youtube',
+    brand: 'Cong TV',
+    action: 'Subscribe Channel',
+    reward: 15,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@CongTV',
+    icon: 'youtube',
+    is_active: true,
+  },
+  {
+    id: 'ph-yt-006',
+    title: 'Ivana Alawi',
+    description: 'Subscribe to Ivana Alawi official YouTube channel',
+    category: 'youtube',
+    brand: 'Ivana Alawi',
+    action: 'Subscribe Channel',
+    reward: 15,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@IvanaAlawi',
+    icon: 'youtube',
+    is_active: true,
+  },
+  {
+    id: 'ph-yt-007',
+    title: 'Raffy Tulfo in Action',
+    description: 'Watch any video on Raffy Tulfo in Action',
+    category: 'youtube',
+    brand: 'Raffy Tulfo',
+    action: 'Watch Video',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@raffytaborandmix',
+    icon: 'youtube',
+    is_active: true,
+  },
+  {
+    id: 'ph-yt-008',
+    title: 'Eat Bulaga',
+    description: 'Subscribe to Eat Bulaga official YouTube channel',
+    category: 'youtube',
+    brand: 'Eat Bulaga',
+    action: 'Subscribe Channel',
+    reward: 15,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@EatBulaga',
+    icon: 'youtube',
+    is_active: true,
+  },
+  {
+    id: 'ph-yt-009',
+    title: 'Erwan Heussaff (FEATR)',
+    description: 'Watch any video on Erwan Heussaff\'s FEATR channel',
+    category: 'youtube',
+    brand: 'FEATR',
+    action: 'Watch Video',
+    reward: 12,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@FEATR',
+    icon: 'youtube',
+    is_active: true,
+  },
+  {
+    id: 'ph-yt-010',
+    title: 'Pinoy Big Brother',
+    description: 'Subscribe to Pinoy Big Brother official YouTube channel',
+    category: 'youtube',
+    brand: 'PBB',
+    action: 'Subscribe Channel',
+    reward: 15,
+    proof_type: 'screenshot',
+    target_url: 'https://www.youtube.com/@PinoyBigBrother',
+    icon: 'youtube',
+    is_active: true,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BUSINESS LOGIC EXPLANATION COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
 function BusinessLogicSection() {
   return (
     <Card className="bg-[#050505]/80 border-[#FFD700]/20 backdrop-blur-xl">
@@ -49,11 +342,11 @@ function BusinessLogicSection() {
         <div className="space-y-3 text-sm text-zinc-300">
           <div className="flex items-start gap-3">
             <div className="p-1.5 rounded bg-[#FFD700]/10">
-              <Target className="h-4 w-4 text-[#FFD700]" />
+              <ExternalLink className="h-4 w-4 text-[#FFD700]" />
             </div>
             <div>
-              <p className="font-semibold text-white">1. Start Mission</p>
-              <p className="text-zinc-400">Click the target URL to complete the task externally (YouTube watch, social follow, etc.)</p>
+              <p className="font-semibold text-white">1. Start Mission (Redirect)</p>
+              <p className="text-zinc-400">Click "Start Mission" to open the target URL in a new tab. Complete the action externally.</p>
             </div>
           </div>
           
@@ -62,8 +355,8 @@ function BusinessLogicSection() {
               <Upload className="h-4 w-4 text-emerald-400" />
             </div>
             <div>
-              <p className="font-semibold text-white">2. Submit Proof</p>
-              <p className="text-zinc-400">Upload a screenshot or provide a link as evidence of task completion</p>
+              <p className="font-semibold text-white">2. Mission Accomplished (Upload Proof)</p>
+              <p className="text-zinc-400">Upload a screenshot as evidence of task completion. Proofs are stored securely.</p>
             </div>
           </div>
           
@@ -72,8 +365,8 @@ function BusinessLogicSection() {
               <Clock className="h-4 w-4 text-blue-400" />
             </div>
             <div>
-              <p className="font-semibold text-white">3. Admin Review</p>
-              <p className="text-zinc-400">Admins verify proofs within 1-24 hours. Only admins can view uploaded proofs.</p>
+              <p className="font-semibold text-white">3. Admin Review (1-24 hrs)</p>
+              <p className="text-zinc-400">Admins verify proofs. <span className="text-[#FFD700]">Only Admins can view uploaded proofs.</span></p>
             </div>
           </div>
           
@@ -82,8 +375,8 @@ function BusinessLogicSection() {
               <Zap className="h-4 w-4 text-[#FFD700]" />
             </div>
             <div>
-              <p className="font-semibold text-white">4. Instant Credit</p>
-              <p className="text-zinc-400">Upon approval, ₳ Credits are instantly deposited to your Task Wallet</p>
+              <p className="font-semibold text-white">4. ABC Vault Injection</p>
+              <p className="text-zinc-400">Upon approval, ₳ Credits are instantly injected into your <span className="text-[#FFD700]">Task Wallet</span>.</p>
             </div>
           </div>
         </div>
@@ -98,7 +391,10 @@ function BusinessLogicSection() {
   );
 }
 
-// Animated Stats Header
+// ═══════════════════════════════════════════════════════════════════════════
+// ANIMATED STATS HEADER WITH ODOMETERS
+// ═══════════════════════════════════════════════════════════════════════════
+
 function StatsHeader({ stats }: { stats: ReturnType<typeof useTaskStats> }) {
   return (
     <div className="grid grid-cols-3 gap-4 p-4 bg-[#050505]/60 rounded-xl border border-[#FFD700]/20 backdrop-blur-xl">
@@ -124,7 +420,10 @@ function StatsHeader({ stats }: { stats: ReturnType<typeof useTaskStats> }) {
   );
 }
 
-// VPA Level Card
+// ═══════════════════════════════════════════════════════════════════════════
+// VPA LEVEL CARD (Performance-Based Leveling)
+// ═══════════════════════════════════════════════════════════════════════════
+
 function VPALevelCard({ completedCount }: { completedCount: number }) {
   const armyLevel: ArmyLevel = completedCount >= 500 ? 'elite_operator' 
     : completedCount >= 150 ? 'vanguard'
@@ -178,49 +477,81 @@ function VPALevelCard({ completedCount }: { completedCount: number }) {
   );
 }
 
-// Mission Card Component
-function MissionCard({ 
-  task, 
-  onStartMission 
+// ═══════════════════════════════════════════════════════════════════════════
+// PHILIPPINE MISSION CARD COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+function PhilippineMissionCard({ 
+  mission, 
+  onStartMission,
+  isSubmitted
 }: { 
-  task: Task; 
-  onStartMission: (task: Task) => void;
+  mission: PhilippineMission; 
+  onStartMission: (mission: PhilippineMission) => void;
+  isSubmitted: boolean;
 }) {
+  const IconComponent = mission.icon === 'youtube' ? Youtube : Facebook;
+  const iconBg = mission.icon === 'youtube' 
+    ? 'from-red-600/20 to-red-800/10 border-red-500/20' 
+    : 'from-blue-600/20 to-blue-800/10 border-blue-500/20';
+  const iconColor = mission.icon === 'youtube' ? 'text-red-500' : 'text-blue-500';
+  
   return (
-    <Card className="bg-[#050505]/80 border-[#FFD700]/10 hover:border-[#FFD700]/40 transition-all duration-300 backdrop-blur-xl group">
+    <Card className={cn(
+      "bg-[#050505]/80 border-[#FFD700]/10 transition-all duration-300 backdrop-blur-xl group",
+      isSubmitted ? "opacity-50" : "hover:border-[#FFD700]/40"
+    )}>
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-[#FFD700]/20 to-[#FFD700]/5 border border-[#FFD700]/20 group-hover:border-[#FFD700]/40 transition-colors">
-            <Target className="h-6 w-6 text-[#FFD700]" />
+          <div className={cn(
+            "p-3 rounded-xl bg-gradient-to-br border transition-colors",
+            iconBg,
+            !isSubmitted && "group-hover:border-[#FFD700]/40"
+          )}>
+            <IconComponent className={cn("h-6 w-6", iconColor)} />
           </div>
           
           <div className="flex-1 min-w-0 space-y-2">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h4 className="font-semibold text-white line-clamp-1">{task.title}</h4>
-                <p className="text-xs text-zinc-500 line-clamp-2 mt-0.5">{task.description}</p>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-semibold text-white line-clamp-1">{mission.title}</h4>
+                  {isSubmitted && (
+                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px]">
+                      <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
+                      Done
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-zinc-500 line-clamp-1 mt-0.5">{mission.description}</p>
               </div>
               <Badge className="bg-[#FFD700]/20 text-[#FFD700] border-[#FFD700]/30 font-mono flex-shrink-0">
-                <OdometerNumber value={task.reward} prefix="+₳" className="text-xs" />
+                <OdometerNumber value={mission.reward} prefix="+₳" className="text-xs" />
               </Badge>
             </div>
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs text-zinc-500">
-                <span className="px-2 py-0.5 rounded bg-[#FFD700]/5 border border-[#FFD700]/10 capitalize">
-                  {task.category}
+                <span className={cn(
+                  "px-2 py-0.5 rounded border capitalize",
+                  mission.icon === 'youtube' 
+                    ? 'bg-red-500/5 border-red-500/20 text-red-400' 
+                    : 'bg-blue-500/5 border-blue-500/20 text-blue-400'
+                )}>
+                  {mission.action}
                 </span>
-                <span className="capitalize">{task.proof_type} required</span>
               </div>
               
-              <EliteButton
-                size="sm"
-                className="bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-semibold hover:opacity-90 h-8"
-                onClick={() => onStartMission(task)}
-              >
-                <Target className="h-3.5 w-3.5 mr-1" />
-                Start
-              </EliteButton>
+              {!isSubmitted && (
+                <EliteButton
+                  size="sm"
+                  className="bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-semibold hover:opacity-90 h-8"
+                  onClick={() => onStartMission(mission)}
+                >
+                  <Target className="h-3.5 w-3.5 mr-1" />
+                  Start
+                </EliteButton>
+              )}
             </div>
           </div>
         </div>
@@ -229,7 +560,10 @@ function MissionCard({
   );
 }
 
-// Submission Card Component
+// ═══════════════════════════════════════════════════════════════════════════
+// SUBMISSION HISTORY CARD
+// ═══════════════════════════════════════════════════════════════════════════
+
 function SubmissionCard({ submission }: { submission: any }) {
   const statusConfig = {
     pending: { icon: Clock, color: 'blue', label: 'Under Review', bg: 'bg-blue-500/10', border: 'border-blue-500/30' },
@@ -296,7 +630,10 @@ function SubmissionCard({ submission }: { submission: any }) {
   );
 }
 
-// Empty State Component
+// ═══════════════════════════════════════════════════════════════════════════
+// EMPTY STATE COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
 function EmptyState({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <Card className="bg-[#050505]/60 border-[#FFD700]/10">
@@ -311,45 +648,53 @@ function EmptyState({ icon, title, description }: { icon: React.ReactNode; title
   );
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN EARN HUB OVERLAY COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
 export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
   const { data: profile } = useProfile();
-  const { data: tasks, isLoading: tasksLoading, refetch: refetchTasks } = useTasks();
   const { data: submissions, isLoading: submissionsLoading, refetch: refetchSubmissions } = useTaskSubmissions();
   const stats = useTaskStats();
   
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<'all' | 'facebook' | 'youtube'>('all');
+  const [selectedMission, setSelectedMission] = useState<PhilippineMission | null>(null);
   const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
 
-  // 15-second RESTful polling for live data
+  // 15-second RESTful polling for live data (NO WebSockets)
   useEffect(() => {
     if (!isOpen) return;
     
     const pollInterval = setInterval(() => {
-      refetchTasks();
       refetchSubmissions();
     }, 15000);
     
     return () => clearInterval(pollInterval);
-  }, [isOpen, refetchTasks, refetchSubmissions]);
+  }, [isOpen, refetchSubmissions]);
 
-  // Get submitted task IDs for filtering
+  // Get submitted task IDs from database submissions
   const submittedTaskIds = new Set(submissions?.map(s => s.task_id) || []);
   
-  // Filter available tasks (not yet submitted)
-  const availableTasks = tasks?.filter(t => !submittedTaskIds.has(t.id)) || [];
-  const filteredAvailable = selectedCategory === 'All' 
-    ? availableTasks 
-    : availableTasks.filter(t => t.category === selectedCategory);
+  // Filter Philippine missions by platform
+  const activeMissions = PHILIPPINE_MISSIONS.filter(m => m.is_active);
+  const filteredMissions = selectedPlatform === 'all' 
+    ? activeMissions 
+    : activeMissions.filter(m => m.category === selectedPlatform);
+
+  // Calculate total potential earnings
+  const totalPotentialEarnings = activeMissions.reduce((sum, m) => sum + m.reward, 0);
+  const facebookCount = activeMissions.filter(m => m.category === 'facebook').length;
+  const youtubeCount = activeMissions.filter(m => m.category === 'youtube').length;
 
   // Filter submissions by status
   const pendingSubmissions = submissions?.filter(s => s.status === 'pending') || [];
   const approvedSubmissions = submissions?.filter(s => s.status === 'approved') || [];
 
-  const isLoading = tasksLoading || submissionsLoading;
-
-  const handleStartMission = useCallback((task: Task) => {
-    setSelectedTask(task);
+  const handleStartMission = useCallback((mission: PhilippineMission) => {
+    // Open target URL in new tab
+    window.open(mission.target_url, '_blank', 'noopener,noreferrer');
+    // Set selected mission for proof submission
+    setSelectedMission(mission);
     setSubmissionModalOpen(true);
   }, []);
 
@@ -357,7 +702,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop with blur */}
+          {/* Backdrop with blur - Obsidian Black theme */}
           <motion.div
             className="fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-2xl"
             initial={{ opacity: 0 }}
@@ -367,7 +712,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
             onClick={onClose}
           />
           
-          {/* Overlay Content */}
+          {/* Overlay Content - Scale-in animation */}
           <motion.div
             className="fixed inset-0 z-50 overflow-y-auto"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -384,7 +729,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                   </div>
                   <div>
                     <h1 className="text-xl font-bold text-white">EARN Hub</h1>
-                    <p className="text-xs text-zinc-500">VPA Mission Control</p>
+                    <p className="text-xs text-zinc-500">VPA Mission Control • 20 Active Missions</p>
                   </div>
                 </div>
                 
@@ -398,11 +743,14 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                 </motion.button>
               </div>
               
-              {/* Info Banner */}
+              {/* Mission Counter Banner */}
               <Alert className="border-[#FFD700]/30 bg-[#FFD700]/5 mb-4">
                 <FileCheck className="h-4 w-4 text-[#FFD700]" />
                 <AlertDescription className="text-xs text-zinc-300">
-                  Complete VPA missions and submit proof for admin review. Credits are allocated after approval.
+                  <span className="text-[#FFD700] font-semibold">{activeMissions.length} Active Missions</span> available • 
+                  <span className="text-blue-400"> {facebookCount} Facebook</span> • 
+                  <span className="text-red-400"> {youtubeCount} YouTube</span> • 
+                  Potential: <span className="text-[#FFD700] font-mono">₳{totalPotentialEarnings}</span>
                 </AlertDescription>
               </Alert>
               
@@ -419,124 +767,152 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                 <BusinessLogicSection />
               </div>
               
-              {/* Category Filters */}
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mt-6">
-                {CATEGORIES.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                      selectedCategory === category
-                        ? 'bg-[#FFD700] text-black'
-                        : 'bg-[#FFD700]/10 text-zinc-400 hover:text-white hover:bg-[#FFD700]/20'
-                    )}
-                  >
-                    {category}
-                  </button>
-                ))}
+              {/* Platform Filter Tabs */}
+              <div className="flex gap-2 mt-6 mb-4">
+                <button
+                  onClick={() => setSelectedPlatform('all')}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all",
+                    selectedPlatform === 'all'
+                      ? 'bg-[#FFD700] text-black'
+                      : 'bg-[#FFD700]/10 text-zinc-400 hover:text-white hover:bg-[#FFD700]/20'
+                  )}
+                >
+                  <Users className="h-4 w-4" />
+                  All ({activeMissions.length})
+                </button>
+                <button
+                  onClick={() => setSelectedPlatform('facebook')}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all",
+                    selectedPlatform === 'facebook'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-blue-500/10 text-blue-400 hover:text-white hover:bg-blue-500/20'
+                  )}
+                >
+                  <Facebook className="h-4 w-4" />
+                  Facebook ({facebookCount})
+                </button>
+                <button
+                  onClick={() => setSelectedPlatform('youtube')}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all",
+                    selectedPlatform === 'youtube'
+                      ? 'bg-red-500 text-white'
+                      : 'bg-red-500/10 text-red-400 hover:text-white hover:bg-red-500/20'
+                  )}
+                >
+                  <Youtube className="h-4 w-4" />
+                  YouTube ({youtubeCount})
+                </button>
               </div>
               
-              {/* Mission Tabs */}
-              <Tabs defaultValue="available" className="w-full mt-4">
-                <TabsList className="w-full bg-[#050505]/80 border border-[#FFD700]/20">
-                  <TabsTrigger value="available" className="flex-1 data-[state=active]:bg-[#FFD700] data-[state=active]:text-black">
-                    <Target className="h-3.5 w-3.5 mr-1.5" />
-                    Available ({filteredAvailable.length})
+              {/* Tabs for Missions vs History */}
+              <Tabs defaultValue="missions" className="w-full">
+                <TabsList className="w-full grid grid-cols-2 bg-[#050505]/60 border border-[#FFD700]/20 rounded-xl mb-4">
+                  <TabsTrigger 
+                    value="missions" 
+                    className="rounded-lg data-[state=active]:bg-[#FFD700] data-[state=active]:text-black"
+                  >
+                    <Target className="h-4 w-4 mr-2" />
+                    Missions
                   </TabsTrigger>
-                  <TabsTrigger value="pending" className="flex-1 data-[state=active]:bg-[#FFD700] data-[state=active]:text-black">
-                    <Clock className="h-3.5 w-3.5 mr-1.5" />
-                    Pending ({pendingSubmissions.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="approved" className="flex-1 data-[state=active]:bg-[#FFD700] data-[state=active]:text-black">
-                    <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                    Approved ({approvedSubmissions.length})
+                  <TabsTrigger 
+                    value="history"
+                    className="rounded-lg data-[state=active]:bg-[#FFD700] data-[state=active]:text-black"
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    History ({submissions?.length || 0})
                   </TabsTrigger>
                 </TabsList>
-
-                <TabsContent value="available" className="space-y-3 mt-4">
-                  {isLoading ? (
-                    <div className="space-y-3">
-                      {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-24 w-full bg-[#FFD700]/5" />
-                      ))}
-                    </div>
-                  ) : filteredAvailable.length > 0 ? (
-                    filteredAvailable.map((task) => (
-                      <MissionCard 
-                        key={task.id} 
-                        task={task} 
+                
+                {/* Missions Tab */}
+                <TabsContent value="missions" className="space-y-3 mt-0">
+                  {submissionsLoading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <Card key={i} className="bg-[#050505]/80 border-[#FFD700]/10">
+                        <CardContent className="p-4">
+                          <div className="flex gap-4">
+                            <Skeleton className="h-12 w-12 rounded-xl" />
+                            <div className="flex-1 space-y-2">
+                              <Skeleton className="h-4 w-2/3" />
+                              <Skeleton className="h-3 w-1/2" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : filteredMissions.length > 0 ? (
+                    filteredMissions.map((mission) => (
+                      <PhilippineMissionCard
+                        key={mission.id}
+                        mission={mission}
                         onStartMission={handleStartMission}
+                        isSubmitted={submittedTaskIds.has(mission.id)}
                       />
                     ))
                   ) : (
-                    <EmptyState 
+                    <EmptyState
                       icon={<Target className="h-12 w-12" />}
-                      title="No available missions"
-                      description="Check back soon for new VPA missions"
+                      title="No Missions Available"
+                      description="Check back later for new missions"
                     />
                   )}
                 </TabsContent>
-
-                <TabsContent value="pending" className="space-y-3 mt-4">
-                  {isLoading ? (
-                    <div className="space-y-3">
-                      {[1, 2].map((i) => (
-                        <Skeleton key={i} className="h-24 w-full bg-blue-500/5" />
-                      ))}
-                    </div>
-                  ) : pendingSubmissions.length > 0 ? (
-                    pendingSubmissions.map((sub) => (
-                      <SubmissionCard key={sub.id} submission={sub} />
+                
+                {/* History Tab */}
+                <TabsContent value="history" className="space-y-3 mt-0">
+                  {submissionsLoading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <Card key={i} className="bg-[#050505]/80 border-[#FFD700]/10">
+                        <CardContent className="p-4">
+                          <div className="flex gap-3">
+                            <Skeleton className="h-10 w-10 rounded-lg" />
+                            <div className="flex-1 space-y-2">
+                              <Skeleton className="h-4 w-3/4" />
+                              <Skeleton className="h-3 w-1/2" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : submissions && submissions.length > 0 ? (
+                    submissions.map((submission) => (
+                      <SubmissionCard key={submission.id} submission={submission} />
                     ))
                   ) : (
-                    <EmptyState 
+                    <EmptyState
                       icon={<Clock className="h-12 w-12" />}
-                      title="No pending missions"
-                      description="Complete missions to see them here"
-                    />
-                  )}
-                </TabsContent>
-
-                <TabsContent value="approved" className="space-y-3 mt-4">
-                  {isLoading ? (
-                    <div className="space-y-3">
-                      {[1, 2].map((i) => (
-                        <Skeleton key={i} className="h-24 w-full bg-emerald-500/5" />
-                      ))}
-                    </div>
-                  ) : approvedSubmissions.length > 0 ? (
-                    approvedSubmissions.map((sub) => (
-                      <SubmissionCard key={sub.id} submission={sub} />
-                    ))
-                  ) : (
-                    <EmptyState 
-                      icon={<CheckCircle2 className="h-12 w-12" />}
-                      title="No approved missions yet"
-                      description="Your approved missions will appear here"
+                      title="No Submissions Yet"
+                      description="Complete missions to see your history"
                     />
                   )}
                 </TabsContent>
               </Tabs>
-              
-              {/* Footer Disclaimer */}
-              <div className="mt-8 p-4 rounded-xl bg-[#050505]/60 border border-[#FFD700]/10">
-                <p className="text-xs text-zinc-500 text-center">
-                  All proof submissions are reviewed by admins. Proof files are stored securely and visible only to you and admins.
-                </p>
-              </div>
             </div>
           </motion.div>
           
           {/* Task Submission Modal */}
-          <TaskSubmissionModal
-            open={submissionModalOpen}
-            onOpenChange={(open) => {
-              setSubmissionModalOpen(open);
-              if (!open) setSelectedTask(null);
-            }}
-            task={selectedTask}
-          />
+          {selectedMission && (
+            <TaskSubmissionModal
+              open={submissionModalOpen}
+              onOpenChange={(open) => {
+                setSubmissionModalOpen(open);
+                if (!open) setSelectedMission(null);
+              }}
+              task={{
+                id: selectedMission.id,
+                title: selectedMission.title,
+                description: selectedMission.description,
+                category: selectedMission.category,
+                required_level: 'cadet',
+                proof_type: selectedMission.proof_type,
+                reward: selectedMission.reward,
+                is_active: selectedMission.is_active,
+                created_at: new Date().toISOString(),
+              }}
+            />
+          )}
         </>
       )}
     </AnimatePresence>
