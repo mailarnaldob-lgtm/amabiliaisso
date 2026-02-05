@@ -18,7 +18,7 @@ const appSections: AppSection[] = [
     icon: Landmark, 
     path: '/dashboard/bank',
     color: 'from-amber-500 to-orange-600',
-    description: 'Wallet & Credits'
+    description: 'Task Earnings'
   },
   { 
     id: 'market', 
@@ -26,7 +26,7 @@ const appSections: AppSection[] = [
     icon: Target, 
     path: '/dashboard/market',
     color: 'from-emerald-500 to-teal-600',
-    description: 'VPA Missions'
+    description: 'Vault Savings'
   },
   { 
     id: 'finance', 
@@ -34,7 +34,7 @@ const appSections: AppSection[] = [
     icon: TrendingUp, 
     path: '/dashboard/finance',
     color: 'from-blue-500 to-indigo-600',
-    description: 'ALPHA P2P Credits'
+    description: 'P2P Trading'
   },
   { 
     id: 'growth', 
@@ -42,7 +42,7 @@ const appSections: AppSection[] = [
     icon: Users, 
     path: '/dashboard/growth',
     color: 'from-purple-500 to-pink-600',
-    description: 'Royalties & Network'
+    description: 'Referral Network'
   },
 ];
 
