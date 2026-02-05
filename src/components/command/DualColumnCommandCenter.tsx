@@ -4,12 +4,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
 import { RadialProgressClock } from './RadialProgressClock';
 import { OdometerNumber } from './OdometerNumber';
 import { ExpandableCard } from './ExpandableCard';
  import { SocialIconGrid } from './SocialIconGrid';
  import { AlphaMissionModal } from './AlphaMissionModal';
-import { useTasks, useTaskSubmissions, Task } from '@/hooks/useTasks';
+import { useTasks, useTaskSubmissions, useTaskStats, Task, TaskSubmission } from '@/hooks/useTasks';
 import { useAdCampaigns, CAMPAIGN_TYPES, AdCampaign } from '@/hooks/useAdCampaigns';
 import { useProfile } from '@/hooks/useProfile';
 import { AdWizardModal } from '@/components/alpha/AdWizardModal';
@@ -33,7 +34,12 @@ import {
   Play,
   Pause,
    CheckCircle2,
-   Sparkles
+   Sparkles,
+   Flame,
+   Award,
+   AlertCircle,
+   XCircle,
+   Timer
 } from 'lucide-react';
 
 const POLL_INTERVAL = 15000; // 15 seconds
@@ -50,6 +56,7 @@ export function DualColumnCommandCenter() {
   const { data: submissions, refetch: refetchSubmissions } = useTaskSubmissions();
   const { myCampaigns, isLoadingMyCampaigns, refetchMyCampaigns } = useAdCampaigns();
   const { data: profile } = useProfile();
+  const taskStats = useTaskStats();
 
   const isPro = profile?.membership_tier === 'pro' || 
                 profile?.membership_tier === 'expert' || 
@@ -63,8 +70,33 @@ export function DualColumnCommandCenter() {
   // Filter available tasks
   const availableTasks = useMemo(() => {
     if (!tasks) return [];
-    return tasks.filter((t) => !submittedTaskIds.has(t.id)).slice(0, 6);
-  }, [tasks, submittedTaskIds]);
+    let filtered = tasks.filter((t) => !submittedTaskIds.has(t.id));
+    
+    // Apply platform filter if active
+    if (filterPlatform) {
+      const platformCategories: Record<string, string[]> = {
+        'youtube': ['Video Engagement', 'video', 'youtube'],
+        'facebook': ['Social Media', 'facebook', 'social'],
+        'instagram': ['Content Creation', 'instagram', 'photo'],
+        'tiktok': ['Content Creation', 'tiktok', 'video', 'short']
+      };
+      const keywords = platformCategories[filterPlatform] || [];
+      filtered = filtered.filter((t) => 
+        keywords.some(kw => 
+          t.category.toLowerCase().includes(kw.toLowerCase()) ||
+          t.title.toLowerCase().includes(kw.toLowerCase()) ||
+          t.description.toLowerCase().includes(kw.toLowerCase())
+        )
+      );
+    }
+    
+    return filtered.slice(0, 8);
+  }, [tasks, submittedTaskIds, filterPlatform]);
+
+  // Get pending submissions for tracking
+  const pendingSubmissions = useMemo(() => {
+    return submissions?.filter(s => s.status === 'pending') || [];
+  }, [submissions]);
 
   // Active campaigns for display
   const activeCampaigns = useMemo(() => {
@@ -112,52 +144,98 @@ export function DualColumnCommandCenter() {
 
   return (
     <div className="space-y-6">
-      {/* Dual Stats Header */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Missions Stats */}
+      {/* VPA Stats Dashboard - 3 Column */}
+      <div className="grid grid-cols-3 gap-3">
+        {/* Available Missions */}
         <Card className="bg-gradient-to-br from-[#FFD700]/10 to-[#FFD700]/5 border-[#FFD700]/30">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-[#FFD700]/20 border border-[#FFD700]/30">
-                <Target className="h-5 w-5 text-[#FFD700]" />
+              <div className="p-2 rounded-lg bg-[#FFD700]/20 border border-[#FFD700]/30">
+                <Target className="h-4 w-4 text-[#FFD700]" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Missions</p>
+                <p className="text-[10px] text-muted-foreground uppercase">Available</p>
                 <OdometerNumber 
                   value={totalMissions} 
-                  className="text-2xl font-bold text-[#FFD700]"
+                  className="text-xl font-bold text-[#FFD700]"
                 />
               </div>
             </div>
-            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <Zap className="h-3 w-3 text-[#FFD700]" />
-              <span>₳<OdometerNumber value={totalRewards} className="text-[#FFD700] font-semibold" /> available</span>
+              <span>₳{totalRewards}</span>
             </div>
           </CardContent>
         </Card>
 
-        {/* Ads Stats */}
-        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/30">
-          <CardContent className="p-4">
+        {/* Pending Review */}
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/30">
+          <CardContent className="p-3">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-amber-500/20 border border-amber-500/30">
-                <Megaphone className="h-5 w-5 text-amber-400" />
+              <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-500/30">
+                <Timer className="h-4 w-4 text-blue-400" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Campaigns</p>
+                <p className="text-[10px] text-muted-foreground uppercase">Pending</p>
                 <OdometerNumber 
-                  value={totalCampaigns} 
-                  className="text-2xl font-bold text-amber-400"
+                  value={pendingSubmissions.length} 
+                  className="text-xl font-bold text-blue-400"
                 />
               </div>
             </div>
-            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-              <Users className="h-3 w-3 text-amber-400" />
-              <span><OdometerNumber value={totalReach} className="text-amber-400 font-semibold" /> reach</span>
+            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Clock className="h-3 w-3 text-blue-400" />
+              <span>Under review</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Total Earned */}
+        <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/30">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30">
+                <Award className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase">Earned</p>
+                <div className="text-xl font-bold text-emerald-400">
+                  ₳<OdometerNumber value={taskStats.totalCreditsEarned} />
+                </div>
+              </div>
+            </div>
+            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+              <span>{taskStats.totalCompleted} approved</span>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Pending Submissions Tracker */}
+      {pendingSubmissions.length > 0 && (
+        <Card className="bg-blue-500/5 border-blue-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Timer className="h-4 w-4 text-blue-400" />
+              <h3 className="text-sm font-semibold text-foreground">Pending Review</h3>
+              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-[10px] ml-auto">
+                {pendingSubmissions.length} awaiting
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              {pendingSubmissions.slice(0, 3).map((sub) => (
+                <PendingSubmissionCard key={sub.id} submission={sub} />
+              ))}
+              {pendingSubmissions.length > 3 && (
+                <p className="text-xs text-muted-foreground text-center pt-1">
+                  +{pendingSubmissions.length - 3} more pending
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Dual Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -175,20 +253,26 @@ export function DualColumnCommandCenter() {
 
            {/* Social Icon Grid Filter */}
            <div className="mb-4">
-             <SocialIconGrid onSelect={handlePlatformFilter} />
+             <SocialIconGrid onSelect={handlePlatformFilter} activeFilter={filterPlatform} />
              {filterPlatform && (
                <motion.div 
                  initial={{ opacity: 0, y: -10 }}
                  animate={{ opacity: 1, y: 0 }}
-                 className="mt-2 flex items-center gap-2"
+                 className="mt-3 flex items-center justify-between"
                >
                  <Badge 
-                   variant="outline" 
-                   className="bg-muted/50 cursor-pointer hover:bg-muted"
+                   className="bg-[#FFD700]/20 text-[#FFD700] border-[#FFD700]/30"
+                 >
+                   {filterPlatform.charAt(0).toUpperCase() + filterPlatform.slice(1)} Missions
+                 </Badge>
+                 <Button
+                   variant="ghost"
+                   size="sm"
+                   className="h-7 text-xs text-muted-foreground hover:text-foreground"
                    onClick={() => setFilterPlatform(null)}
                  >
-                   Showing: {filterPlatform.toUpperCase()} × Clear
-                 </Badge>
+                   Clear Filter
+                 </Button>
                </motion.div>
              )}
            </div>
@@ -332,6 +416,35 @@ export function DualColumnCommandCenter() {
         isOpen={adWizardOpen} 
         onClose={() => setAdWizardOpen(false)} 
       />
+    </div>
+  );
+}
+
+// Pending Submission Card Component
+interface PendingSubmissionCardProps {
+  submission: TaskSubmission & { task?: Task };
+}
+
+function PendingSubmissionCard({ submission }: PendingSubmissionCardProps) {
+  const submittedTime = formatDistanceToNow(new Date(submission.submitted_at), { addSuffix: true });
+  
+  return (
+    <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/30 border border-border/50">
+      <div className="p-1.5 rounded-md bg-blue-500/20">
+        <Clock className="h-3.5 w-3.5 text-blue-400" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium text-foreground truncate">
+          {submission.task?.title || 'Mission'}
+        </p>
+        <p className="text-[10px] text-muted-foreground">
+          Submitted {submittedTime}
+        </p>
+      </div>
+      <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px]">
+        <Timer className="h-2.5 w-2.5 mr-1" />
+        Review
+      </Badge>
     </div>
   );
 }
