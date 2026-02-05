@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
-import { usePaymentMethods } from '@/hooks/usePaymentMethods';
+import { usePaymentMethodsPolling } from '@/hooks/usePaymentMethodsPolling';
 import { useEliteQualification } from '@/hooks/useEliteQualification';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -93,7 +93,7 @@ const STEPS = [
 export default function UpgradeMembership() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { data: paymentMethods, isLoading: isLoadingMethods } = usePaymentMethods();
+  const { paymentMethods, isLoading: isLoadingMethods } = usePaymentMethodsPolling(30000);
   const { data: eliteQualification, isLoading: isLoadingQualification } = useEliteQualification();
   const { toast } = useToast();
   const queryClient = useQueryClient();
