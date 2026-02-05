@@ -43,6 +43,7 @@ const AdminEconomicControls = lazy(() => import("./pages/admin/AdminEconomicCont
 const GodEyePanel = lazy(() => import("./pages/admin/GodEyePanel"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const TaskProofsDashboard = lazy(() => import("./pages/admin/TaskProofsDashboard"));
+const AdminNetwork = lazy(() => import("./pages/admin/AdminNetwork"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -145,6 +146,7 @@ const App = () => (
                 {/* Admin Auth Routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/task-proofs" element={<ProtectedRoute requireAdmin><TaskProofsDashboard /></ProtectedRoute>} />
+                <Route path="/admin/network" element={<ProtectedRoute requireAdmin><AdminNetwork /></ProtectedRoute>} />
                 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
