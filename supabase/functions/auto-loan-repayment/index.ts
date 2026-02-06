@@ -34,6 +34,12 @@ Deno.serve(async (req) => {
 
     if (rpcError) {
       logError('AUTO-LOAN-REPAYMENT', 'RPC error', rpcError)
+      // Log failure to health table
+      await supabase.rpc('log_edge_function_execution', {
+        p_function_name: 'auto-loan-repayment',
+        p_status: 'error',
+        p_details: { error: rpcError.message }
+      })
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -49,6 +55,12 @@ Deno.serve(async (req) => {
 
     if (!result?.success) {
       logError('AUTO-LOAN-REPAYMENT', 'Process failed', result?.error)
+      // Log failure to health table
+      await supabase.rpc('log_edge_function_execution', {
+        p_function_name: 'auto-loan-repayment',
+        p_status: 'error',
+        p_details: { error: result?.error || 'Unknown error' }
+      })
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -61,6 +73,17 @@ Deno.serve(async (req) => {
         }
       )
     }
+
+    // Log success to health table
+    await supabase.rpc('log_edge_function_execution', {
+      p_function_name: 'auto-loan-repayment',
+      p_status: 'success',
+      p_details: { 
+        repaid_count: result.repaid_count, 
+        defaulted_count: result.defaulted_count, 
+        total_repaid: result.total_repaid 
+      }
+    })
 
     log('AUTO-LOAN-REPAYMENT', `Complete: ${result.repaid_count} repaid, ${result.defaulted_count} defaulted, ₳${result.total_repaid} total`)
 

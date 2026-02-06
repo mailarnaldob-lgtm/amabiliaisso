@@ -15,11 +15,12 @@ import {
   Eye,
   Settings,
   DollarSign,
-  Info,
   Activity,
-  Zap
+  Zap,
+  BarChart3
 } from 'lucide-react';
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
+import { EcosystemLiquidityPanel } from '@/components/admin/EcosystemLiquidityPanel';
 
 export default function AdminDashboard() {
   const { data: stats } = useQuery({
@@ -188,6 +189,9 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
+          {/* Ecosystem Liquidity Panel - V12.0 */}
+          <EcosystemLiquidityPanel />
+
           {/* Capabilities Overview */}
           <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
             <CardHeader>
@@ -217,8 +221,8 @@ export default function AdminDashboard() {
                   <span className="text-foreground">Manage commission payouts</span>
                 </li>
                 <li className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
-                  <Eye className="h-5 w-5 text-primary" />
-                  <span className="text-foreground">Monitor system health and liquidity</span>
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <span className="text-foreground">Monitor ecosystem liquidity and yield</span>
                 </li>
               </ul>
             </CardContent>

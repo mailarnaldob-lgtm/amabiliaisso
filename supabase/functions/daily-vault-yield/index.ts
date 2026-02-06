@@ -33,8 +33,21 @@ Deno.serve(async (req) => {
 
     if (rpcError) {
       logError('DAILY-VAULT-YIELD', 'RPC error', rpcError)
+      // Log failure to health table
+      await supabase.rpc('log_edge_function_execution', {
+        p_function_name: 'daily-vault-yield',
+        p_status: 'error',
+        p_details: { error: rpcError.message }
+      })
       throw new Error(`Failed to calculate vault yield: ${rpcError.message}`)
     }
+
+    // Log success to health table
+    await supabase.rpc('log_edge_function_execution', {
+      p_function_name: 'daily-vault-yield',
+      p_status: 'success',
+      p_details: { processed: result?.processed || 0, total_yield: result?.total_yield_distributed || 0 }
+    })
 
     log('DAILY-VAULT-YIELD', `Complete: Processed ${result?.processed || 0} vaults, distributed ₳${result?.total_yield_distributed || 0}`)
 

@@ -218,6 +218,33 @@ export type Database = {
         }
         Relationships: []
       }
+      edge_function_health: {
+        Row: {
+          created_at: string | null
+          execution_details: Json | null
+          execution_status: string | null
+          function_name: string
+          id: string
+          last_execution: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          execution_details?: Json | null
+          execution_status?: string | null
+          function_name: string
+          id?: string
+          last_execution?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          execution_details?: Json | null
+          execution_status?: string | null
+          function_name?: string
+          id?: string
+          last_execution?: string | null
+        }
+        Relationships: []
+      }
       elite_vaults: {
         Row: {
           available_balance: number | null
@@ -830,6 +857,16 @@ export type Database = {
       }
     }
     Views: {
+      network_commission_report: {
+        Row: {
+          level_1_total: number | null
+          level_2_total: number | null
+          total_commission_events: number | null
+          total_commissions_distributed: number | null
+          unique_earners: number | null
+        }
+        Relationships: []
+      }
       network_stats: {
         Row: {
           created_at: string | null
@@ -907,6 +944,27 @@ export type Database = {
             | null
           referred_id?: string | null
           referrer_id?: string | null
+        }
+        Relationships: []
+      }
+      system_liquidity_report: {
+        Row: {
+          total_circulating: number | null
+          total_main_balance: number | null
+          total_royalty_balance: number | null
+          total_task_balance: number | null
+          total_wallets: number | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      vault_liquidity_report: {
+        Row: {
+          active_vaults: number | null
+          total_available_vault: number | null
+          total_frozen_collateral: number | null
+          total_vault_deposits: number | null
+          total_vaults: number | null
         }
         Relationships: []
       }
@@ -1006,6 +1064,7 @@ export type Database = {
         Returns: Json
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_edge_function_health: { Args: never; Returns: Json }
       get_genealogy_tree: {
         Args: { p_max_depth?: number; p_user_id: string }
         Returns: {
@@ -1031,6 +1090,7 @@ export type Database = {
         }[]
       }
       get_network_stats: { Args: { p_user_id: string }; Returns: Json }
+      get_system_liquidity_stats: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1072,6 +1132,10 @@ export type Database = {
       lending_take_offer: {
         Args: { p_loan_id: string; p_user_id: string }
         Returns: Json
+      }
+      log_edge_function_execution: {
+        Args: { p_details?: Json; p_function_name: string; p_status?: string }
+        Returns: undefined
       }
       process_expired_loans: { Args: never; Returns: Json }
       reject_cash_in_request: {
