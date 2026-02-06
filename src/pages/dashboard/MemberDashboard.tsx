@@ -21,6 +21,8 @@ import { AlphaCoinHub } from '@/components/dashboard/AlphaCoinHub';
 import { DashboardHeroNav } from '@/components/dashboard/DashboardHeroNav';
 import { SovereignBalanceCard } from '@/components/dashboard/SovereignBalanceCard';
 import { AlphaLoader } from '@/components/ui/AlphaLoader';
+import { MissionControlWidget } from '@/components/dashboard/MissionControlWidget';
+import { EarnHubOverlay } from '@/components/earn/EarnHubOverlay';
 
 export default function MemberDashboard() {
   const { secureSignOut, isLoggingOut } = useAuth();
@@ -31,6 +33,7 @@ export default function MemberDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isEarnOverlayOpen, setIsEarnOverlayOpen] = useState(false);
 
   const taskWallet = wallets.find(w => w.wallet_type === 'task');
   const royaltyWallet = wallets.find(w => w.wallet_type === 'royalty');
@@ -237,11 +240,24 @@ export default function MemberDashboard() {
           <DashboardHeroNav />
         </motion.div>
 
-        {/* Partner Network Stats */}
+        {/* MISSION CONTROL CENTER - High Visibility Widget */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
+        >
+          <h3 className="text-xs text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Live Assignments
+          </h3>
+          <MissionControlWidget onOpenEarnHub={() => setIsEarnOverlayOpen(true)} />
+        </motion.div>
+
+        {/* Partner Network Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
           className="p-5 rounded-xl bg-card border border-border hover:border-[#FFD700]/30 transition-colors"
         >
           <Link to="/dashboard/referrals" className="flex items-center justify-between group">
@@ -292,6 +308,12 @@ export default function MemberDashboard() {
 
       {/* Alpha Coin FAB */}
       <AlphaCoinHub />
+
+      {/* EARN Hub Overlay - Triggered by Mission Control Widget */}
+      <EarnHubOverlay 
+        isOpen={isEarnOverlayOpen} 
+        onClose={() => setIsEarnOverlayOpen(false)} 
+      />
     </div>
   );
 }
