@@ -14,6 +14,7 @@ import { PaymentAssetManager } from '@/components/admin/PaymentAssetManager';
 import { CashInAuditPanel } from '@/components/admin/CashInAuditPanel';
 import { CashOutAuditPanel } from '@/components/admin/CashOutAuditPanel';
 import { MediaManagerPanel } from '@/components/admin/MediaManagerPanel';
+import { VaultManagerPanel } from '@/components/admin/VaultManagerPanel';
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper';
 import { 
   Bell,
@@ -24,6 +25,7 @@ import {
   Save,
   ArrowDownToLine,
   Video,
+  Vault,
 } from 'lucide-react';
 
 export default function AdminSettings() {
@@ -49,7 +51,7 @@ export default function AdminSettings() {
         <div className="space-y-8 max-w-5xl">
           {/* Main Settings Tabs */}
           <Tabs defaultValue="cashin" className="w-full">
-            <TabsList className="grid w-full grid-cols-7 mb-6 bg-card/50 border border-border">
+            <TabsList className="grid w-full grid-cols-8 mb-6 bg-card/50 border border-border">
               <TabsTrigger value="cashin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Wallet className="h-4 w-4 mr-2" />
                 Cash-In
@@ -57,6 +59,10 @@ export default function AdminSettings() {
               <TabsTrigger value="cashout" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <ArrowDownToLine className="h-4 w-4 mr-2" />
                 Cash-Out
+              </TabsTrigger>
+              <TabsTrigger value="vault" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Vault className="h-4 w-4 mr-2" />
+                Vault
               </TabsTrigger>
               <TabsTrigger value="notifications" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Bell className="h-4 w-4 mr-2" />
@@ -88,6 +94,11 @@ export default function AdminSettings() {
             {/* Cash-Out Audit Panel Tab */}
             <TabsContent value="cashout">
               <CashOutAuditPanel />
+            </TabsContent>
+
+            {/* Vault Manager Tab */}
+            <TabsContent value="vault">
+              <VaultManagerPanel />
             </TabsContent>
 
             {/* Notifications & Approvals Tab */}

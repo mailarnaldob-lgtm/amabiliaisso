@@ -4,11 +4,12 @@ import { cn } from '@/lib/utils';
 import { BOTTOM_NAV_ITEMS } from '@/lib/navSections';
 import { EarnHubOverlay } from '@/components/earn';
 import { MLMHubOverlay } from '@/components/mlm';
+import { SaveVaultOverlay } from '@/components/vault';
 
 /**
  * AppSwitcher - V12.0
  * Four-pillar bottom navigation using centralized constants
- * EARN and MLM open as full-screen overlays; others navigate
+ * EARN, SAVE, and MLM open as full-screen overlays; TRADE navigates
  * Source: src/lib/navSections.ts
  */
 
@@ -16,6 +17,7 @@ export function AppSwitcher() {
   const location = useLocation();
   const navigate = useNavigate();
   const [earnOverlayOpen, setEarnOverlayOpen] = useState(false);
+  const [saveOverlayOpen, setSaveOverlayOpen] = useState(false);
   const [mlmOverlayOpen, setMlmOverlayOpen] = useState(false);
 
   const getCurrentApp = () => {
@@ -32,6 +34,8 @@ export function AppSwitcher() {
   const handleAppClick = (app: typeof BOTTOM_NAV_ITEMS[number]) => {
     if (app.id === 'earn') {
       setEarnOverlayOpen(true);
+    } else if (app.id === 'save') {
+      setSaveOverlayOpen(true);
     } else if (app.id === 'mlm') {
       setMlmOverlayOpen(true);
     } else {
@@ -46,6 +50,7 @@ export function AppSwitcher() {
           {BOTTOM_NAV_ITEMS.map((app) => {
             const isActive = currentApp === app.id || 
               (app.id === 'earn' && earnOverlayOpen) ||
+              (app.id === 'save' && saveOverlayOpen) ||
               (app.id === 'mlm' && mlmOverlayOpen);
             const Icon = app.icon;
             
@@ -89,6 +94,12 @@ export function AppSwitcher() {
       <EarnHubOverlay 
         isOpen={earnOverlayOpen} 
         onClose={() => setEarnOverlayOpen(false)} 
+      />
+
+      {/* SAVE Vault Full-Screen Overlay */}
+      <SaveVaultOverlay 
+        isOpen={saveOverlayOpen} 
+        onClose={() => setSaveOverlayOpen(false)} 
       />
 
       {/* MLM Hub Full-Screen Overlay */}
