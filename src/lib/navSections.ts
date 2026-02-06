@@ -32,7 +32,7 @@ export const APP_PILLARS = {
     path: '/dashboard/market',
     icon: Target,
     color: 'from-emerald-500 to-teal-600',
-    isOverlay: false,
+    isOverlay: true, // Opens as full-screen Cinematic Vault overlay
   },
   TRADE: {
     id: 'trade',

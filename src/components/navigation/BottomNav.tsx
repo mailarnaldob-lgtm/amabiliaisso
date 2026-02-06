@@ -6,11 +6,12 @@ import { motion } from 'framer-motion';
 import { BOTTOM_NAV_ITEMS } from '@/lib/navSections';
 import { EarnHubOverlay } from '@/components/earn';
 import { MLMHubOverlay } from '@/components/mlm';
+import { SaveVaultOverlay } from '@/components/vault';
 
 /**
  * BottomNav - V12.0
  * Compact bottom navigation using centralized constants
- * EARN and MLM open as full-screen overlays; others navigate
+ * EARN, SAVE, and MLM open as full-screen overlays; TRADE navigates
  * Source: src/lib/navSections.ts
  */
 
@@ -22,12 +23,16 @@ const navItems = [
 export function BottomNav() {
   const location = useLocation();
   const [earnOverlayOpen, setEarnOverlayOpen] = useState(false);
+  const [saveOverlayOpen, setSaveOverlayOpen] = useState(false);
   const [mlmOverlayOpen, setMlmOverlayOpen] = useState(false);
 
   const handleNavClick = (item: typeof navItems[number], e: React.MouseEvent) => {
     if (item.id === 'earn') {
       e.preventDefault();
       setEarnOverlayOpen(true);
+    } else if (item.id === 'save') {
+      e.preventDefault();
+      setSaveOverlayOpen(true);
     } else if (item.id === 'mlm') {
       e.preventDefault();
       setMlmOverlayOpen(true);
@@ -41,6 +46,7 @@ export function BottomNav() {
           {navItems.map((item) => {
             const isActive = location.pathname === item.path || 
               (item.id === 'earn' && earnOverlayOpen) ||
+              (item.id === 'save' && saveOverlayOpen) ||
               (item.id === 'mlm' && mlmOverlayOpen);
             return (
               <Link
@@ -85,6 +91,12 @@ export function BottomNav() {
       <EarnHubOverlay 
         isOpen={earnOverlayOpen} 
         onClose={() => setEarnOverlayOpen(false)} 
+      />
+
+      {/* SAVE Vault Full-Screen Overlay */}
+      <SaveVaultOverlay 
+        isOpen={saveOverlayOpen} 
+        onClose={() => setSaveOverlayOpen(false)} 
       />
 
       {/* MLM Hub Full-Screen Overlay */}
