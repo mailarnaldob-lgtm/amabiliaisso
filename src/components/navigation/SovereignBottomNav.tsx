@@ -22,6 +22,7 @@ const navItems = BOTTOM_NAV_ITEMS.map(item => ({
   path: item.path,
   color: item.color,
   isOverlay: item.isOverlay,
+  comingSoon: 'comingSoon' in item ? item.comingSoon : false,
 }));
 
 export function SovereignBottomNav() {
@@ -95,7 +96,7 @@ export function SovereignBottomNav() {
                     'text-[8px] transition-colors -mt-0.5',
                     active ? 'text-[#FFD700]/70' : 'text-muted-foreground/60'
                   )}>
-                    {item.sublabel}
+                    {item.comingSoon ? 'Coming Soon' : item.sublabel}
                   </span>
                 </motion.div>
 
