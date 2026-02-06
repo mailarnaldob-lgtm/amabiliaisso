@@ -37,11 +37,12 @@ export const APP_PILLARS = {
   TRADE: {
     id: 'trade',
     name: 'TRADE',
-    description: 'P2P Trading',
+    description: 'Convert ₳ to Fiat',
     path: '/dashboard/finance',
     icon: TrendingUp,
     color: 'from-blue-500 to-indigo-600',
     isOverlay: false,
+    comingSoon: true,
   },
   MLM: {
     id: 'mlm',
@@ -92,13 +93,14 @@ export const APP_PILLARS = {
      href: '/dashboard/market',
      color: 'from-purple-400 to-purple-600',
    },
-   {
-     icon: Landmark,
-     label: 'TRADE Hub',
-     description: 'P2P Trading',
-     href: '/dashboard/finance',
-     color: 'from-cyan-400 to-cyan-600',
-   },
+    {
+      icon: Landmark,
+      label: 'TRADE Hub',
+      description: 'Convert ₳ to Fiat',
+      href: '/dashboard/finance',
+      color: 'from-cyan-400 to-cyan-600',
+      comingSoon: true,
+    },
    {
      icon: Megaphone,
      label: 'MLM Hub',
@@ -145,7 +147,7 @@ export const APP_PILLARS = {
  export const BLOOM_SECONDARY_ITEMS = [
    { icon: TrendingUp, label: 'EARN', sublabel: 'Task Earnings', path: '/dashboard/bank', color: 'from-amber-500 to-orange-600' },
    { icon: Target, label: 'SAVE', sublabel: 'Vault Savings', path: '/dashboard/market', color: 'from-emerald-500 to-teal-600' },
-   { icon: Landmark, label: 'TRADE', sublabel: 'P2P Trading', path: '/dashboard/finance', color: 'from-blue-500 to-indigo-600' },
+   { icon: Landmark, label: 'TRADE', sublabel: 'Convert ₳ to Fiat', path: '/dashboard/finance', color: 'from-blue-500 to-indigo-600', comingSoon: true },
    { icon: Crown, label: 'MLM', sublabel: 'Referral Network', path: '/dashboard/growth', color: 'from-purple-500 to-pink-600' },
  ];
  
@@ -160,15 +162,16 @@ export const APP_PILLARS = {
      gradient: 'from-emerald-500 to-teal-600',
      shadowColor: 'shadow-emerald-500/30',
    },
-   {
-     icon: Landmark,
-     label: 'TRADE',
-     fullLabel: 'ALPHA BANKERS',
-     description: 'P2P Trading',
-     path: '/dashboard/finance',
-     gradient: 'from-[#FFD700] to-[#FFA500]',
-     shadowColor: 'shadow-[#FFD700]/30',
-   },
+    {
+      icon: Landmark,
+      label: 'TRADE',
+      fullLabel: 'ALPHA BANKERS',
+      description: 'Convert ₳ to Fiat',
+      path: '/dashboard/finance',
+      gradient: 'from-[#FFD700] to-[#FFA500]',
+      shadowColor: 'shadow-[#FFD700]/30',
+      comingSoon: true,
+    },
    {
      icon: Users,
      label: 'MLM',
@@ -202,7 +205,7 @@ export const APP_PILLARS = {
      items: [
        { icon: TrendingUp, label: 'EARN', path: '/dashboard/bank', description: 'Task Earnings' },
        { icon: Target, label: 'SAVE', path: '/dashboard/market', description: 'Vault Savings' },
-       { icon: Landmark, label: 'TRADE', path: '/dashboard/finance', description: 'P2P Trading' },
+       { icon: Landmark, label: 'TRADE', path: '/dashboard/finance', description: 'Convert ₳ to Fiat', badge: 'SOON' },
        { icon: Users, label: 'MLM', path: '/dashboard/growth', description: 'Referral Network' },
        { icon: Crown, label: 'Ad Wizard', path: '/dashboard/ads', description: 'Create ad campaigns', badge: 'PRO+' },
      ],
