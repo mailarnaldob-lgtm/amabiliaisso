@@ -55,7 +55,7 @@ export function AlphaExchangerCard({ balance, className }: AlphaExchangerCardPro
 
       <div className="relative p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FFD700]/20 to-[#FFA500]/10 border border-[#FFD700]/30 flex items-center justify-center">
               <ArrowRightLeft className="w-5 h-5 text-[#FFD700]" />
@@ -85,6 +85,14 @@ export function AlphaExchangerCard({ balance, className }: AlphaExchangerCardPro
               </>
             )}
           </div>
+        </div>
+
+        {/* SOVEREIGN V12.1: Available for All Accounts Notice */}
+        <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] text-emerald-400 font-medium">
+            Available for All Accounts • Buy ₳ to Fund Campaigns
+          </span>
         </div>
 
         {/* Balance Display - Digital Odometer Style */}

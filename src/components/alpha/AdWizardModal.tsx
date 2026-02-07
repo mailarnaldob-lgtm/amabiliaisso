@@ -404,6 +404,14 @@ export function AdWizardModal({ isOpen, onClose }: AdWizardModalProps) {
            </DialogDescription>
         </DialogHeader>
 
+         {/* SOVEREIGN V12.1: Available for All Accounts Notice */}
+         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-2">
+           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+           <span className="text-[11px] text-emerald-400 font-medium">
+             Available for All Accounts • Create campaigns without activation
+           </span>
+         </div>
+
          <motion.div
            initial={{ opacity: 0, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}
