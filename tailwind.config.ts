@@ -136,12 +136,11 @@ export default {
   				'Inter',
   				'ui-sans-serif',
   				'system-ui',
-  				'-apple-system',
-  				'BlinkMacSystemFont',
-  				'Segoe UI',
-  				'Helvetica Neue',
-  				'Arial',
-  				'sans-serif'
+  				'sans-serif',
+  				'Apple Color Emoji',
+  				'Segoe UI Emoji',
+  				'Segoe UI Symbol',
+  				'Noto Color Emoji'
   			],
   			mono: [
   				'JetBrains Mono',
@@ -153,6 +152,14 @@ export default {
   				'Liberation Mono',
   				'Courier New',
   				'monospace'
+  			],
+  			serif: [
+  				'ui-serif',
+  				'Georgia',
+  				'Cambria',
+  				'Times New Roman',
+  				'Times',
+  				'serif'
   			]
   		}
   	}
