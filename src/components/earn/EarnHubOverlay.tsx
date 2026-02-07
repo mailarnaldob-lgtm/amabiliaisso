@@ -810,12 +810,12 @@ function PhilippineMissionCard({
             <div className="p-2 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30 w-fit mx-auto mb-2">
               <Lock className="h-5 w-5 text-[#FFD700]" />
             </div>
-            <p className="text-xs text-zinc-400 mb-2">Account inactive. Activation required to earn ₳.</p>
+            <p className="text-xs text-zinc-400 mb-2">Activation required to earn ₳ from missions.</p>
             <button
               onClick={onActivateClick}
               className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black hover:opacity-90 transition-opacity"
             >
-              ACTIVATE ACCOUNT TO UNLOCK
+              ACTIVATE ACCOUNT TO EARN ₳
             </button>
           </div>
         </div>
