@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Home, LayoutDashboard, Key, ArrowLeftRight, 
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface NavItem {
   icon: LucideIcon;
@@ -48,7 +49,7 @@ const authenticatedItems: NavItem[] = [
     icon: ArrowLeftRight, 
     acronym: 'EXCH',
     label: 'Exchanger', 
-    href: '/dashboard/bank',
+    href: '/dashboard/exchanger',
     color: 'from-[#FFD700] to-[#FFA500]',
     requiresAuth: true
   },
@@ -155,23 +156,42 @@ const publicItems: NavItem[] = [
 ];
 
 /**
- * FLOATING ACTION CENTER - Global Sovereign Navigator
+ * FLOATING ACTION CENTER - Global Sovereign Navigator V10.0
  * 
  * Features:
  * - Global persistence across all pages
- * - Auto-hide after selection
+ * - Auto-hide after selection with 150ms delay
  * - Icon + Acronym labels for clarity
  * - Sovereign UI: Obsidian Black, Alpha Gold
  * - 0.3s Bloom scale-down (95%) animations
  * - Glassmorphism with backdrop-blur-2xl
+ * - Mobile: FAB moves up on small screens (<768px)
+ * - Auto-hides when mobile nav is open
  */
 export function FloatingActionCenter() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const menuItems = user ? authenticatedItems : publicItems;
+  
+  // Listen for mobile nav toggle events from LandingHeader
+  useEffect(() => {
+    const handleMobileNavToggle = (e: CustomEvent) => {
+      setIsMobileNavOpen(e.detail.isOpen);
+      if (e.detail.isOpen) {
+        setIsOpen(false); // Close FAB when mobile nav opens
+      }
+    };
+
+    window.addEventListener('mobileNavToggle', handleMobileNavToggle as EventListener);
+    return () => {
+      window.removeEventListener('mobileNavToggle', handleMobileNavToggle as EventListener);
+    };
+  }, []);
   
   // Handle navigation with auto-hide
   const handleNavigation = useCallback((href: string) => {
@@ -193,8 +213,18 @@ export function FloatingActionCenter() {
     return null;
   }
 
+  // Hide when mobile nav is open
+  if (isMobileNavOpen) {
+    return null;
+  }
+
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div 
+      className={cn(
+        "fixed z-50 transition-all duration-300",
+        isMobile ? "bottom-20 right-4" : "bottom-6 right-6"
+      )}
+    >
       <AnimatePresence>
         {isOpen && (
           <>
@@ -210,8 +240,9 @@ export function FloatingActionCenter() {
             {/* Menu Container */}
             <motion.div
               className={cn(
-                "absolute bottom-20 right-0",
-                "w-64 max-h-[70vh] overflow-y-auto",
+                "absolute right-0",
+                isMobile ? "bottom-16" : "bottom-20",
+                "w-64 max-h-[60vh] overflow-y-auto",
                 "bg-[#0a0a0a]/95 backdrop-blur-2xl",
                 "border border-[#FFD700]/20 rounded-2xl",
                 "shadow-2xl shadow-black/50",
@@ -303,9 +334,10 @@ export function FloatingActionCenter() {
       {/* Main FAB Button - Alpha Gold */}
       <motion.button
         className={cn(
-          "relative w-16 h-16 rounded-full flex items-center justify-center",
+          "relative rounded-full flex items-center justify-center",
           "text-2xl font-bold",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD700]/50"
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD700]/50",
+          isMobile ? "w-14 h-14" : "w-16 h-16"
         )}
         style={{
           background: isOpen 
@@ -325,9 +357,9 @@ export function FloatingActionCenter() {
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       >
         {isOpen ? (
-          <X className="w-6 h-6 text-[#FFD700]" />
+          <X className={cn("text-[#FFD700]", isMobile ? "w-5 h-5" : "w-6 h-6")} />
         ) : (
-          <span className="text-black font-bold text-xl">₳</span>
+          <span className={cn("text-black font-bold", isMobile ? "text-lg" : "text-xl")}>₳</span>
         )}
         
         {/* Pulse Ring - Only when closed */}

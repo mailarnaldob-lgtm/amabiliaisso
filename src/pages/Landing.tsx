@@ -10,6 +10,18 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 
+/**
+ * LANDING PAGE - AMABILIA NETWORK V10.0 (Final Build)
+ * 
+ * Features:
+ * - Premium, production-ready, fully polished
+ * - Cinematic Obsidian Black (#050505) + Alpha Gold (#FFD700)
+ * - Animated grid pattern with parallax
+ * - Floating ambient orbs with subtle motion
+ * - All sections: Header, Hero, Stats, Four Pillars, Manifesto, Tiers, Mission/Vision, CTA, Footer
+ * - Persistent FAB handled globally in App.tsx
+ * - Fully responsive: Desktop, Tablet, Mobile
+ */
 export default function Landing() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -18,7 +30,9 @@ export default function Landing() {
   });
   
   // Parallax for background elements
-  const gridOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.02, 0.03, 0.01]);
+  const gridOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.02, 0.04, 0.01]);
+  const orbY1 = useTransform(scrollYProgress, [0, 1], [0, 100]);
+  const orbY2 = useTransform(scrollYProgress, [0, 1], [0, -80]);
   
   return (
     <div ref={containerRef} className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -45,11 +59,11 @@ export default function Landing() {
       <motion.div
         className="fixed top-1/4 -left-32 w-96 h-96 rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, hsl(45 100% 51% / 0.03) 0%, transparent 70%)',
-          filter: 'blur(60px)'
+          background: 'radial-gradient(circle, hsl(45 100% 51% / 0.04) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          y: orbY1
         }}
         animate={{
-          y: [0, 50, 0],
           x: [0, 30, 0],
           scale: [1, 1.1, 1]
         }}
@@ -59,15 +73,29 @@ export default function Landing() {
       <motion.div
         className="fixed bottom-1/4 -right-32 w-80 h-80 rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, hsl(45 100% 51% / 0.02) 0%, transparent 70%)',
-          filter: 'blur(50px)'
+          background: 'radial-gradient(circle, hsl(45 100% 51% / 0.03) 0%, transparent 70%)',
+          filter: 'blur(50px)',
+          y: orbY2
         }}
         animate={{
-          y: [0, -40, 0],
           x: [0, -20, 0],
           scale: [1, 1.15, 1]
         }}
         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 5 }}
+      />
+      
+      {/* Third orb for depth */}
+      <motion.div
+        className="fixed top-2/3 left-1/4 w-64 h-64 rounded-full pointer-events-none hidden lg:block"
+        style={{
+          background: 'radial-gradient(circle, hsl(45 100% 51% / 0.02) 0%, transparent 70%)',
+          filter: 'blur(40px)'
+        }}
+        animate={{
+          y: [0, 40, 0],
+          opacity: [0.3, 0.6, 0.3]
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 8 }}
       />
       
       {/* Content */}
@@ -83,7 +111,7 @@ export default function Landing() {
         <LandingFooter />
       </div>
       
-      {/* Floating Action Center now handled globally in App.tsx */}
+      {/* Floating Action Center handled globally in App.tsx */}
     </div>
   );
 }

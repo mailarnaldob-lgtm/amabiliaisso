@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ArrowRight, Sparkles, LucideIcon } from 'lucide-react';
+import { Check, ArrowRight, Sparkles, LucideIcon, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
@@ -19,7 +19,7 @@ interface LegendaryTierCardProps {
 }
 
 /**
- * LEGENDARY TIER CARD - Sovereign Cinematic UI
+ * LEGENDARY TIER CARD - Sovereign Cinematic UI V10.0
  * 
  * Features:
  * - Hide/Expand interaction with legendary animations
@@ -27,6 +27,8 @@ interface LegendaryTierCardProps {
  * - Obsidian Black (#050505) + Alpha Gold (#FFD700)
  * - 0.3s Bloom scale-down transitions
  * - Gold dust particles on expand
+ * - "Most Popular" badge for Expert tier
+ * - Fully touch-friendly for mobile
  */
 export function LegendaryTierCard({
   name,
@@ -46,7 +48,7 @@ export function LegendaryTierCard({
   const handleExpand = useCallback(() => {
     if (!isExpanded) {
       // Generate gold dust particles on expand
-      const newParticles = Array.from({ length: 8 }, (_, i) => ({
+      const newParticles = Array.from({ length: 10 }, (_, i) => ({
         id: Date.now() + i,
         x: Math.random() * 100,
         y: Math.random() * 100,
@@ -56,6 +58,14 @@ export function LegendaryTierCard({
     }
     setIsExpanded(!isExpanded);
   }, [isExpanded]);
+
+  // Auto-expand the popular tier on first view
+  useEffect(() => {
+    if (popular) {
+      const timer = setTimeout(() => setIsExpanded(true), 800 + index * 200);
+      return () => clearTimeout(timer);
+    }
+  }, [popular, index]);
 
   return (
     <motion.div
@@ -70,14 +80,18 @@ export function LegendaryTierCard({
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
-            className="absolute w-1 h-1 rounded-full bg-[#FFD700] pointer-events-none z-50"
-            style={{ left: `${particle.x}%`, top: `${particle.y}%` }}
+            className="absolute w-1.5 h-1.5 rounded-full bg-[#FFD700] pointer-events-none z-50"
+            style={{ 
+              left: `${particle.x}%`, 
+              top: `${particle.y}%`,
+              boxShadow: '0 0 8px rgba(255, 215, 0, 0.8)'
+            }}
             initial={{ opacity: 1, scale: 0 }}
             animate={{
               opacity: [1, 0.8, 0],
               scale: [0, 1.5, 0.5],
-              y: [0, -30],
-              x: [0, (Math.random() - 0.5) * 40],
+              y: [0, -40],
+              x: [0, (Math.random() - 0.5) * 50],
             }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
@@ -90,9 +104,9 @@ export function LegendaryTierCard({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         animate={{
-          scale: isHovered ? 1.02 : 1,
-          rotateY: isHovered ? 3 : 0,
-          rotateX: isHovered ? -2 : 0,
+          scale: isHovered && !isExpanded ? 1.02 : 1,
+          rotateY: isHovered && !isExpanded ? 3 : 0,
+          rotateX: isHovered && !isExpanded ? -2 : 0,
         }}
         transition={{ type: "spring", stiffness: 400, damping: 25, duration: 0.3 }}
         className={cn(
@@ -101,6 +115,7 @@ export function LegendaryTierCard({
           "border transition-all duration-300",
           borderColor,
           isExpanded && "ring-2 ring-[#FFD700]/50 shadow-2xl shadow-[#FFD700]/20",
+          popular && !isExpanded && "ring-1 ring-[#FFD700]/30",
           "backdrop-blur-2xl"
         )}
         style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
@@ -128,12 +143,20 @@ export function LegendaryTierCard({
           transition={{ duration: 0.3 }}
         />
 
-        {/* Popular Badge */}
+        {/* Popular Badge - MOST POPULAR for Expert */}
         {popular && (
-          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-bold px-4 shadow-lg shadow-[#FFD700]/30">
-            <Sparkles className="w-3 h-3 mr-1" />
-            MOST POPULAR
-          </Badge>
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
+          >
+            <Badge 
+              className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-bold px-4 py-1 shadow-lg shadow-[#FFD700]/30 border-0"
+            >
+              <Crown className="w-3 h-3 mr-1" />
+              MOST POPULAR
+            </Badge>
+          </motion.div>
         )}
 
         <div className="relative p-6">
@@ -160,7 +183,12 @@ export function LegendaryTierCard({
             <div className="flex-1">
               <h3 className="text-xl font-bold text-white mb-1">{name}</h3>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-[#FFD700] font-mono">₱{price}</span>
+                <span 
+                  className="text-2xl font-bold text-[#FFD700]"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  ₱{price}
+                </span>
                 <span className="text-xs text-muted-foreground">one-time</span>
               </div>
             </div>
@@ -256,6 +284,8 @@ export function LegendaryTierCard({
                           'w-full h-12 text-base font-bold transition-all gap-2',
                           name === 'Elite'
                             ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black hover:opacity-90 shadow-lg shadow-[#FFD700]/30'
+                            : popular
+                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:opacity-90 shadow-lg shadow-blue-500/30'
                             : 'bg-muted hover:bg-muted/80 text-foreground border border-[#FFD700]/20'
                         )}
                       >
