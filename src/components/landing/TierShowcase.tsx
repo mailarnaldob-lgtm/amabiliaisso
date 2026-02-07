@@ -3,12 +3,14 @@ import { Star, Zap, Crown, Sparkles } from 'lucide-react';
 import { LegendaryTierCard } from './LegendaryTierCard';
 
 /**
- * TIER SHOWCASE - SOVEREIGN LEGENDARY UI V8.7
+ * TIER SHOWCASE - ONE-TIME ACTIVATION V10.0
  * 
- * Interactive hide/expand legendary cards
- * One-time activation fees per Blueprint V8.7
- * PRO: ₱300, EXPERT: ₱600, ELITE: ₱900
- * 1% DAILY vault yield for Elite
+ * Features:
+ * - Expert package "Most Popular" badge
+ * - Bloom expand/collapse animation for package details
+ * - Hover/tap micro-particle glow effects
+ * - Fully responsive layout for all screen sizes
+ * - PRO: ₱300, EXPERT: ₱600, ELITE: ₱900 (per Blueprint V8.7)
  */
 
 const tiers = [
@@ -42,7 +44,7 @@ const tiers = [
       '10% Network Overrides (Lvl 1-2)',
       '15,000 ₳ Daily Transfer Limit',
     ],
-    popular: true,
+    popular: true, // MOST POPULAR badge
   },
   {
     name: 'Elite',
@@ -69,28 +71,30 @@ export function TierShowcase() {
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
       
-      {/* Ambient Gold Orbs */}
+      {/* Ambient Gold Orbs with Parallax */}
       <motion.div
         className="absolute top-1/4 -left-32 w-80 h-80 rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(255,215,0,0.03) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,215,0,0.04) 0%, transparent 70%)',
           filter: 'blur(60px)',
         }}
         animate={{
           scale: [1, 1.2, 1],
           opacity: [0.3, 0.5, 0.3],
+          x: [0, 20, 0],
         }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
         className="absolute bottom-1/4 -right-32 w-64 h-64 rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(255,215,0,0.02) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,215,0,0.03) 0%, transparent 70%)',
           filter: 'blur(50px)',
         }}
         animate={{
           scale: [1, 1.15, 1],
           opacity: [0.2, 0.4, 0.2],
+          x: [0, -20, 0],
         }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 3 }}
       />
@@ -113,7 +117,7 @@ export function TierShowcase() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl md:text-4xl font-bold text-foreground mb-4"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4"
           >
             Choose Your <span className="text-[#FFD700]">Legendary</span> Path
           </motion.h2>
@@ -123,7 +127,7 @@ export function TierShowcase() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-muted-foreground max-w-2xl mx-auto mb-2"
+            className="text-muted-foreground max-w-2xl mx-auto mb-2 text-lg"
           >
             One-time registration fee unlocks permanent access to the Alpha Ecosystem.
             No recurring charges. No hidden fees.
@@ -141,8 +145,8 @@ export function TierShowcase() {
           </motion.p>
         </div>
 
-        {/* Legendary Tier Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Legendary Tier Cards - Responsive Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {tiers.map((tier, index) => (
             <LegendaryTierCard
               key={tier.name}
@@ -153,15 +157,20 @@ export function TierShowcase() {
         </div>
 
         {/* Footnote */}
-        <motion.p
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
-          className="text-center text-xs text-muted-foreground mt-8"
+          className="text-center mt-10 space-y-2"
         >
-          * Elite members require 3 direct EXPERT referrals to qualify for 1% Daily Vault Yield.
-        </motion.p>
+          <p className="text-xs text-muted-foreground">
+            * Elite members require 3 direct PRO referrals to qualify for 1% Daily Vault Yield.
+          </p>
+          <p className="text-[10px] text-[#FFD700]/40">
+            All prices shown in Philippine Peso (₱). Exchange rate: ₳ 1.00 = ₱ 1.00
+          </p>
+        </motion.div>
       </div>
     </section>
   );
