@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AlphaSuspenseBoundary } from "@/components/ui/AlphaSuspenseBoundary";
+import { FloatingActionCenter } from "@/components/navigation/FloatingActionCenter";
 
 // Public pages - Lazy loaded
 const Landing = lazy(() => import("./pages/Landing"));
@@ -151,6 +152,9 @@ const App = () => (
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              
+              {/* Global Floating Action Center */}
+              <FloatingActionCenter />
             </AlphaSuspenseBoundary>
           </BrowserRouter>
         </TooltipProvider>
