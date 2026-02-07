@@ -12,7 +12,7 @@
   * All navigation components MUST import from here to prevent drift.
   */
  
- import { Landmark, Target, TrendingUp, Users, Crown, Megaphone, Wallet, ArrowUpDown, Send } from 'lucide-react';
+ import { Landmark, Target, TrendingUp, Users, Crown, Megaphone, Wallet, ArrowUpDown, Send, ArrowRightLeft } from 'lucide-react';
  
 // Core four-pillar taxonomy
 export const APP_PILLARS = {
@@ -73,11 +73,11 @@ export const APP_PILLARS = {
      color: 'from-[#FFD700] to-[#FFA500]',
    },
    {
-     icon: ArrowUpDown,
-     label: 'Exchange',
-     description: 'Top-up or Payout',
-     href: '/dashboard/bank',
-     color: 'from-emerald-400 to-emerald-600',
+     icon: ArrowRightLeft,
+     label: 'Exchanger',
+     description: 'Buy/Sell ₳ Credits',
+     href: '/dashboard/exchanger',
+     color: 'from-[#FFD700] to-[#FFA500]',
    },
    {
      icon: Send,
@@ -118,6 +118,13 @@ export const APP_PILLARS = {
      sublabel: 'Mission Control Center',
      path: '/dashboard',
      color: 'from-[#FFD700] to-[#FFA500]',
+   },
+   {
+     icon: ArrowRightLeft,
+     label: 'Exchanger',
+     sublabel: 'Buy/Sell ₳ Credits',
+     path: '/dashboard/exchanger',
+     color: 'from-[#FFD700] to-[#B8860B]',
    },
    {
      icon: Landmark,
@@ -198,6 +205,7 @@ export const APP_PILLARS = {
      title: 'Main',
      items: [
        { icon: Target, label: 'Command Center', path: '/dashboard', description: 'Your primary dashboard' },
+       { icon: ArrowRightLeft, label: 'Exchanger', path: '/dashboard/exchanger', description: 'Buy/Sell ₳ Credits' },
      ],
    },
    {
