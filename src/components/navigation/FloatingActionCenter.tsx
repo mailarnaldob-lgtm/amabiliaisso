@@ -1,67 +1,153 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useCallback } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  X, Wallet, ArrowUpDown, Send, Zap, Landmark, 
-  Users, TrendingUp, Shield, HelpCircle 
+  X, Home, LayoutDashboard, Key, ArrowLeftRight, 
+  Rocket, Megaphone, Landmark, Globe, User, 
+  TrendingUp, Shield, HelpCircle, Zap, Wallet,
+  type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
-const authenticatedItems = [
+interface NavItem {
+  icon: LucideIcon;
+  acronym: string;
+  label: string;
+  href: string;
+  color: string;
+  requiresAuth?: boolean;
+}
+
+// Authenticated user navigation items
+const authenticatedItems: NavItem[] = [
   { 
-    icon: Wallet, 
-    label: 'My Wallet', 
-    href: '/dashboard/bank',
+    icon: Home, 
+    acronym: 'HOME',
+    label: 'Landing', 
+    href: '/',
     color: 'from-[#FFD700] to-[#FFA500]'
   },
   { 
-    icon: ArrowUpDown, 
-    label: 'Exchange', 
-    href: '/dashboard/bank',
-    color: 'from-[#FFD700] to-[#FFA500]'
+    icon: LayoutDashboard, 
+    acronym: 'DASH',
+    label: 'Dashboard', 
+    href: '/dashboard',
+    color: 'from-[#FFD700] to-[#FFA500]',
+    requiresAuth: true
   },
   { 
-    icon: Send, 
-    label: 'Transfer', 
-    href: '/dashboard/bank',
-    color: 'from-[#FFA500] to-[#FFD700]'
+    icon: Key, 
+    acronym: 'ACTV',
+    label: 'Activate', 
+    href: '/dashboard/upgrade',
+    color: 'from-[#FFA500] to-[#FFD700]',
+    requiresAuth: true
   },
   { 
-    icon: Zap, 
+    icon: ArrowLeftRight, 
+    acronym: 'EXCH',
+    label: 'Exchanger', 
+    href: '/dashboard/bank',
+    color: 'from-[#FFD700] to-[#FFA500]',
+    requiresAuth: true
+  },
+  { 
+    icon: Rocket, 
+    acronym: 'MISS',
     label: 'Missions', 
     href: '/dashboard/market',
-    color: 'from-[#FFD700] to-[#FFA500]'
+    color: 'from-[#FFA500] to-[#FFD700]',
+    requiresAuth: true
+  },
+  { 
+    icon: Megaphone, 
+    acronym: 'CAMP',
+    label: 'Campaigns', 
+    href: '/dashboard/ads',
+    color: 'from-[#FFD700] to-[#FFA500]',
+    requiresAuth: true
   },
   { 
     icon: Landmark, 
-    label: 'Lending', 
+    acronym: 'VAULT',
+    label: 'Vault', 
     href: '/dashboard/finance',
-    color: 'from-[#FFA500] to-[#FFD700]'
+    color: 'from-[#FFA500] to-[#FFD700]',
+    requiresAuth: true
   },
   { 
-    icon: Users, 
+    icon: Globe, 
+    acronym: 'NET',
     label: 'Network', 
     href: '/dashboard/growth',
-    color: 'from-[#FFD700] to-[#FFA500]'
+    color: 'from-[#FFD700] to-[#FFA500]',
+    requiresAuth: true
+  },
+  { 
+    icon: User, 
+    acronym: 'PROF',
+    label: 'Profile', 
+    href: '/dashboard/settings',
+    color: 'from-[#FFA500] to-[#FFD700]',
+    requiresAuth: true
   },
 ];
 
-const publicItems = [
+// Public navigation items (non-authenticated)
+const publicItems: NavItem[] = [
+  { 
+    icon: Home, 
+    acronym: 'HOME',
+    label: 'Home', 
+    href: '/',
+    color: 'from-[#FFD700] to-[#FFA500]'
+  },
+  { 
+    icon: Zap, 
+    acronym: 'EARN',
+    label: 'Earn Pillar', 
+    href: '/pillars/earn',
+    color: 'from-[#FFD700] to-[#FFA500]'
+  },
+  { 
+    icon: Wallet, 
+    acronym: 'SAVE',
+    label: 'Save Pillar', 
+    href: '/pillars/save',
+    color: 'from-[#FFA500] to-[#FFD700]'
+  },
+  { 
+    icon: ArrowLeftRight, 
+    acronym: 'TRADE',
+    label: 'Trade Pillar', 
+    href: '/pillars/trade',
+    color: 'from-[#FFD700] to-[#FFA500]'
+  },
+  { 
+    icon: Globe, 
+    acronym: 'MLM',
+    label: 'MLM Pillar', 
+    href: '/pillars/mlm',
+    color: 'from-[#FFA500] to-[#FFD700]'
+  },
   { 
     icon: TrendingUp, 
+    acronym: 'JOIN',
     label: 'Join Now', 
     href: '/auth',
     color: 'from-[#FFD700] to-[#FFA500]'
   },
   { 
     icon: Shield, 
+    acronym: 'ABOUT',
     label: 'About', 
     href: '/about',
     color: 'from-[#FFA500] to-[#FFD700]'
   },
   { 
     icon: HelpCircle, 
+    acronym: 'HELP',
     label: 'Contact', 
     href: '/contact',
     color: 'from-[#FFD700] to-[#FFA500]'
@@ -69,31 +155,44 @@ const publicItems = [
 ];
 
 /**
- * FLOATING ACTION CENTER - Global Component
- * 
- * Persists across:
- * - Landing page
- * - Main members dashboard
- * - All internal member pages
+ * FLOATING ACTION CENTER - Global Sovereign Navigator
  * 
  * Features:
- * - Sovereign UI: Obsidian base, Alpha Gold accents
- * - Glassmorphism with subtle glow
+ * - Global persistence across all pages
+ * - Auto-hide after selection
+ * - Icon + Acronym labels for clarity
+ * - Sovereign UI: Obsidian Black, Alpha Gold
  * - 0.3s Bloom scale-down (95%) animations
- * - Different menu items for authenticated vs public users
+ * - Glassmorphism with backdrop-blur-2xl
  */
 export function FloatingActionCenter() {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  const menuItems = user ? authenticatedItems : publicItems;
+  
+  // Handle navigation with auto-hide
+  const handleNavigation = useCallback((href: string) => {
+    setIsOpen(false);
+    // Small delay for smooth animation before navigation
+    setTimeout(() => {
+      navigate(href);
+    }, 150);
+  }, [navigate]);
+
+  // Check if current path matches item
+  const isActiveRoute = useCallback((href: string) => {
+    if (href === '/') return location.pathname === '/';
+    return location.pathname.startsWith(href);
+  }, [location.pathname]);
   
   // Hide on admin pages
   if (location.pathname.startsWith('/admin')) {
     return null;
   }
-  
-  const menuItems = user ? authenticatedItems : publicItems;
-  
+
   return (
     <div className="fixed bottom-6 right-6 z-50">
       <AnimatePresence>
@@ -101,63 +200,102 @@ export function FloatingActionCenter() {
           <>
             {/* Backdrop with Glassmorphism */}
             <motion.div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
             />
             
-            {/* Menu Items */}
-            <div className="absolute bottom-20 right-0 flex flex-col gap-3 items-end">
-              {menuItems.map((item, index) => (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0, x: 20, scale: 0.8 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 20, scale: 0.8 }}
-                  transition={{ 
-                    delay: index * 0.05,
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 25
-                  }}
-                >
-                  <Link
-                    to={item.href}
-                    className="flex items-center gap-3 group"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {/* Label with Glassmorphism */}
-                    <motion.span 
+            {/* Menu Container */}
+            <motion.div
+              className={cn(
+                "absolute bottom-20 right-0",
+                "w-64 max-h-[70vh] overflow-y-auto",
+                "bg-[#0a0a0a]/95 backdrop-blur-2xl",
+                "border border-[#FFD700]/20 rounded-2xl",
+                "shadow-2xl shadow-black/50",
+                "scrollbar-thin scrollbar-thumb-[#FFD700]/20 scrollbar-track-transparent"
+              )}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            >
+              {/* Header */}
+              <div className="sticky top-0 z-10 p-3 border-b border-[#FFD700]/10 bg-[#0a0a0a]/95 backdrop-blur-xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-[#FFD700]">₳</span>
+                  <span className="text-xs font-medium tracking-[0.15em] text-white/80">
+                    SOVEREIGN NAV
+                  </span>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="p-2">
+                {menuItems.map((item, index) => {
+                  const isActive = isActiveRoute(item.href);
+                  
+                  return (
+                    <motion.button
+                      key={item.acronym + item.href}
+                      onClick={() => handleNavigation(item.href)}
                       className={cn(
-                        "text-sm font-medium text-white/80 group-hover:text-white",
-                        "transition-colors px-4 py-2 rounded-full",
-                        "bg-[#0a0a0a]/90 backdrop-blur-xl",
-                        "border border-[#FFD700]/20 group-hover:border-[#FFD700]/40",
-                        "shadow-lg shadow-black/30"
+                        "w-full flex items-center gap-3 p-3 rounded-xl",
+                        "transition-all duration-200",
+                        "group cursor-pointer",
+                        isActive 
+                          ? "bg-[#FFD700]/10 border border-[#FFD700]/30" 
+                          : "hover:bg-[#FFD700]/5 border border-transparent"
                       )}
-                      whileHover={{ x: -5 }}
-                    >
-                      {item.label}
-                    </motion.span>
-                    
-                    {/* Icon Button */}
-                    <motion.div
-                      className={cn(
-                        "w-12 h-12 rounded-full flex items-center justify-center",
-                        `bg-gradient-to-br ${item.color}`,
-                        "shadow-lg shadow-[#FFD700]/30"
-                      )}
-                      whileHover={{ scale: 1.1 }}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      whileHover={{ scale: 0.98 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <item.icon className="w-5 h-5 text-black" />
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+                      {/* Icon Container */}
+                      <div className={cn(
+                        "w-10 h-10 rounded-lg flex items-center justify-center",
+                        "bg-gradient-to-br",
+                        item.color,
+                        "shadow-lg shadow-[#FFD700]/20",
+                        "group-hover:shadow-[#FFD700]/40 transition-shadow"
+                      )}>
+                        <item.icon className="w-5 h-5 text-black" />
+                      </div>
+                      
+                      {/* Text Container */}
+                      <div className="flex-1 text-left">
+                        <p className={cn(
+                          "text-xs font-bold tracking-[0.1em]",
+                          isActive ? "text-[#FFD700]" : "text-white/90 group-hover:text-[#FFD700]",
+                          "transition-colors"
+                        )}>
+                          {item.acronym}
+                        </p>
+                        <p className="text-[10px] text-white/50 group-hover:text-white/70 transition-colors">
+                          {item.label}
+                        </p>
+                      </div>
+
+                      {/* Active Indicator */}
+                      {isActive && (
+                        <div className="w-2 h-2 rounded-full bg-[#FFD700] animate-pulse" />
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Footer */}
+              <div className="sticky bottom-0 p-2 border-t border-[#FFD700]/10 bg-[#0a0a0a]/95">
+                <p className="text-[9px] text-center text-white/30 tracking-wider">
+                  AMABILIA NETWORK
+                </p>
+              </div>
+            </motion.div>
           </>
         )}
       </AnimatePresence>
