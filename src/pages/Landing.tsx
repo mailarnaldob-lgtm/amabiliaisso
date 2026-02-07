@@ -6,7 +6,6 @@ import { FoundingCountdown } from '@/components/landing/FoundingCountdown';
 import { TierShowcase } from '@/components/landing/TierShowcase';
 import { FinalCTA } from '@/components/landing/FinalCTA';
 import { LandingFooter } from '@/components/landing/LandingFooter';
-import { FloatingAlphaHub } from '@/components/landing/FloatingAlphaHub';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 
@@ -82,8 +81,7 @@ export default function Landing() {
         <LandingFooter />
       </div>
       
-      {/* Floating Alpha Hub (FAB) */}
-      <FloatingAlphaHub />
+      {/* Floating Action Center now handled globally in App.tsx */}
     </div>
   );
 }
