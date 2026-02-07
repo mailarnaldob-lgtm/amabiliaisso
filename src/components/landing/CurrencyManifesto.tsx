@@ -1,11 +1,6 @@
 import { motion } from 'framer-motion';
 import { Shield, Eye, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
-import { Suspense, lazy } from 'react';
-
-// Lazy load the 3D coin for performance
-const AlphaGoldCoin3D = lazy(() => 
-  import('./AlphaGoldCoin3D').then(mod => ({ default: mod.AlphaGoldCoin3D }))
-);
+import { AlphaGoldCoin3D } from './AlphaGoldCoin3D';
 
 /**
  * THE ALPHA (₳) CURRENCY MANIFESTO
@@ -32,29 +27,6 @@ const manifestoItems = [
     highlight: 'Zero-Lag Performance'
   }
 ];
-
-// Fallback coin while 3D loads
-function CoinFallback() {
-  return (
-    <motion.div
-      className="w-20 h-20 rounded-full flex items-center justify-center"
-      style={{
-        background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #B8860B 100%)',
-        boxShadow: '0 0 40px hsl(45 100% 51% / 0.4), inset 0 2px 4px hsl(45 100% 80% / 0.3)',
-      }}
-      animate={{
-        rotateY: [0, 360],
-      }}
-      transition={{
-        duration: 3,
-        repeat: Infinity,
-        ease: "linear"
-      }}
-    >
-      <span className="text-4xl font-bold text-amber-900 font-mono">₳</span>
-    </motion.div>
-  );
-}
 
 export function CurrencyManifesto() {
   return (
@@ -117,9 +89,7 @@ export function CurrencyManifesto() {
               viewport={{ once: true }}
               transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
             >
-              <Suspense fallback={<CoinFallback />}>
-                <AlphaGoldCoin3D size="xl" showTooltip={true} />
-              </Suspense>
+              <AlphaGoldCoin3D size="xl" showTooltip={true} />
             </motion.div>
 
             <motion.h2
@@ -187,13 +157,9 @@ export function CurrencyManifesto() {
                   }}
                 >
                   {/* Mini coin accent */}
-                  <motion.div
-                    className="absolute -top-3 -right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  >
-                    <Suspense fallback={null}>
-                      <AlphaGoldCoin3D size="sm" showTooltip={false} />
-                    </Suspense>
-                  </motion.div>
+                  <div className="absolute -top-3 -right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <AlphaGoldCoin3D size="sm" showTooltip={false} />
+                  </div>
                   
                   <div className="flex items-center gap-3 mb-4">
                     <div
@@ -230,9 +196,7 @@ export function CurrencyManifesto() {
             transition={{ delay: 0.6 }}
           >
             <div className="flex items-center gap-2">
-              <Suspense fallback={<CoinFallback />}>
-                <AlphaGoldCoin3D size="md" showTooltip={true} />
-              </Suspense>
+              <AlphaGoldCoin3D size="md" showTooltip={true} />
               <div className="text-left">
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Exchange Rate</p>
                 <p className="text-lg font-mono font-bold text-amber-400">₳ 1.00 = ₱ 1.00</p>
@@ -242,9 +206,7 @@ export function CurrencyManifesto() {
             <div className="hidden sm:block w-px h-8 bg-amber-500/20" />
             
             <div className="flex items-center gap-2">
-              <Suspense fallback={<CoinFallback />}>
-                <AlphaGoldCoin3D size="md" showTooltip={true} />
-              </Suspense>
+              <AlphaGoldCoin3D size="md" showTooltip={true} />
               <div className="text-left">
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Daily Vault Yield</p>
                 <p className="text-lg font-mono font-bold text-amber-400">1.00%</p>
@@ -254,9 +216,7 @@ export function CurrencyManifesto() {
             <div className="hidden sm:block w-px h-8 bg-amber-500/20" />
             
             <div className="flex items-center gap-2">
-              <Suspense fallback={<CoinFallback />}>
-                <AlphaGoldCoin3D size="md" showTooltip={true} />
-              </Suspense>
+              <AlphaGoldCoin3D size="md" showTooltip={true} />
               <div className="text-left">
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Referral Bonus</p>
                 <p className="text-lg font-mono font-bold text-amber-400">50%</p>
