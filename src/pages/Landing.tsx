@@ -1,9 +1,10 @@
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { LiveAlphaStats } from '@/components/landing/LiveAlphaStats';
-import { FeaturesGrid } from '@/components/landing/FeaturesGrid';
-import { FoundingCountdown } from '@/components/landing/FoundingCountdown';
+import { FourPillars } from '@/components/landing/FourPillars';
+import { CurrencyManifesto } from '@/components/landing/CurrencyManifesto';
 import { TierShowcase } from '@/components/landing/TierShowcase';
+import { MissionVision } from '@/components/landing/MissionVision';
 import { FinalCTA } from '@/components/landing/FinalCTA';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -74,9 +75,10 @@ export default function Landing() {
         <LandingHeader />
         <HeroSection />
         <LiveAlphaStats />
-        <FeaturesGrid />
-        <FoundingCountdown />
+        <FourPillars />
+        <CurrencyManifesto />
         <TierShowcase />
+        <MissionVision />
         <FinalCTA />
         <LandingFooter />
       </div>
