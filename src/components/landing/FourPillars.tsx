@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Briefcase, Vault, ArrowLeftRight, Network, Clock, Percent, Sparkles, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 
 /**
  * THE FOUR PILLARS OF ₳ — CORE INFRASTRUCTURE
@@ -19,7 +20,8 @@ const pillars = [
     color: 'from-emerald-500 to-teal-600',
     borderColor: 'border-emerald-500/30',
     glowColor: 'emerald',
-    status: 'active'
+    status: 'active',
+    route: '/pillars/earn'
   },
   {
     symbol: '₳',
@@ -32,7 +34,8 @@ const pillars = [
     color: 'from-blue-500 to-indigo-600',
     borderColor: 'border-blue-500/30',
     glowColor: 'blue',
-    status: 'active'
+    status: 'active',
+    route: '/pillars/save'
   },
   {
     symbol: '₳',
@@ -45,7 +48,8 @@ const pillars = [
     color: 'from-[#FFD700] to-[#FFA500]',
     borderColor: 'border-[#FFD700]/30',
     glowColor: 'amber',
-    status: 'coming-soon'
+    status: 'coming-soon',
+    route: '/pillars/trade'
   },
   {
     symbol: '₳',
@@ -58,7 +62,8 @@ const pillars = [
     color: 'from-purple-500 to-pink-600',
     borderColor: 'border-purple-500/30',
     glowColor: 'purple',
-    status: 'active'
+    status: 'active',
+    route: '/pillars/mlm'
   }
 ];
 
@@ -73,24 +78,25 @@ function PillarCard({
   const FeatureIcon = pillar.featureIcon;
 
   return (
-    <motion.div
-      className="group relative rounded-2xl overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, hsl(220 23% 8% / 0.95) 0%, hsl(220 23% 5%) 100%)',
-        backdropFilter: 'blur(40px)',
-        border: '1px solid hsl(220 23% 20% / 0.3)'
-      }}
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, delay: index * 0.15 }}
-      whileHover={{
-        y: -8,
-        scale: 0.95,
-        transition: { duration: 0.3 }
-      }}
-      whileTap={{ scale: 0.95 }}
-    >
+    <Link to={pillar.route}>
+      <motion.div
+        className="group relative rounded-2xl overflow-hidden cursor-pointer h-full"
+        style={{
+          background: 'linear-gradient(135deg, hsl(220 23% 8% / 0.95) 0%, hsl(220 23% 5%) 100%)',
+          backdropFilter: 'blur(40px)',
+          border: '1px solid hsl(220 23% 20% / 0.3)'
+        }}
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.6, delay: index * 0.15 }}
+        whileHover={{
+          y: -8,
+          scale: 0.95,
+          transition: { duration: 0.3 }
+        }}
+        whileTap={{ scale: 0.95 }}
+      >
       {/* Glassmorphism Overlay */}
       <div 
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -157,14 +163,15 @@ function PillarCard({
         </div>
       </div>
 
-      {/* Bottom Glow Line */}
-      <motion.div
-        className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent"
-        initial={{ width: 0, opacity: 0 }}
-        whileHover={{ width: '100%', opacity: 1 }}
-        transition={{ duration: 0.4 }}
-      />
-    </motion.div>
+        {/* Bottom Glow Line */}
+        <motion.div
+          className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent"
+          initial={{ width: 0, opacity: 0 }}
+          whileHover={{ width: '100%', opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        />
+      </motion.div>
+    </Link>
   );
 }
 

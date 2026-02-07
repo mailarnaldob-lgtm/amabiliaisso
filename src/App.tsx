@@ -17,6 +17,12 @@ const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Pillar Presentation Pages
+const EarnPillar = lazy(() => import("./pages/pillars/EarnPillar"));
+const SavePillar = lazy(() => import("./pages/pillars/SavePillar"));
+const TradePillar = lazy(() => import("./pages/pillars/TradePillar"));
+const MLMPillar = lazy(() => import("./pages/pillars/MLMPillar"));
+
 // ₳LPHA SMART FINANCE - Command Center Architecture (now under /dashboard)
 const BankApp = lazy(() => import("./pages/alpha/BankApp"));
 const MarketApp = lazy(() => import("./pages/alpha/MarketApp"));
@@ -75,6 +81,12 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+                
+                {/* Pillar Presentation Pages */}
+                <Route path="/pillars/earn" element={<EarnPillar />} />
+                <Route path="/pillars/save" element={<SavePillar />} />
+                <Route path="/pillars/trade" element={<TradePillar />} />
+                <Route path="/pillars/mlm" element={<MLMPillar />} />
                 
                 {/* ═══════════════════════════════════════════════════════════════
                     ₳LPHA SMART FINANCE - UNIFIED DASHBOARD
