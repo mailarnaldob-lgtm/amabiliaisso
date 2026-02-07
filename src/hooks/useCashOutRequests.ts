@@ -64,7 +64,7 @@ export function usePendingCashOutRequests() {
   });
 }
 
-// Hook for user to view their own cash-out requests
+// Hook for user to view their own cash-out requests (USES MASKED VIEW for security)
 export function useUserCashOutRequests() {
   const { user } = useAuth();
 
@@ -73,10 +73,11 @@ export function useUserCashOutRequests() {
     queryFn: async (): Promise<CashOutRequest[]> => {
       if (!user) return [];
 
+      // SECURITY: Use masked view to prevent full bank account exposure
+      // The view masks account_name and account_number (shows only last 4 digits)
       const { data, error } = await supabase
-        .from('cash_out_requests')
+        .from('cash_out_requests_user_view' as 'cash_out_requests')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
 
