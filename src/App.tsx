@@ -31,6 +31,7 @@ const GrowthApp = lazy(() => import("./pages/alpha/GrowthApp"));
 const SettingsApp = lazy(() => import("./pages/alpha/SettingsApp"));
 const AdsApp = lazy(() => import("./pages/alpha/AdsApp"));
 const CommandCenterApp = lazy(() => import("./pages/alpha/CommandCenterApp"));
+const ExchangerApp = lazy(() => import("./pages/alpha/ExchangerApp"));
 
 // Member dashboard sub-pages - Lazy loaded
 const UpgradeMembership = lazy(() => import("./pages/dashboard/UpgradeMembership"));
@@ -110,6 +111,9 @@ const App = () => (
                 
                 {/* App #5: ADS - Ad Wizard (PRO+) */}
                 <Route path="/dashboard/ads" element={<ProtectedRoute><AdsApp /></ProtectedRoute>} />
+                
+                {/* App #6: EXCHANGER - Alpha Currency Exchange */}
+                <Route path="/dashboard/exchanger" element={<ProtectedRoute><ExchangerApp /></ProtectedRoute>} />
                 
                 {/* Settings */}
                 <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsApp /></ProtectedRoute>} />

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRightLeft, Lock, TrendingUp, Sparkles } from 'lucide-react';
+import { ArrowRightLeft, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn, formatAlpha } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface AlphaExchangerCardProps {
   balance: number;
@@ -17,11 +18,10 @@ interface AlphaExchangerCardProps {
  * - Sovereign Obsidian + Gold theme
  * - Digital odometer-style ₳ balance display
  * - Premium glassmorphism styling
- * - ENTER ALPHA EXCHANGER button (placeholder route)
+ * - ENTER ALPHA EXCHANGER button with navigation
  */
 export function AlphaExchangerCard({ balance, className }: AlphaExchangerCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const isExchangeAvailable = false; // Coming Soon state
 
   return (
     <motion.div
@@ -69,25 +69,14 @@ export function AlphaExchangerCard({ balance, className }: AlphaExchangerCardPro
           {/* Status Badge */}
           <div className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold",
-            isExchangeAvailable 
-              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-              : "bg-[#FFD700]/10 text-[#FFD700] border border-[#FFD700]/20"
+            "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
           )}>
-            {isExchangeAvailable ? (
-              <>
-                <TrendingUp className="w-3 h-3" />
-                Available
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-3 h-3" />
-                Coming Soon
-              </>
-            )}
+            <TrendingUp className="w-3 h-3" />
+            Live
           </div>
         </div>
 
-        {/* SOVEREIGN V12.1: Available for All Accounts Notice */}
+        {/* Available for All Accounts Notice */}
         <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-[11px] text-emerald-400 font-medium">
@@ -125,34 +114,25 @@ export function AlphaExchangerCard({ balance, className }: AlphaExchangerCardPro
           </div>
         </div>
 
-        {/* CTA Button */}
-        <motion.div
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        >
-          <Button 
-            disabled={!isExchangeAvailable}
-            className={cn(
-              "w-full h-12 font-bold text-sm",
-              "rounded-xl border-0",
-              isExchangeAvailable
-                ? "bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black hover:opacity-90 shadow-lg shadow-[#FFD700]/20"
-                : "bg-[#1a1a1a] text-muted-foreground border border-[#FFD700]/20 cursor-not-allowed"
-            )}
+        {/* CTA Button - Now navigates to Exchanger page */}
+        <Link to="/dashboard/exchanger">
+          <motion.div
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
           >
-            {isExchangeAvailable ? (
-              <>
-                <ArrowRightLeft className="w-4 h-4 mr-2" />
-                ENTER ALPHA EXCHANGER
-              </>
-            ) : (
-              <>
-                <Lock className="w-4 h-4 mr-2" />
-                EXCHANGER COMING SOON
-              </>
-            )}
-          </Button>
-        </motion.div>
+            <Button 
+              className={cn(
+                "w-full h-12 font-bold text-sm",
+                "rounded-xl border-0",
+                "bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black hover:opacity-90 shadow-lg shadow-[#FFD700]/20"
+              )}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              ENTER ALPHA EXCHANGER
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </motion.div>
+        </Link>
 
         {/* Bottom Accent */}
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#FFD700]/20 to-transparent" />
