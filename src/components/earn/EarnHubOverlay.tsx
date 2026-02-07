@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Target, CheckCircle2, Clock, Award, Zap, Upload, 
   ExternalLink, Info, FileCheck, AlertCircle, Star,
-  Youtube, Facebook, Play, Users, Music, Camera
+  Youtube, Facebook, Play, Users, Music, Camera, Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -754,11 +754,15 @@ function VPALevelCard({ completedCount }: { completedCount: number }) {
 function PhilippineMissionCard({ 
   mission, 
   onStartMission,
-  isSubmitted
+  isSubmitted,
+  isAccountInactive,
+  onActivateClick
 }: { 
   mission: PhilippineMission; 
   onStartMission: (mission: PhilippineMission) => void;
   isSubmitted: boolean;
+  isAccountInactive?: boolean;
+  onActivateClick?: () => void;
 }) {
   // Platform-specific styling
   const platformConfig: Record<MissionPlatform, { icon: typeof Youtube; bg: string; color: string; actionBg: string }> = {
@@ -790,18 +794,39 @@ function PhilippineMissionCard({
   
   const config = platformConfig[mission.icon];
   const IconComponent = config.icon;
+
+  // Locked state for inactive accounts
+  const isLocked = isAccountInactive && !isSubmitted;
   
   return (
     <Card className={cn(
-      "bg-[#050505]/80 border-[#FFD700]/10 transition-all duration-300 backdrop-blur-xl group",
-      isSubmitted ? "opacity-50" : "hover:border-[#FFD700]/40"
+      "bg-[#050505]/80 border-[#FFD700]/10 transition-all duration-300 backdrop-blur-xl group relative",
+      isSubmitted ? "opacity-50" : isLocked ? "opacity-70" : "hover:border-[#FFD700]/40"
     )}>
+      {/* Lock overlay for inactive accounts */}
+      {isLocked && (
+        <div className="absolute inset-0 bg-[#050505]/60 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center">
+          <div className="text-center px-4">
+            <div className="p-2 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30 w-fit mx-auto mb-2">
+              <Lock className="h-5 w-5 text-[#FFD700]" />
+            </div>
+            <p className="text-xs text-zinc-400 mb-2">Account inactive. Activation required to earn ₳.</p>
+            <button
+              onClick={onActivateClick}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black hover:opacity-90 transition-opacity"
+            >
+              ACTIVATE ACCOUNT TO UNLOCK
+            </button>
+          </div>
+        </div>
+      )}
+      
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <div className={cn(
             "p-3 rounded-xl bg-gradient-to-br border transition-colors",
             config.bg,
-            !isSubmitted && "group-hover:border-[#FFD700]/40"
+            !isSubmitted && !isLocked && "group-hover:border-[#FFD700]/40"
           )}>
             <IconComponent className={cn("h-6 w-6", config.color)} />
           </div>
@@ -832,7 +857,7 @@ function PhilippineMissionCard({
                 </span>
               </div>
               
-              {!isSubmitted && (
+              {!isSubmitted && !isLocked && (
                 <EliteButton
                   size="sm"
                   className="bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-semibold hover:opacity-90 h-8"
@@ -950,6 +975,15 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
   const [selectedPlatform, setSelectedPlatform] = useState<'all' | MissionPlatform>('all');
   const [selectedMission, setSelectedMission] = useState<PhilippineMission | null>(null);
   const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
+
+  // SOVEREIGN V12.0: Check if account is inactive (no membership_tier)
+  const isAccountInactive = !profile?.membership_tier;
+
+  // Handler to redirect to activation flow
+  const handleActivateClick = useCallback(() => {
+    onClose(); // Close overlay and redirect to dashboard activation module
+    // The user will be redirected to the main dashboard where ACTIVATE ACCOUNT card is visible
+  }, [onClose]);
 
   // 15-second RESTful polling for live data (NO WebSockets)
   useEffect(() => {
@@ -1161,14 +1195,33 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                       </Card>
                     ))
                   ) : filteredMissions.length > 0 ? (
-                    filteredMissions.map((mission) => (
-                      <PhilippineMissionCard
-                        key={mission.id}
-                        mission={mission}
-                        onStartMission={handleStartMission}
-                        isSubmitted={submittedTaskIds.has(mission.id)}
-                      />
-                    ))
+                    <>
+                      {/* Inactive Account Warning Banner */}
+                      {isAccountInactive && (
+                        <Alert className="border-[#FFD700]/50 bg-[#FFD700]/10 mb-4">
+                          <Lock className="h-4 w-4 text-[#FFD700]" />
+                          <AlertDescription className="text-xs text-[#FFD700]">
+                            <strong>Account Inactive:</strong> Activate your account to start earning ₳ from missions.{' '}
+                            <button 
+                              onClick={handleActivateClick} 
+                              className="underline hover:text-white transition-colors"
+                            >
+                              Activate Now →
+                            </button>
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      {filteredMissions.map((mission) => (
+                        <PhilippineMissionCard
+                          key={mission.id}
+                          mission={mission}
+                          onStartMission={handleStartMission}
+                          isSubmitted={submittedTaskIds.has(mission.id)}
+                          isAccountInactive={isAccountInactive}
+                          onActivateClick={handleActivateClick}
+                        />
+                      ))}
+                    </>
                   ) : (
                     <EmptyState
                       icon={<Target className="h-12 w-12" />}

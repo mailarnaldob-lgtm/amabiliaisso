@@ -127,6 +127,35 @@ serve(async (req) => {
       );
     }
 
+    // SOVEREIGN V12.0: Validate account is ACTIVE (has membership_tier)
+    const { data: userProfile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('membership_tier')
+      .eq('id', userId)
+      .single();
+
+    if (profileError) {
+      console.error('[SUBMIT-TASK] Profile lookup error:', profileError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unable to verify account status', code: 'ERR_AUTH_003' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if account is inactive (null membership_tier)
+    if (!userProfile?.membership_tier) {
+      console.warn(`[SUBMIT-TASK] Inactive account attempt: ${userId}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Account inactive. Activation required to earn ₳.', 
+          code: 'ERR_INACTIVE_001',
+          requiresActivation: true 
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Check if task exists and is active
     const { data: task, error: taskError } = await supabaseAdmin
       .from('tasks')
