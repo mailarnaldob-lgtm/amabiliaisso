@@ -857,6 +857,63 @@ export type Database = {
       }
     }
     Views: {
+      cash_out_requests_user_view: {
+        Row: {
+          account_name: string | null
+          account_number: string | null
+          amount: number | null
+          created_at: string | null
+          fee_amount: number | null
+          has_active_loan: boolean | null
+          id: string | null
+          net_amount: number | null
+          payment_method: string | null
+          pin_verified: boolean | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account_name?: never
+          account_number?: never
+          amount?: number | null
+          created_at?: string | null
+          fee_amount?: number | null
+          has_active_loan?: boolean | null
+          id?: string | null
+          net_amount?: number | null
+          payment_method?: string | null
+          pin_verified?: boolean | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account_name?: never
+          account_number?: never
+          amount?: number | null
+          created_at?: string | null
+          fee_amount?: number | null
+          has_active_loan?: boolean | null
+          id?: string | null
+          net_amount?: number | null
+          payment_method?: string | null
+          pin_verified?: boolean | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       network_commission_report: {
         Row: {
           level_1_total: number | null

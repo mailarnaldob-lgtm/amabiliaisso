@@ -29,7 +29,7 @@ export interface TaskSubmission {
   task?: Task;
 }
 
-// Fetch all active tasks
+// Fetch all active tasks with 15-second polling
 export function useTasks() {
   return useQuery({
     queryKey: ['tasks'],
@@ -38,11 +38,13 @@ export function useTasks() {
         .from('tasks')
         .select('*')
         .eq('is_active', true)
-        .order('reward', { ascending: true });
+        .order('reward', { ascending: false });
 
       if (error) throw error;
       return data as Task[];
     },
+    refetchInterval: 15000, // 15-second polling per Blueprint V8.0
+    staleTime: 10000,
   });
 }
 
