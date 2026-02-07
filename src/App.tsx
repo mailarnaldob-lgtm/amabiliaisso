@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { AlphaSuspenseBoundary } from "@/components/ui/AlphaSuspenseBoundary";
+import { SovereignSuspenseBoundary } from "@/components/ui/SovereignSuspenseBoundary";
 import { FloatingActionCenter } from "@/components/navigation/FloatingActionCenter";
 
 // Public pages - Lazy loaded
@@ -74,7 +74,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <AlphaSuspenseBoundary message="LOADING SOVEREIGN INTERFACE">
+            <SovereignSuspenseBoundary message="LOADING SOVEREIGN INTERFACE">
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Landing />} />
@@ -167,7 +167,7 @@ const App = () => (
               
               {/* Global Floating Action Center */}
               <FloatingActionCenter />
-            </AlphaSuspenseBoundary>
+            </SovereignSuspenseBoundary>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
