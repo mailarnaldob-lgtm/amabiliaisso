@@ -178,6 +178,13 @@ export function FloatingActionCenter() {
   
   const menuItems = user ? authenticatedItems : publicItems;
   
+  // Emit event when FAB opens so other components can react (e.g., LiveAlphaStats collapse)
+  useEffect(() => {
+    if (isOpen) {
+      window.dispatchEvent(new CustomEvent('fab-opened'));
+    }
+  }, [isOpen]);
+  
   // Listen for mobile nav toggle events from LandingHeader
   useEffect(() => {
     const handleMobileNavToggle = (e: CustomEvent) => {
