@@ -48,7 +48,7 @@ const tiers = [
       '10% Network Overrides (Lvl 1-2)',
       '15,000 ₳ Daily Transfer Limit',
     ],
-    popular: true, // MOST POPULAR badge
+    popular: false,
     requiresTasks: 5, // Requires 5 completed tasks
     requiresReferrals: 0,
   },
