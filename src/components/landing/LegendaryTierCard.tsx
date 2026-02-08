@@ -1,8 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ArrowRight, Sparkles, LucideIcon, Crown, Target, Users, Lock } from 'lucide-react';
+import { Check, ArrowRight, Sparkles, LucideIcon, Target, Users, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -29,7 +28,6 @@ interface LegendaryTierCardProps {
  * - Obsidian Black (#050505) + Alpha Gold (#FFD700)
  * - 0.3s Bloom scale-down transitions
  * - Gold dust particles on expand
- * - "Most Popular" badge for Expert tier
  * - Task/Referral requirements display
  * - Fully touch-friendly for mobile
  */
@@ -64,13 +62,7 @@ export function LegendaryTierCard({
     setIsExpanded(!isExpanded);
   }, [isExpanded]);
 
-  // Auto-expand the popular tier on first view
-  useEffect(() => {
-    if (popular) {
-      const timer = setTimeout(() => setIsExpanded(true), 800 + index * 200);
-      return () => clearTimeout(timer);
-    }
-  }, [popular, index]);
+  // No auto-expand - cards remain collapsed until user interaction
 
   return (
     <motion.div
@@ -119,8 +111,7 @@ export function LegendaryTierCard({
           "bg-gradient-to-br from-[#0a0a0a] via-[#050505] to-[#0d0d0d]",
           "border transition-all duration-300",
           borderColor,
-          isExpanded && "ring-2 ring-[#FFD700]/50 shadow-2xl shadow-[#FFD700]/20",
-          popular && !isExpanded && "ring-1 ring-[#FFD700]/30",
+          isExpanded && "ring-2 ring-primary/50 shadow-2xl shadow-primary/20",
           "backdrop-blur-2xl"
         )}
         style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
@@ -148,21 +139,7 @@ export function LegendaryTierCard({
           transition={{ duration: 0.3 }}
         />
 
-        {/* Popular Badge - MOST POPULAR for Expert */}
-        {popular && (
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
-          >
-            <Badge 
-              className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-bold px-4 py-1 shadow-lg shadow-[#FFD700]/30 border-0"
-            >
-              <Crown className="w-3 h-3 mr-1" />
-              MOST POPULAR
-            </Badge>
-          </motion.div>
-        )}
+        {/* Reserved for future badges */}
 
         <div className="relative p-6">
           {/* Collapsed Header - Always Visible */}
