@@ -133,12 +133,18 @@ export default function UpgradeMembership() {
     }
   };
 
+  /**
+   * SOVEREIGN PAYMENT SUBMISSION V10.0
+   * Uses the centralized submit-membership-payment edge function
+   * which enforces rate limiting, validation, and proper logging
+   */
   const submitPayment = useMutation({
     mutationFn: async () => {
       if (!user || !selectedTierData) throw new Error('Invalid data');
 
-      let proofPath: string | null = null;
+      let proofUrl: string | null = null;
 
+      // Upload proof file if provided
       if (proofFile) {
         setIsUploading(true);
         const fileExt = proofFile.name.split('.').pop();
@@ -149,31 +155,58 @@ export default function UpgradeMembership() {
           .upload(fileName, proofFile);
 
         if (uploadError) {
-          console.error('Upload error:', uploadError);
+          console.error('[UPGRADE] Upload error:', uploadError);
+          setIsUploading(false);
           throw new Error('Failed to upload payment proof');
         }
         
-        proofPath = fileName;
+        // Get public URL for the uploaded proof
+        const { data: urlData } = supabase.storage
+          .from('payment-proofs')
+          .getPublicUrl(fileName);
+        
+        proofUrl = urlData.publicUrl;
         setIsUploading(false);
       }
 
-      const { error } = await supabase
-        .from('membership_payments')
-        .insert({
-          user_id: user.id,
-          tier: selectedTier as 'pro' | 'expert' | 'elite',
-          amount: selectedTierData.price,
-          payment_method: paymentMethod,
-          reference_number: referenceNumber,
-          proof_url: proofPath,
-          status: 'pending',
-        });
+      // Get session for edge function authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Authentication required');
+      }
 
-      if (error) throw new Error('Failed to submit payment');
+      // Call the centralized edge function for payment submission
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-membership-payment`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            tier: selectedTier,
+            paymentMethod: paymentMethod,
+            proofUrl: proofUrl,
+            referenceNumber: referenceNumber,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Payment submission failed');
+      }
+
+      return result;
     },
     onSuccess: () => {
       setSubmitted(true);
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['membership-payments'] });
     },
     onError: (error: Error) => {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
