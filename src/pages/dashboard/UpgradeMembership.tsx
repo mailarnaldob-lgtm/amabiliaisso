@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { usePaymentMethodsPolling } from '@/hooks/usePaymentMethodsPolling';
 import { useEliteQualification } from '@/hooks/useEliteQualification';
+import { useExpertQualification, EXPERT_REQUIRED_TASKS } from '@/hooks/useExpertQualification';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,7 +34,8 @@ import {
   Check,
   CreditCard,
   FileCheck,
-  ChevronRight
+  ChevronRight,
+  Target
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -41,7 +43,7 @@ import { paymentSchema } from '@/lib/validations';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// SOVEREIGN BRANDING V8.7 - PRO/EXPERT/ELITE hierarchy
+// SOVEREIGN BRANDING V10.0 - PRO/EXPERT/ELITE hierarchy with qualification rules
 const MEMBERSHIP_TIERS = [
   {
     id: 'pro',
@@ -54,7 +56,9 @@ const MEMBERSHIP_TIERS = [
     bgColor: 'bg-emerald-500/10',
     textColor: 'text-emerald-400',
     features: ['Full VPA Mission Access', '50% Referral Commission', 'Omni-Transfer Engine', 'Alpha Mobile Dashboard'],
+    description: 'Unlock the full earning potential of the Alpha Ecosystem. Start completing missions and earning ₳ today.',
     requiresReferrals: 0,
+    requiresTasks: 0,
   },
   {
     id: 'expert',
@@ -67,7 +71,9 @@ const MEMBERSHIP_TIERS = [
     bgColor: 'bg-primary/10',
     textColor: 'text-primary',
     features: ['All Pro Features', 'Ad Wizard Professional', 'Priority Mission Queue', '10% Network Overrides (Lvl 1-2)', '15,000 ₳ Daily Transfer Limit'],
+    description: 'Designed for proven contributors. Complete 5 verified tasks to demonstrate reliability and unlock advanced earning tools.',
     requiresReferrals: 0,
+    requiresTasks: EXPERT_REQUIRED_TASKS,
   },
   {
     id: 'elite',
@@ -80,7 +86,9 @@ const MEMBERSHIP_TIERS = [
     bgColor: 'bg-[#FFD700]/10',
     textColor: 'text-[#FFD700]',
     features: ['All Expert Features', 'Alpha Bankers Cooperative', '1% Daily Vault Yield', 'P2P Lending Access', 'Full Royalty Engine', 'Priority Support'],
+    description: 'Access the exclusive Alpha Bankers Cooperative. Requires Elite-level network building with 3 EXPERT partners.',
     requiresReferrals: 3,
+    requiresTasks: 0,
   },
 ];
 
@@ -94,7 +102,8 @@ export default function UpgradeMembership() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const { paymentMethods, isLoading: isLoadingMethods } = usePaymentMethodsPolling(30000);
-  const { data: eliteQualification, isLoading: isLoadingQualification } = useEliteQualification();
+  const { data: eliteQualification, isLoading: isLoadingEliteQualification } = useEliteQualification();
+  const { data: expertQualification, isLoading: isLoadingExpertQualification } = useExpertQualification();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -215,11 +224,21 @@ export default function UpgradeMembership() {
 
   const handleNext = () => {
     if (currentStep === 1) {
+      // EXPERT qualification check: requires 5 completed tasks
+      if (selectedTier === 'expert' && !expertQualification?.isQualified) {
+        toast({
+          variant: 'destructive',
+          title: 'EXPERT Qualification Required',
+          description: `Complete ${expertQualification?.remainingTasks || EXPERT_REQUIRED_TASKS} more approved tasks to unlock EXPERT status.`,
+        });
+        return;
+      }
+      // ELITE qualification check: requires 3 EXPERT referrals
       if (selectedTier === 'elite' && !eliteQualification?.isQualified) {
         toast({
           variant: 'destructive',
           title: 'Elite Gatekeeper Requirement',
-          description: `You need ${3 - (eliteQualification?.qualifiedReferrals || 0)} more PRO referrals to unlock Elite status.`,
+          description: `You need ${3 - (eliteQualification?.qualifiedReferrals || 0)} more EXPERT referrals to unlock Elite status.`,
         });
         return;
       }
@@ -456,26 +475,28 @@ export default function UpgradeMembership() {
                     const TierIcon = tier.icon;
                     const isSelected = selectedTier === tier.id;
                     const isEliteLocked = tier.id === 'elite' && !eliteQualification?.isQualified;
+                    const isExpertLocked = tier.id === 'expert' && !expertQualification?.isQualified;
+                    const isLocked = isEliteLocked || isExpertLocked;
                     
                     return (
                       <motion.div
                         key={tier.id}
-                        whileHover={{ scale: isEliteLocked ? 1 : 1.01 }}
-                        whileTap={{ scale: isEliteLocked ? 1 : 0.99 }}
+                        whileHover={{ scale: isLocked ? 1 : 1.01 }}
+                        whileTap={{ scale: isLocked ? 1 : 0.99 }}
                       >
                         <button
                           type="button"
-                          onClick={() => !isEliteLocked && setSelectedTier(tier.id)}
-                          disabled={isEliteLocked}
+                          onClick={() => !isLocked && setSelectedTier(tier.id)}
+                          disabled={isLocked}
                           className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 ${
                             isSelected 
                               ? `${tier.borderColor} ${tier.bgColor}` 
                               : 'border-border bg-card hover:border-muted-foreground/30'
-                          } ${isEliteLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          } ${isLocked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                         >
                           <div className="flex items-start gap-4">
                             <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tier.gradient} flex items-center justify-center flex-shrink-0`}>
-                              {isEliteLocked ? (
+                              {isLocked ? (
                                 <Lock className="h-6 w-6 text-white" />
                               ) : (
                                 <TierIcon className="h-6 w-6 text-white" />
@@ -487,12 +508,44 @@ export default function UpgradeMembership() {
                                 <span className={`text-2xl font-bold font-mono ${tier.textColor}`}>₳{tier.price}</span>
                               </div>
                               
-                              {tier.requiresReferrals > 0 && (
-                                <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400 mb-2">
-                                  <Users className="h-3 w-3 mr-1" />
-                                  Requires {tier.requiresReferrals} PRO Referrals
+                              {/* EXPERT Task Requirement Badge */}
+                              {tier.id === 'expert' && (
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs mb-2 ${
+                                    expertQualification?.isQualified 
+                                      ? 'border-primary/30 text-primary' 
+                                      : 'border-amber-500/30 text-amber-400'
+                                  }`}
+                                >
+                                  <Target className="h-3 w-3 mr-1" />
+                                  {expertQualification?.isQualified 
+                                    ? '✓ Task Requirement Met' 
+                                    : `Requires ${EXPERT_REQUIRED_TASKS} Completed Tasks`
+                                  }
                                 </Badge>
                               )}
+                              
+                              {/* ELITE Referral Requirement Badge */}
+                              {tier.requiresReferrals > 0 && (
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs mb-2 ${
+                                    eliteQualification?.isQualified 
+                                      ? 'border-[#FFD700]/30 text-[#FFD700]' 
+                                      : 'border-amber-500/30 text-amber-400'
+                                  }`}
+                                >
+                                  <Users className="h-3 w-3 mr-1" />
+                                  {eliteQualification?.isQualified 
+                                    ? '✓ Referral Requirement Met' 
+                                    : `Requires ${tier.requiresReferrals} EXPERT Referrals`
+                                  }
+                                </Badge>
+                              )}
+                              
+                              {/* Tier Description */}
+                              <p className="text-xs text-muted-foreground mb-2">{tier.description}</p>
                               
                               <div className="grid grid-cols-2 gap-1 mt-2">
                                 {tier.features.slice(0, 4).map((f) => (
@@ -511,13 +564,41 @@ export default function UpgradeMembership() {
                             </div>
                           </div>
                           
+                          {/* EXPERT Task Progress */}
+                          {tier.id === 'expert' && !expertQualification?.isQualified && (
+                            <div className="mt-4 pt-4 border-t border-border">
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <span className="text-primary flex items-center gap-1">
+                                  <Target className="h-3 w-3" />
+                                  Approved Tasks Required
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {expertQualification?.completedTasks || 0}/{EXPERT_REQUIRED_TASKS}
+                                </span>
+                              </div>
+                              <Progress value={expertQualification?.progressPercent || 0} className="h-1.5" />
+                              <p className="text-[10px] text-muted-foreground mt-2">
+                                Complete {expertQualification?.remainingTasks || EXPERT_REQUIRED_TASKS} more approved tasks to unlock EXPERT
+                              </p>
+                              <Link 
+                                to="/alpha/command" 
+                                className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Target className="h-3 w-3" />
+                                Go to Mission Center
+                                <ChevronRight className="h-3 w-3" />
+                              </Link>
+                            </div>
+                          )}
+                          
                           {/* Elite Gatekeeper Progress */}
                           {tier.id === 'elite' && !eliteQualification?.isQualified && (
                             <div className="mt-4 pt-4 border-t border-border">
                               <div className="flex items-center justify-between text-xs mb-1">
-                                <span className="text-amber-400 flex items-center gap-1">
+                                <span className="text-[#FFD700] flex items-center gap-1">
                                   <Lock className="h-3 w-3" />
-                                  PRO Referrals Required
+                                  EXPERT Referrals Required
                                 </span>
                                 <span className="text-muted-foreground">{eliteQualification?.qualifiedReferrals || 0}/3</span>
                               </div>

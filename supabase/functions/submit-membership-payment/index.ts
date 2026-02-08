@@ -174,6 +174,38 @@ serve(async (req) => {
       );
     }
 
+    // SOVEREIGN V10.0: EXPERT QUALIFICATION CHECK
+    // Users must complete 5 approved tasks to qualify for EXPERT
+    const REQUIRED_EXPERT_TASKS = 5;
+    if (tier === 'expert') {
+      const { count: approvedTaskCount, error: taskCountError } = await supabaseAdmin
+        .from('task_submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('status', 'approved');
+
+      if (taskCountError) {
+        console.error('[SUBMIT-PAYMENT] Task count error:', taskCountError);
+      }
+
+      const completedTasks = approvedTaskCount || 0;
+      if (completedTasks < REQUIRED_EXPERT_TASKS) {
+        console.warn(`[SUBMIT-PAYMENT] EXPERT qualification failed: ${completedTasks}/${REQUIRED_EXPERT_TASKS} tasks`);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `EXPERT requires ${REQUIRED_EXPERT_TASKS} completed tasks. You have ${completedTasks}.`, 
+            code: 'EXPERT_LOCKED_INSUFFICIENT_TASKS',
+            completedTasks,
+            requiredTasks: REQUIRED_EXPERT_TASKS
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      console.log(`[SUBMIT-PAYMENT] EXPERT qualification passed: ${completedTasks}/${REQUIRED_EXPERT_TASKS} tasks`);
+    }
+
     // Check for existing pending payment for this tier
     const { data: existingPayment } = await supabaseAdmin
       .from('membership_payments')
