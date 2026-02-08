@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Star, Zap, Crown, Sparkles } from 'lucide-react';
+import { Star, Zap, Crown, Sparkles, Target, Users } from 'lucide-react';
 import { LegendaryTierCard } from './LegendaryTierCard';
 
 /**
@@ -7,6 +7,8 @@ import { LegendaryTierCard } from './LegendaryTierCard';
  * 
  * Features:
  * - Expert package "Most Popular" badge
+ * - EXPERT requires 5 completed tasks (qualification gate)
+ * - ELITE requires 3 EXPERT referrals (qualification gate)
  * - Bloom expand/collapse animation for package details
  * - Hover/tap micro-particle glow effects
  * - Fully responsive layout for all screen sizes
@@ -29,6 +31,8 @@ const tiers = [
       'Priority Support Access',
     ],
     popular: false,
+    requiresTasks: 0,
+    requiresReferrals: 0,
   },
   {
     name: 'Expert',
@@ -45,6 +49,8 @@ const tiers = [
       '15,000 ₳ Daily Transfer Limit',
     ],
     popular: true, // MOST POPULAR badge
+    requiresTasks: 5, // Requires 5 completed tasks
+    requiresReferrals: 0,
   },
   {
     name: 'Elite',
@@ -62,6 +68,8 @@ const tiers = [
       'VIP Priority Support',
     ],
     popular: false,
+    requiresTasks: 0,
+    requiresReferrals: 3, // Requires 3 EXPERT referrals
   },
 ];
 
@@ -164,10 +172,15 @@ export function TierShowcase() {
           transition={{ delay: 0.5 }}
           className="text-center mt-10 space-y-2"
         >
-          <p className="text-xs text-muted-foreground">
-            * Elite members require 3 direct PRO referrals to qualify for 1% Daily Vault Yield.
+          <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+            <Target className="w-3 h-3 text-primary" />
+            EXPERT requires 5 completed verified tasks to qualify.
           </p>
-          <p className="text-[10px] text-[#FFD700]/40">
+          <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+            <Users className="w-3 h-3 text-[#FFD700]" />
+            ELITE requires 3 direct EXPERT referrals to qualify for 1% Daily Vault Yield.
+          </p>
+          <p className="text-[10px] text-muted-foreground/60 mt-2">
             All prices shown in Philippine Peso (₱). Exchange rate: ₳ 1.00 = ₱ 1.00
           </p>
         </motion.div>

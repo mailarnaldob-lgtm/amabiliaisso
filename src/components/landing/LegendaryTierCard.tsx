@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ArrowRight, Sparkles, LucideIcon, Crown } from 'lucide-react';
+import { Check, ArrowRight, Sparkles, LucideIcon, Crown, Target, Users, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
@@ -16,6 +16,8 @@ interface LegendaryTierCardProps {
   features: string[];
   popular?: boolean;
   index: number;
+  requiresTasks?: number;
+  requiresReferrals?: number;
 }
 
 /**
@@ -28,6 +30,7 @@ interface LegendaryTierCardProps {
  * - 0.3s Bloom scale-down transitions
  * - Gold dust particles on expand
  * - "Most Popular" badge for Expert tier
+ * - Task/Referral requirements display
  * - Fully touch-friendly for mobile
  */
 export function LegendaryTierCard({
@@ -40,6 +43,8 @@ export function LegendaryTierCard({
   features,
   popular = false,
   index,
+  requiresTasks = 0,
+  requiresReferrals = 0,
 }: LegendaryTierCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -238,9 +243,31 @@ export function LegendaryTierCard({
                   {/* Value Proposition */}
                   <p className="text-sm text-muted-foreground mb-4">
                     {name === 'Pro' && 'Unlock the full earning potential of the Alpha Ecosystem. Start completing missions and earning ₳ today.'}
-                    {name === 'Expert' && 'Lead your network with advanced tools and earn passive income through multi-level overrides.'}
-                    {name === 'Elite' && 'Access the exclusive Alpha Bankers Cooperative and unlock the highest earning potential with daily vault yields.'}
+                    {name === 'Expert' && 'Designed for proven contributors. Complete 5 verified tasks, demonstrating reliability and commitment, to unlock advanced earning tools and network overrides.'}
+                    {name === 'Elite' && 'Access the exclusive Alpha Bankers Cooperative with 1% daily vault yields. Requires 3 EXPERT partners in your network.'}
                   </p>
+                  
+                  {/* Qualification Requirements */}
+                  {(requiresTasks > 0 || requiresReferrals > 0) && (
+                    <div className="mb-4 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                      <h4 className="text-xs font-semibold text-amber-400 mb-2 flex items-center gap-1">
+                        <Lock className="w-3 h-3" />
+                        Qualification Requirement
+                      </h4>
+                      {requiresTasks > 0 && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Target className="w-3 h-3 text-amber-400" />
+                          <span>Complete {requiresTasks} approved tasks to qualify</span>
+                        </div>
+                      )}
+                      {requiresReferrals > 0 && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <Users className="w-3 h-3 text-amber-400" />
+                          <span>Enroll {requiresReferrals} EXPERT partners to qualify</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Features List */}
                   <ul className="space-y-2 mb-6">
