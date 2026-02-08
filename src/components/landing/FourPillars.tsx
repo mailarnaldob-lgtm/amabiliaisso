@@ -41,14 +41,14 @@ const pillars = [
     symbol: '₳',
     title: 'TRADE',
     subtitle: 'Sovereign Liquidity',
-    description: 'Seamlessly convert your accumulated Alpha (₳) into fiat currency.',
-    feature: 'ALPHA EXCHANGER',
+    description: 'Instant Buy & Sell for Alpha Gold. Convert ₳ to Fiat and vice-versa.',
+    feature: 'ALPHA EXCHANGER — Now Live',
     icon: ArrowLeftRight,
     featureIcon: Sparkles,
     color: 'from-[#FFD700] to-[#FFA500]',
     borderColor: 'border-[#FFD700]/30',
     glowColor: 'amber',
-    status: 'coming-soon',
+    status: 'active',
     route: '/pillars/trade'
   },
   {

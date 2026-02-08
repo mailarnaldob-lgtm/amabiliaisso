@@ -90,33 +90,33 @@ export default function TradePillar() {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
               <span className="text-amber-400">₳</span> TRADE
             </h1>
-            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-              COMING SOON
+            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+              NOW LIVE
             </Badge>
           </div>
           <p className="text-xl sm:text-2xl text-amber-400 font-medium mb-4">
             Sovereign Liquidity
           </p>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Seamlessly convert your accumulated Alpha (₳) into fiat currency through the Alpha Exchanger.
+            Instant Buy &amp; Sell for Alpha Gold. Convert ₳ to Fiat and vice-versa within the Amabilia Network.
           </p>
         </motion.div>
 
-        {/* Coming Soon Banner */}
+        {/* Live Exchange Banner */}
         <motion.div
           className="rounded-2xl p-8 mb-16 text-center"
           style={{
-            background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.1) 100%)',
-            border: '1px solid rgba(255, 215, 0, 0.3)',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(255, 215, 0, 0.1) 100%)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
             backdropFilter: 'blur(40px)'
           }}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Sparkles className="h-8 w-8 text-amber-400 mx-auto mb-4" />
-          <h3 className="text-2xl font-bold text-amber-400 mb-2">ALPHA EXCHANGER</h3>
-          <p className="text-muted-foreground">The sovereign gateway from digital to physical wealth</p>
+          <Sparkles className="h-8 w-8 text-emerald-400 mx-auto mb-4" />
+          <h3 className="text-2xl font-bold text-emerald-400 mb-2">ALPHA EXCHANGER — NOW LIVE</h3>
+          <p className="text-muted-foreground">Your sovereign gateway from digital to physical wealth is now active</p>
         </motion.div>
 
         {/* Sections */}
@@ -279,12 +279,12 @@ export default function TradePillar() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
         >
-          <Link to="/auth">
+          <Link to="/dashboard/exchanger">
             <Button 
               size="lg"
-              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black px-8 py-6 text-lg font-semibold"
+              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-6 text-lg font-semibold"
             >
-              Get Notified at Launch
+              Open Alpha Exchanger
             </Button>
           </Link>
         </motion.div>
