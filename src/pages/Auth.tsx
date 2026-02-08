@@ -8,8 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Users, Wallet, Shield, Info, CreditCard, Check, X, Sparkles, Crown, Zap, Star } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import { Eye, EyeOff, Users, Wallet, Shield, AlertTriangle, CreditCard, Check, X, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Password strength validation
@@ -112,113 +111,11 @@ function FeatureCard({
   );
 }
 
-// Sovereign Tier Badge Component
-function TierBadge({ 
-  tier, 
-  selected, 
-  onClick 
-}: { 
-  tier: { id: string; name: string; price: number; icon: React.ElementType; features: string[] };
-  selected: boolean;
-  onClick: () => void;
-}) {
-  const Icon = tier.icon;
-  
-  return (
-    <motion.button
-      type="button"
-      onClick={onClick}
-      className={`relative p-4 rounded-xl text-left transition-all duration-300 ${
-        selected ? 'ring-2 ring-[#FFD700]' : ''
-      }`}
-      style={{
-        background: selected 
-          ? 'linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,165,0,0.1) 100%)'
-          : 'linear-gradient(135deg, rgba(5,5,5,0.6) 0%, rgba(15,15,15,0.4) 100%)',
-        border: selected 
-          ? '1px solid rgba(255,215,0,0.5)' 
-          : '1px solid rgba(255,255,255,0.1)',
-        boxShadow: selected 
-          ? '0 0 30px rgba(255,215,0,0.2)' 
-          : 'none'
-      }}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      {selected && (
-        <motion.div
-          className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' }}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-        >
-          <Check className="w-4 h-4 text-black" />
-        </motion.div>
-      )}
-      
-      <div className="flex items-center gap-3 mb-2">
-        <div 
-          className="p-2 rounded-lg"
-          style={{
-            background: selected 
-              ? 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0.1) 100%)'
-              : 'rgba(255,255,255,0.05)',
-            border: selected 
-              ? '1px solid rgba(255,215,0,0.3)' 
-              : '1px solid rgba(255,255,255,0.1)'
-          }}
-        >
-          <Icon className={`w-4 h-4 ${selected ? 'text-[#FFD700]' : 'text-muted-foreground'}`} />
-        </div>
-        <div>
-          <span className={`font-bold text-sm ${selected ? 'text-[#FFD700]' : 'text-foreground'}`}>
-            {tier.name}
-          </span>
-          <div className="text-xs text-muted-foreground">
-            ₱{tier.price.toLocaleString()}
-          </div>
-        </div>
-      </div>
-      
-      <div className="text-xs text-muted-foreground line-clamp-2">
-        {tier.features[0]}
-      </div>
-    </motion.button>
-  );
-}
-
-// Sovereign Tiers Configuration
-const SOVEREIGN_TIERS = [
-  {
-    id: 'pro',
-    name: 'PRO',
-    price: 300,
-    icon: Zap,
-    features: ['Full VPA Mission Access', '50% Referral Commission', 'Omni-Transfer Engine']
-  },
-  {
-    id: 'expert',
-    name: 'EXPERT',
-    price: 600,
-    icon: Star,
-    features: ['All Pro Features', '10% Network Overrides', 'Priority Mission Queue']
-  },
-  {
-    id: 'elite',
-    name: 'ELITE',
-    price: 900,
-    icon: Crown,
-    features: ['Alpha Bankers Cooperative', '1% Daily Vault Yield', 'P2P Lending Access']
-  }
-];
-
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const referralCode = searchParams.get('ref') || '';
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<string>('pro');
 
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
@@ -284,6 +181,7 @@ export default function Auth() {
       return;
     }
     
+    // All new accounts start as INACTIVE with no tier
     const { error } = await signUp(signupEmail, signupPassword, signupFullName, signupPhone, signupReferralCode);
     
     if (error) {
@@ -298,15 +196,13 @@ export default function Auth() {
       });
     } else {
       toast({
-        title: 'Welcome to AMABILIA NETWORK',
-        description: `Your ${selectedTier.toUpperCase()} account has been created. Activate to unlock the Alpha Ecosystem.`
+        title: 'Identity Created Successfully',
+        description: 'Your account is pending activation. Pay the activation fee to unlock the Alpha Ecosystem.'
       });
       navigate('/dashboard', { replace: true });
     }
     setIsLoading(false);
   };
-
-  const selectedTierData = SOVEREIGN_TIERS.find(t => t.id === selectedTier);
 
   return (
     <div 
@@ -619,7 +515,7 @@ export default function Auth() {
                   </form>
                 </TabsContent>
                 
-                {/* Registration Tab */}
+                {/* Registration Tab - STRICT INACTIVE ENFORCEMENT */}
                 <TabsContent value="signup">
                   <form onSubmit={handleSignup} className="space-y-4 mt-4">
                     <div className="space-y-2">
@@ -747,23 +643,6 @@ export default function Auth() {
                       </AnimatePresence>
                     </div>
                     
-                    {/* Sovereign Tier Selection */}
-                    <div className="space-y-3">
-                      <Label className="text-foreground text-sm">
-                        Select Sovereign Tier
-                      </Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {SOVEREIGN_TIERS.map(tier => (
-                          <TierBadge
-                            key={tier.id}
-                            tier={tier}
-                            selected={selectedTier === tier.id}
-                            onClick={() => setSelectedTier(tier.id)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    
                     <div className="space-y-2">
                       <Label htmlFor="signup-referral" className="text-foreground text-sm">
                         Referral Code (Optional)
@@ -778,7 +657,7 @@ export default function Auth() {
                       />
                     </div>
                     
-                    {/* Activation Notice with Sovereign styling */}
+                    {/* STRICT INACTIVE NOTICE - Zero Shortcut Policy */}
                     <Alert 
                       className="border-0"
                       style={{
@@ -786,11 +665,11 @@ export default function Auth() {
                         border: '1px solid rgba(255,215,0,0.2)'
                       }}
                     >
-                      <Info className="h-4 w-4 text-[#FFD700]" />
+                      <AlertTriangle className="h-4 w-4 text-[#FFD700]" />
                       <AlertDescription className="text-xs text-muted-foreground">
-                        New accounts start as <span className="font-medium text-[#FFD700]">inactive</span>. 
-                        Pay <span className="font-bold text-[#FFD700]">₱{selectedTierData?.price.toLocaleString()}</span> after 
-                        signup to activate your <span className="font-bold text-[#FFD700]">{selectedTierData?.name}</span> account.
+                        <span className="font-semibold text-[#FFD700]">Zero Shortcut Policy:</span> All new accounts start as{' '}
+                        <span className="font-bold text-orange-400">INACTIVE</span>. After registration, you must submit 
+                        your activation payment (starting at <span className="font-bold text-[#FFD700]">₱300</span>) to unlock the Alpha Ecosystem.
                       </AlertDescription>
                     </Alert>
                     
@@ -808,12 +687,12 @@ export default function Auth() {
                         }}
                         disabled={isLoading}
                       >
-                        {isLoading ? 'Creating Sovereign Identity...' : `Register as ${selectedTierData?.name}`}
+                        {isLoading ? 'Creating Sovereign Identity...' : 'Create Inactive Account'}
                       </Button>
                     </motion.div>
                     
                     <p className="text-xs text-center text-muted-foreground">
-                      Activate your account after registration to unlock the Alpha Ecosystem
+                      Submit your activation payment after registration to unlock the Alpha Ecosystem
                     </p>
                   </form>
                 </TabsContent>
