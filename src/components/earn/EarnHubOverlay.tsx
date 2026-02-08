@@ -1,10 +1,11 @@
 /**
- * EARN HUB OVERLAY - SOVEREIGN V11.0
- * Complete overhaul with 20 Philippine Brand Missions
+ * EARN HUB OVERLAY - SOVEREIGN V12.1
+ * Complete database-driven mission marketplace
  * 
  * Architecture:
- * - RESTful polling (15-second intervals)
- * - No WebSockets or realtime subscriptions
+ * - Fetches from `tasks` table (database source of truth)
+ * - RESTful polling (15-second intervals) via useMissionHub
+ * - Tier-based visibility (PRO, EXPERT, ELITE)
  * - Standard Supabase storage for proof uploads
  * - AnimatedOdometers for reward figures
  * 
@@ -14,9 +15,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  X, Target, CheckCircle2, Clock, Award, Zap, Upload, 
-  ExternalLink, Info, FileCheck, AlertCircle, Star,
-  Youtube, Facebook, Play, Users, Music, Camera, Lock
+  X, Target, CheckCircle2, Clock, Award, Zap, 
+  ExternalLink, FileCheck, AlertCircle, Star,
+  Youtube, Facebook, Users, Music, Camera, Lock, Briefcase
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -27,8 +28,9 @@ import { EliteButton } from '@/components/ui/elite-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTaskSubmissions, useTaskStats } from '@/hooks/useTasks';
+import { useFilteredMissions, getPlatformFromCategory, DatabaseMission, MissionPlatform } from '@/hooks/useMissionHub';
 import { useProfile } from '@/hooks/useProfile';
-import { ARMY_LEVELS, ArmyLevel } from '@/stores/appStore';
+import { ARMY_LEVELS } from '@/stores/appStore';
 import { formatDistanceToNow } from 'date-fns';
 import { OdometerNumber } from '@/components/command/OdometerNumber';
 import { TaskSubmissionModal } from '@/components/alpha/TaskSubmissionModal';
@@ -39,664 +41,78 @@ interface EarnHubOverlayProps {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PHILIPPINE BRAND MISSIONS - 40 ACTIVE TASKS (FB, YT, TikTok, Instagram)
-// ═══════════════════════════════════════════════════════════════════════════
-
-export type MissionPlatform = 'facebook' | 'youtube' | 'tiktok' | 'instagram';
-
-export interface PhilippineMission {
-  id: string;
-  title: string;
-  description: string;
-  category: MissionPlatform;
-  brand: string;
-  action: string;
-  reward: number;
-  proof_type: 'screenshot' | 'link';
-  target_url: string;
-  icon: MissionPlatform;
-  is_active: boolean;
-}
-
-export const PHILIPPINE_MISSIONS: PhilippineMission[] = [
-  // ═══════════════════════════════════════════════════════════════════════
-  // FACEBOOK MISSIONS (10 Tasks - Follow/Like)
-  // ═══════════════════════════════════════════════════════════════════════
-  {
-    id: 'ph-fb-001',
-    title: 'Coca-Cola Philippines',
-    description: 'Follow the official Coca-Cola Philippines Facebook page',
-    category: 'facebook',
-    brand: 'Coca-Cola PH',
-    action: 'Follow Page',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/CocaColaPH',
-    icon: 'facebook',
-    is_active: true,
-  },
-  {
-    id: 'ph-fb-002',
-    title: 'Jollibee',
-    description: 'Like the latest post on Jollibee\'s official Facebook page',
-    category: 'facebook',
-    brand: 'Jollibee',
-    action: 'Like Latest Post',
-    reward: 8,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/JollibeePhilippines',
-    icon: 'facebook',
-    is_active: true,
-  },
-  {
-    id: 'ph-fb-003',
-    title: 'SM Supermalls',
-    description: 'Follow SM Supermalls official Facebook page',
-    category: 'facebook',
-    brand: 'SM Supermalls',
-    action: 'Follow Page',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/saborandmix',
-    icon: 'facebook',
-    is_active: true,
-  },
-  {
-    id: 'ph-fb-004',
-    title: 'GCash',
-    description: 'Like and share any GCash Facebook post',
-    category: 'facebook',
-    brand: 'GCash',
-    action: 'Like & Share Post',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/gcaborandmix',
-    icon: 'facebook',
-    is_active: true,
-  },
-  {
-    id: 'ph-fb-005',
-    title: 'Angkas',
-    description: 'Follow Angkas official Facebook page',
-    category: 'facebook',
-    brand: 'Angkas',
-    action: 'Follow Page',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/angaborandmix',
-    icon: 'facebook',
-    is_active: true,
-  },
-  {
-    id: 'ph-fb-006',
-    title: 'Shopee PH',
-    description: 'Like any Shopee Philippines Facebook post',
-    category: 'facebook',
-    brand: 'Shopee PH',
-    action: 'Like Post',
-    reward: 8,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/ShopeePH',
-    icon: 'facebook',
-    is_active: true,
-  },
-  {
-    id: 'ph-fb-007',
-    title: 'Lazada PH',
-    description: 'Follow Lazada Philippines official Facebook page',
-    category: 'facebook',
-    brand: 'Lazada PH',
-    action: 'Follow Page',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/LazadaPhilippines',
-    icon: 'facebook',
-    is_active: true,
-  },
-  {
-    id: 'ph-fb-008',
-    title: 'Globe Telecom',
-    description: 'Like any Globe Telecom Facebook post',
-    category: 'facebook',
-    brand: 'Globe Telecom',
-    action: 'Like Post',
-    reward: 8,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/globeph',
-    icon: 'facebook',
-    is_active: true,
-  },
-  {
-    id: 'ph-fb-009',
-    title: 'Smart Communications',
-    description: 'Follow Smart Communications official Facebook page',
-    category: 'facebook',
-    brand: 'Smart',
-    action: 'Follow Page',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/SmartCommunications',
-    icon: 'facebook',
-    is_active: true,
-  },
-  {
-    id: 'ph-fb-010',
-    title: 'Meralco',
-    description: 'Like the latest update on Meralco Facebook page',
-    category: 'facebook',
-    brand: 'Meralco',
-    action: 'Like Latest Update',
-    reward: 8,
-    proof_type: 'screenshot',
-    target_url: 'https://www.facebook.com/meralco',
-    icon: 'facebook',
-    is_active: true,
-  },
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // YOUTUBE MISSIONS (10 Tasks - Subscribe/Watch)
-  // ═══════════════════════════════════════════════════════════════════════
-  {
-    id: 'ph-yt-001',
-    title: 'Vivamax',
-    description: 'Subscribe to Vivamax official YouTube channel',
-    category: 'youtube',
-    brand: 'Vivamax',
-    action: 'Subscribe Channel',
-    reward: 15,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@VivamaxPH',
-    icon: 'youtube',
-    is_active: true,
-  },
-  {
-    id: 'ph-yt-002',
-    title: 'ABS-CBN Entertainment',
-    description: 'Watch the latest video on ABS-CBN Entertainment',
-    category: 'youtube',
-    brand: 'ABS-CBN',
-    action: 'Watch Latest Video',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@ABSCBNEntertainment',
-    icon: 'youtube',
-    is_active: true,
-  },
-  {
-    id: 'ph-yt-003',
-    title: 'GMA Integrated News',
-    description: 'Subscribe to GMA Integrated News YouTube channel',
-    category: 'youtube',
-    brand: 'GMA News',
-    action: 'Subscribe Channel',
-    reward: 15,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@gaborandmix',
-    icon: 'youtube',
-    is_active: true,
-  },
-  {
-    id: 'ph-yt-004',
-    title: 'Wish 107.5',
-    description: 'Watch any performance video on Wish 107.5 channel',
-    category: 'youtube',
-    brand: 'Wish 107.5',
-    action: 'Watch Performance',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@Wish1075',
-    icon: 'youtube',
-    is_active: true,
-  },
-  {
-    id: 'ph-yt-005',
-    title: 'Cong TV',
-    description: 'Subscribe to Cong TV official YouTube channel',
-    category: 'youtube',
-    brand: 'Cong TV',
-    action: 'Subscribe Channel',
-    reward: 15,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@CongTV',
-    icon: 'youtube',
-    is_active: true,
-  },
-  {
-    id: 'ph-yt-006',
-    title: 'Ivana Alawi',
-    description: 'Subscribe to Ivana Alawi official YouTube channel',
-    category: 'youtube',
-    brand: 'Ivana Alawi',
-    action: 'Subscribe Channel',
-    reward: 15,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@IvanaAlawi',
-    icon: 'youtube',
-    is_active: true,
-  },
-  {
-    id: 'ph-yt-007',
-    title: 'Raffy Tulfo in Action',
-    description: 'Watch any video on Raffy Tulfo in Action',
-    category: 'youtube',
-    brand: 'Raffy Tulfo',
-    action: 'Watch Video',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@raffytaborandmix',
-    icon: 'youtube',
-    is_active: true,
-  },
-  {
-    id: 'ph-yt-008',
-    title: 'Eat Bulaga',
-    description: 'Subscribe to Eat Bulaga official YouTube channel',
-    category: 'youtube',
-    brand: 'Eat Bulaga',
-    action: 'Subscribe Channel',
-    reward: 15,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@EatBulaga',
-    icon: 'youtube',
-    is_active: true,
-  },
-  {
-    id: 'ph-yt-009',
-    title: 'Erwan Heussaff (FEATR)',
-    description: 'Watch any video on Erwan Heussaff\'s FEATR channel',
-    category: 'youtube',
-    brand: 'FEATR',
-    action: 'Watch Video',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@FEATR',
-    icon: 'youtube',
-    is_active: true,
-  },
-  {
-    id: 'ph-yt-010',
-    title: 'Pinoy Big Brother',
-    description: 'Subscribe to Pinoy Big Brother official YouTube channel',
-    category: 'youtube',
-    brand: 'PBB',
-    action: 'Subscribe Channel',
-    reward: 15,
-    proof_type: 'screenshot',
-    target_url: 'https://www.youtube.com/@PinoyBigBrother',
-    icon: 'youtube',
-    is_active: true,
-  },
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // TIKTOK MISSIONS (10 Tasks - Viral Reach & Follow) - V12.0 EXPANSION
-  // ═══════════════════════════════════════════════════════════════════════
-  {
-    id: 'ph-tt-001',
-    title: 'FoodPanda PH',
-    description: 'Follow FoodPanda PH and heart their latest video',
-    category: 'tiktok',
-    brand: 'FoodPanda PH',
-    action: 'Follow & Heart Video',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@foodpanda_ph',
-    icon: 'tiktok',
-    is_active: true,
-  },
-  {
-    id: 'ph-tt-002',
-    title: 'Vice Cosmetics',
-    description: 'Heart the latest clip on Vice Cosmetics TikTok',
-    category: 'tiktok',
-    brand: 'Vice Cosmetics',
-    action: 'Heart Latest Clip',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@vicecosmetics',
-    icon: 'tiktok',
-    is_active: true,
-  },
-  {
-    id: 'ph-tt-003',
-    title: 'Smart Communications',
-    description: 'Follow Smart Communications TikTok account',
-    category: 'tiktok',
-    brand: 'Smart',
-    action: 'Follow Account',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@smartcommunications',
-    icon: 'tiktok',
-    is_active: true,
-  },
-  {
-    id: 'ph-tt-004',
-    title: 'BDO Unibank',
-    description: 'Watch any tip video on BDO Unibank TikTok',
-    category: 'tiktok',
-    brand: 'BDO Unibank',
-    action: 'Watch Tip Video',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@bdounibank',
-    icon: 'tiktok',
-    is_active: true,
-  },
-  {
-    id: 'ph-tt-005',
-    title: 'Chowking',
-    description: 'Follow Chowking and heart any video',
-    category: 'tiktok',
-    brand: 'Chowking',
-    action: 'Follow & Heart',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@chowkingph',
-    icon: 'tiktok',
-    is_active: true,
-  },
-  {
-    id: 'ph-tt-006',
-    title: 'Mang Inasal',
-    description: 'Follow Mang Inasal TikTok account',
-    category: 'tiktok',
-    brand: 'Mang Inasal',
-    action: 'Follow Account',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@manginasalph',
-    icon: 'tiktok',
-    is_active: true,
-  },
-  {
-    id: 'ph-tt-007',
-    title: 'Grab Philippines',
-    description: 'Heart the latest promo video on Grab Philippines',
-    category: 'tiktok',
-    brand: 'Grab PH',
-    action: 'Heart Latest Promo',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@grabph',
-    icon: 'tiktok',
-    is_active: true,
-  },
-  {
-    id: 'ph-tt-008',
-    title: 'Maya PH',
-    description: 'Follow Maya PH TikTok account',
-    category: 'tiktok',
-    brand: 'Maya PH',
-    action: 'Follow Account',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@mayaph',
-    icon: 'tiktok',
-    is_active: true,
-  },
-  {
-    id: 'ph-tt-009',
-    title: 'Bench/ Official',
-    description: 'Heart any fashion clip on Bench TikTok',
-    category: 'tiktok',
-    brand: 'Bench/',
-    action: 'Heart Fashion Clip',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@bench',
-    icon: 'tiktok',
-    is_active: true,
-  },
-  {
-    id: 'ph-tt-010',
-    title: 'Penshoppe',
-    description: 'Follow Penshoppe TikTok account',
-    category: 'tiktok',
-    brand: 'Penshoppe',
-    action: 'Follow Account',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.tiktok.com/@penshoppe',
-    icon: 'tiktok',
-    is_active: true,
-  },
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // INSTAGRAM MISSIONS (10 Tasks - Followers & Stories) - V12.0 EXPANSION
-  // ═══════════════════════════════════════════════════════════════════════
-  {
-    id: 'ph-ig-001',
-    title: 'Starbucks Philippines',
-    description: 'Follow Starbucks Philippines Instagram account',
-    category: 'instagram',
-    brand: 'Starbucks PH',
-    action: 'Follow Account',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/starbucksph/',
-    icon: 'instagram',
-    is_active: true,
-  },
-  {
-    id: 'ph-ig-002',
-    title: 'National Book Store',
-    description: 'Like the latest photo on National Book Store Instagram',
-    category: 'instagram',
-    brand: 'National Book Store',
-    action: 'Like Latest Photo',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/nationalbookstore/',
-    icon: 'instagram',
-    is_active: true,
-  },
-  {
-    id: 'ph-ig-003',
-    title: 'Uniqlo Philippines',
-    description: 'Follow Uniqlo Philippines Instagram account',
-    category: 'instagram',
-    brand: 'Uniqlo PH',
-    action: 'Follow Account',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/uniqlophofficial/',
-    icon: 'instagram',
-    is_active: true,
-  },
-  {
-    id: 'ph-ig-004',
-    title: 'H&M Philippines',
-    description: 'Like the latest post on H&M Philippines Instagram',
-    category: 'instagram',
-    brand: 'H&M PH',
-    action: 'Like Latest Post',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/hm_ph/',
-    icon: 'instagram',
-    is_active: true,
-  },
-  {
-    id: 'ph-ig-005',
-    title: 'Watsons Philippines',
-    description: 'Follow Watsons Philippines Instagram account',
-    category: 'instagram',
-    brand: 'Watsons PH',
-    action: 'Follow Account',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/waborandmixph/',
-    icon: 'instagram',
-    is_active: true,
-  },
-  {
-    id: 'ph-ig-006',
-    title: 'Sunnies Studios',
-    description: 'Like the latest post on Sunnies Studios Instagram',
-    category: 'instagram',
-    brand: 'Sunnies Studios',
-    action: 'Like Latest Post',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/sunniesstudios/',
-    icon: 'instagram',
-    is_active: true,
-  },
-  {
-    id: 'ph-ig-007',
-    title: 'Zalora PH',
-    description: 'Follow Zalora PH Instagram account',
-    category: 'instagram',
-    brand: 'Zalora PH',
-    action: 'Follow Account',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/zaborandmixph/',
-    icon: 'instagram',
-    is_active: true,
-  },
-  {
-    id: 'ph-ig-008',
-    title: 'Toyota Philippines',
-    description: 'Like the latest car post on Toyota Philippines',
-    category: 'instagram',
-    brand: 'Toyota PH',
-    action: 'Like Latest Car Post',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/toyotamotor_ph/',
-    icon: 'instagram',
-    is_active: true,
-  },
-  {
-    id: 'ph-ig-009',
-    title: 'KFC Philippines',
-    description: 'Follow KFC Philippines Instagram account',
-    category: 'instagram',
-    brand: 'KFC PH',
-    action: 'Follow Account',
-    reward: 12,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/kfcphilippines/',
-    icon: 'instagram',
-    is_active: true,
-  },
-  {
-    id: 'ph-ig-010',
-    title: "Shakey's PH",
-    description: "Like the latest post on Shakey's Philippines Instagram",
-    category: 'instagram',
-    brand: "Shakey's PH",
-    action: 'Like Latest Post',
-    reward: 10,
-    proof_type: 'screenshot',
-    target_url: 'https://www.instagram.com/shakeysph/',
-    icon: 'instagram',
-    is_active: true,
-  },
-];
-
-// ═══════════════════════════════════════════════════════════════════════════
-// BUSINESS LOGIC EXPLANATION COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════
-
-function BusinessLogicSection() {
-  return (
-    <Card className="bg-[#050505]/80 border-[#FFD700]/20 backdrop-blur-xl">
-      <CardContent className="p-4 space-y-4">
-        <div className="flex items-center gap-2">
-          <Info className="h-5 w-5 text-[#FFD700]" />
-          <h3 className="font-bold text-[#FFD700]">Task/Rewards Business Logic</h3>
-        </div>
-        
-        <div className="space-y-3 text-sm text-zinc-300">
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-[#FFD700]/10">
-              <ExternalLink className="h-4 w-4 text-[#FFD700]" />
-            </div>
-            <div>
-              <p className="font-semibold text-white">1. Start Mission (Redirect)</p>
-              <p className="text-zinc-400">Click "Start Mission" to open the target URL in a new tab. Complete the action externally.</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-emerald-500/10">
-              <Upload className="h-4 w-4 text-emerald-400" />
-            </div>
-            <div>
-              <p className="font-semibold text-white">2. Mission Accomplished (Upload Proof)</p>
-              <p className="text-zinc-400">Upload a screenshot as evidence of task completion. Proofs are stored securely.</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-blue-500/10">
-              <Clock className="h-4 w-4 text-blue-400" />
-            </div>
-            <div>
-              <p className="font-semibold text-white">3. Admin Review (1-24 hrs)</p>
-              <p className="text-zinc-400">Admins verify proofs. <span className="text-[#FFD700]">Only Admins can view uploaded proofs.</span></p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-[#FFD700]/10">
-              <Zap className="h-4 w-4 text-[#FFD700]" />
-            </div>
-            <div>
-              <p className="font-semibold text-white">4. ABC Vault Injection</p>
-              <p className="text-zinc-400">Upon approval, ₳ Credits are instantly injected into your <span className="text-[#FFD700]">Task Wallet</span>.</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="pt-2 border-t border-[#FFD700]/10">
-          <p className="text-xs text-zinc-500">
-            <span className="text-[#FFD700]">90/10 Split:</span> You receive 90% of the reward. 10% supports platform operations.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// ANIMATED STATS HEADER WITH ODOMETERS
+// STATS HEADER COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
 function StatsHeader({ stats }: { stats: ReturnType<typeof useTaskStats> }) {
   return (
-    <div className="grid grid-cols-3 gap-4 p-4 bg-[#050505]/60 rounded-xl border border-[#FFD700]/20 backdrop-blur-xl">
-      <div className="text-center">
-        <div className="text-2xl font-bold text-[#FFD700]">
-          <OdometerNumber value={stats.totalCreditsEarned} prefix="₳" />
-        </div>
-        <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Total Earned</p>
-      </div>
-      <div className="text-center border-x border-[#FFD700]/10">
-        <div className="text-2xl font-bold text-blue-400">
-          <OdometerNumber value={stats.totalPending} />
-        </div>
-        <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Pending</p>
-      </div>
-      <div className="text-center">
-        <div className="text-2xl font-bold text-emerald-400">
-          <OdometerNumber value={stats.todayCompleted} />
-        </div>
-        <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Today</p>
-      </div>
+    <div className="grid grid-cols-3 gap-3 mb-4">
+      <Card className="bg-[#050505]/60 border-[#FFD700]/20">
+        <CardContent className="p-3 text-center">
+          <p className="text-xs text-zinc-500 mb-1">Available</p>
+          <div className="flex items-center justify-center gap-1">
+            <Target className="h-4 w-4 text-[#FFD700]" />
+            <OdometerNumber 
+              value={40 - stats.totalCompleted} 
+              className="text-lg font-bold text-[#FFD700]" 
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="bg-[#050505]/60 border-blue-500/20">
+        <CardContent className="p-3 text-center">
+          <p className="text-xs text-zinc-500 mb-1">Pending</p>
+          <div className="flex items-center justify-center gap-1">
+            <Clock className="h-4 w-4 text-blue-400" />
+            <OdometerNumber 
+              value={stats.totalPending} 
+              className="text-lg font-bold text-blue-400" 
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="bg-[#050505]/60 border-emerald-500/20">
+        <CardContent className="p-3 text-center">
+          <p className="text-xs text-zinc-500 mb-1">Earned</p>
+          <div className="flex items-center justify-center gap-1">
+            <Zap className="h-4 w-4 text-emerald-400" />
+            <OdometerNumber 
+              value={stats.totalCreditsEarned} 
+              prefix="₳" 
+              className="text-lg font-bold text-emerald-400" 
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// VPA LEVEL CARD (Performance-Based Leveling)
+// BUSINESS LOGIC SECTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+function BusinessLogicSection() {
+  return (
+    <Alert className="border-[#FFD700]/20 bg-[#FFD700]/5">
+      <AlertCircle className="h-4 w-4 text-[#FFD700]" />
+      <AlertDescription className="text-xs text-zinc-300">
+        <strong className="text-[#FFD700]">How It Works:</strong> Complete social missions → 
+        Upload proof → Admin reviews → ₳ credits your wallet automatically.
+        <span className="block mt-1 text-zinc-500">
+          PRO members earn full rewards. EXPERT/ELITE unlock premium missions.
+        </span>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VPA LEVEL CARD COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
 function VPALevelCard({ completedCount }: { completedCount: number }) {
-  const armyLevel: ArmyLevel = completedCount >= 500 ? 'elite_operator' 
-    : completedCount >= 150 ? 'vanguard'
+  const armyLevel = completedCount >= 100 ? 'elite_operator'
     : completedCount >= 50 ? 'operative'
     : completedCount >= 10 ? 'specialist'
     : 'cadet';
@@ -748,54 +164,69 @@ function VPALevelCard({ completedCount }: { completedCount: number }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PHILIPPINE MISSION CARD COMPONENT
+// PLATFORM ICON HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 
-function PhilippineMissionCard({ 
+const getPlatformIcon = (category: string) => {
+  const platform = getPlatformFromCategory(category);
+  switch (platform) {
+    case 'youtube': return Youtube;
+    case 'facebook': return Facebook;
+    case 'tiktok': return Music;
+    case 'instagram': return Camera;
+    default: return Briefcase;
+  }
+};
+
+const platformConfig: Record<MissionPlatform, { bg: string; color: string; actionBg: string }> = {
+  youtube: {
+    bg: 'from-red-600/20 to-red-800/10 border-red-500/20',
+    color: 'text-red-500',
+    actionBg: 'bg-red-500/5 border-red-500/20 text-red-400',
+  },
+  facebook: {
+    bg: 'from-blue-600/20 to-blue-800/10 border-blue-500/20',
+    color: 'text-blue-500',
+    actionBg: 'bg-blue-500/5 border-blue-500/20 text-blue-400',
+  },
+  tiktok: {
+    bg: 'from-cyan-400/20 to-pink-500/10 border-cyan-400/20',
+    color: 'text-cyan-400',
+    actionBg: 'bg-cyan-500/5 border-cyan-500/20 text-cyan-400',
+  },
+  instagram: {
+    bg: 'from-pink-500/20 to-purple-600/10 border-pink-500/20',
+    color: 'text-pink-500',
+    actionBg: 'bg-pink-500/5 border-pink-500/20 text-pink-400',
+  },
+  other: {
+    bg: 'from-zinc-600/20 to-zinc-800/10 border-zinc-500/20',
+    color: 'text-zinc-400',
+    actionBg: 'bg-zinc-500/5 border-zinc-500/20 text-zinc-400',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATABASE MISSION CARD COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+function DatabaseMissionCard({ 
   mission, 
   onStartMission,
   isSubmitted,
   isAccountInactive,
   onActivateClick
 }: { 
-  mission: PhilippineMission; 
-  onStartMission: (mission: PhilippineMission) => void;
+  mission: DatabaseMission; 
+  onStartMission: (mission: DatabaseMission) => void;
   isSubmitted: boolean;
   isAccountInactive?: boolean;
   onActivateClick?: () => void;
 }) {
-  // Platform-specific styling
-  const platformConfig: Record<MissionPlatform, { icon: typeof Youtube; bg: string; color: string; actionBg: string }> = {
-    youtube: {
-      icon: Youtube,
-      bg: 'from-red-600/20 to-red-800/10 border-red-500/20',
-      color: 'text-red-500',
-      actionBg: 'bg-red-500/5 border-red-500/20 text-red-400',
-    },
-    facebook: {
-      icon: Facebook,
-      bg: 'from-blue-600/20 to-blue-800/10 border-blue-500/20',
-      color: 'text-blue-500',
-      actionBg: 'bg-blue-500/5 border-blue-500/20 text-blue-400',
-    },
-    tiktok: {
-      icon: Music, // TikTok-like icon
-      bg: 'from-cyan-400/20 to-pink-500/10 border-cyan-400/20',
-      color: 'text-cyan-400',
-      actionBg: 'bg-cyan-500/5 border-cyan-500/20 text-cyan-400',
-    },
-    instagram: {
-      icon: Camera, // Instagram-like icon
-      bg: 'from-pink-500/20 to-purple-600/10 border-pink-500/20',
-      color: 'text-pink-500',
-      actionBg: 'bg-pink-500/5 border-pink-500/20 text-pink-400',
-    },
-  };
+  const platform = getPlatformFromCategory(mission.category);
+  const config = platformConfig[platform];
+  const IconComponent = getPlatformIcon(mission.category);
   
-  const config = platformConfig[mission.icon];
-  const IconComponent = config.icon;
-
-  // Locked state for inactive accounts
   const isLocked = isAccountInactive && !isSubmitted;
   
   return (
@@ -853,8 +284,10 @@ function PhilippineMissionCard({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs text-zinc-500">
                 <span className={cn("px-2 py-0.5 rounded border capitalize", config.actionBg)}>
-                  {mission.action}
+                  {mission.category}
                 </span>
+                <span className="text-zinc-600">•</span>
+                <span className="capitalize">{mission.proof_type}</span>
               </div>
               
               {!isSubmitted && !isLocked && (
@@ -881,9 +314,9 @@ function PhilippineMissionCard({
 
 function SubmissionCard({ submission }: { submission: any }) {
   const statusConfig = {
-    pending: { icon: Clock, color: 'blue', label: 'Under Review', bg: 'bg-blue-500/10', border: 'border-blue-500/30' },
-    approved: { icon: CheckCircle2, color: 'emerald', label: 'Approved', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' },
-    rejected: { icon: AlertCircle, color: 'red', label: 'Rejected', bg: 'bg-red-500/10', border: 'border-red-500/30' }
+    pending: { icon: Clock, label: 'Under Review', bg: 'bg-blue-500/10', border: 'border-blue-500/30' },
+    approved: { icon: CheckCircle2, label: 'Approved', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' },
+    rejected: { icon: AlertCircle, label: 'Rejected', bg: 'bg-red-500/10', border: 'border-red-500/30' }
   };
   
   const config = statusConfig[submission.status as keyof typeof statusConfig] || statusConfig.pending;
@@ -891,10 +324,7 @@ function SubmissionCard({ submission }: { submission: any }) {
   const timeAgo = formatDistanceToNow(new Date(submission.submitted_at), { addSuffix: true });
   
   return (
-    <Card className={cn(
-      "bg-[#050505]/80 backdrop-blur-xl transition-all",
-      config.border
-    )}>
+    <Card className={cn("bg-[#050505]/80 backdrop-blur-xl transition-all", config.border)}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <div className={cn("p-2.5 rounded-lg", config.bg)}>
@@ -912,9 +342,7 @@ function SubmissionCard({ submission }: { submission: any }) {
                 <p className="font-semibold text-white line-clamp-1">
                   {submission.task?.title || 'Mission'}
                 </p>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Submitted {timeAgo}
-                </p>
+                <p className="text-xs text-zinc-500 mt-0.5">Submitted {timeAgo}</p>
               </div>
               <Badge className={cn(
                 "text-xs flex-shrink-0",
@@ -934,9 +362,7 @@ function SubmissionCard({ submission }: { submission: any }) {
             )}
             
             {submission.status === 'rejected' && submission.rejection_reason && (
-              <p className="mt-2 text-xs text-red-400">
-                Reason: {submission.rejection_reason}
-              </p>
+              <p className="mt-2 text-xs text-red-400">Reason: {submission.rejection_reason}</p>
             )}
           </div>
         </div>
@@ -953,9 +379,7 @@ function EmptyState({ icon, title, description }: { icon: React.ReactNode; title
   return (
     <Card className="bg-[#050505]/60 border-[#FFD700]/10">
       <CardContent className="p-8 text-center">
-        <div className="mx-auto text-zinc-600 mb-3">
-          {icon}
-        </div>
+        <div className="mx-auto text-zinc-600 mb-3">{icon}</div>
         <p className="font-medium text-white">{title}</p>
         <p className="text-xs text-zinc-500 mt-1">{description}</p>
       </CardContent>
@@ -972,17 +396,28 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
   const { data: submissions, isLoading: submissionsLoading, refetch: refetchSubmissions } = useTaskSubmissions();
   const stats = useTaskStats();
   
+  // Database-driven missions with 15-second polling
+  const { 
+    missions, 
+    availableMissions, 
+    submittedTaskIds, 
+    platformCounts, 
+    totalPotentialEarnings,
+    totalMissions,
+    isLoading: missionsLoading,
+    refetch: refetchMissions 
+  } = useFilteredMissions();
+  
   const [selectedPlatform, setSelectedPlatform] = useState<'all' | MissionPlatform>('all');
-  const [selectedMission, setSelectedMission] = useState<PhilippineMission | null>(null);
+  const [selectedMission, setSelectedMission] = useState<DatabaseMission | null>(null);
   const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
 
-  // SOVEREIGN V12.0: Check if account is inactive (no membership_tier)
+  // Check if account is inactive (no membership_tier)
   const isAccountInactive = !profile?.membership_tier;
 
   // Handler to redirect to activation flow
   const handleActivateClick = useCallback(() => {
-    onClose(); // Close overlay and redirect to dashboard activation module
-    // The user will be redirected to the main dashboard where ACTIVATE ACCOUNT card is visible
+    onClose();
   }, [onClose]);
 
   // 15-second RESTful polling for live data (NO WebSockets)
@@ -991,38 +426,23 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
     
     const pollInterval = setInterval(() => {
       refetchSubmissions();
+      refetchMissions();
     }, 15000);
     
     return () => clearInterval(pollInterval);
-  }, [isOpen, refetchSubmissions]);
+  }, [isOpen, refetchSubmissions, refetchMissions]);
 
-  // Get submitted task IDs from database submissions
-  const submittedTaskIds = new Set(submissions?.map(s => s.task_id) || []);
-  
-  // Filter Philippine missions by platform
-  const activeMissions = PHILIPPINE_MISSIONS.filter(m => m.is_active);
+  // Filter missions by platform
   const filteredMissions = selectedPlatform === 'all' 
-    ? activeMissions 
-    : activeMissions.filter(m => m.category === selectedPlatform);
+    ? missions 
+    : missions?.filter(m => getPlatformFromCategory(m.category) === selectedPlatform) || [];
 
-  // Calculate total potential earnings and platform counts
-  const totalPotentialEarnings = activeMissions.reduce((sum, m) => sum + m.reward, 0);
-  const facebookCount = activeMissions.filter(m => m.category === 'facebook').length;
-  const youtubeCount = activeMissions.filter(m => m.category === 'youtube').length;
-  const tiktokCount = activeMissions.filter(m => m.category === 'tiktok').length;
-  const instagramCount = activeMissions.filter(m => m.category === 'instagram').length;
-
-  // Filter submissions by status
-  const pendingSubmissions = submissions?.filter(s => s.status === 'pending') || [];
-  const approvedSubmissions = submissions?.filter(s => s.status === 'approved') || [];
-
-  const handleStartMission = useCallback((mission: PhilippineMission) => {
-    // Open target URL in new tab
-    window.open(mission.target_url, '_blank', 'noopener,noreferrer');
-    // Set selected mission for proof submission
+  const handleStartMission = useCallback((mission: DatabaseMission) => {
     setSelectedMission(mission);
     setSubmissionModalOpen(true);
   }, []);
+
+  const isLoading = submissionsLoading || missionsLoading;
 
   return (
     <AnimatePresence>
@@ -1055,7 +475,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                   </div>
                   <div>
                     <h1 className="text-xl font-bold text-white">EARN Hub</h1>
-                    <p className="text-xs text-zinc-500">VPA Mission Control • {activeMissions.length} Active Missions</p>
+                    <p className="text-xs text-zinc-500">VPA Mission Control • {totalMissions} Active Missions</p>
                   </div>
                 </div>
                 
@@ -1073,11 +493,11 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
               <Alert className="border-[#FFD700]/30 bg-[#FFD700]/5 mb-4">
                 <FileCheck className="h-4 w-4 text-[#FFD700]" />
                 <AlertDescription className="text-xs text-zinc-300">
-                  <span className="text-[#FFD700] font-semibold">{activeMissions.length} Active Missions</span> • 
-                  <span className="text-blue-400"> {facebookCount} FB</span> • 
-                  <span className="text-red-400"> {youtubeCount} YT</span> • 
-                  <span className="text-cyan-400"> {tiktokCount} TikTok</span> • 
-                  <span className="text-pink-400"> {instagramCount} IG</span> • 
+                  <span className="text-[#FFD700] font-semibold">{totalMissions} Active Missions</span> • 
+                  <span className="text-blue-400"> {platformCounts.facebook} FB</span> • 
+                  <span className="text-red-400"> {platformCounts.youtube} YT</span> • 
+                  <span className="text-cyan-400"> {platformCounts.tiktok} TikTok</span> • 
+                  <span className="text-pink-400"> {platformCounts.instagram} IG</span> • 
                   Total: <span className="text-[#FFD700] font-mono">₳{totalPotentialEarnings}</span>
                 </AlertDescription>
               </Alert>
@@ -1107,7 +527,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                   )}
                 >
                   <Users className="h-3.5 w-3.5" />
-                  All ({activeMissions.length})
+                  All ({totalMissions})
                 </button>
                 <button
                   onClick={() => setSelectedPlatform('facebook')}
@@ -1119,7 +539,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                   )}
                 >
                   <Facebook className="h-3.5 w-3.5" />
-                  FB ({facebookCount})
+                  FB ({platformCounts.facebook})
                 </button>
                 <button
                   onClick={() => setSelectedPlatform('youtube')}
@@ -1131,7 +551,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                   )}
                 >
                   <Youtube className="h-3.5 w-3.5" />
-                  YT ({youtubeCount})
+                  YT ({platformCounts.youtube})
                 </button>
                 <button
                   onClick={() => setSelectedPlatform('tiktok')}
@@ -1143,7 +563,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                   )}
                 >
                   <Music className="h-3.5 w-3.5" />
-                  TikTok ({tiktokCount})
+                  TikTok ({platformCounts.tiktok})
                 </button>
                 <button
                   onClick={() => setSelectedPlatform('instagram')}
@@ -1155,7 +575,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                   )}
                 >
                   <Camera className="h-3.5 w-3.5" />
-                  IG ({instagramCount})
+                  IG ({platformCounts.instagram})
                 </button>
               </div>
               
@@ -1180,7 +600,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                 
                 {/* Missions Tab */}
                 <TabsContent value="missions" className="space-y-3 mt-0">
-                  {submissionsLoading ? (
+                  {isLoading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <Card key={i} className="bg-[#050505]/80 border-[#FFD700]/10">
                         <CardContent className="p-4">
@@ -1212,7 +632,7 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                         </Alert>
                       )}
                       {filteredMissions.map((mission) => (
-                        <PhilippineMissionCard
+                        <DatabaseMissionCard
                           key={mission.id}
                           mission={mission}
                           onStartMission={handleStartMission}
@@ -1276,11 +696,11 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
                 title: selectedMission.title,
                 description: selectedMission.description,
                 category: selectedMission.category,
-                required_level: 'cadet',
+                required_level: selectedMission.required_level,
                 proof_type: selectedMission.proof_type,
                 reward: selectedMission.reward,
                 is_active: selectedMission.is_active,
-                created_at: new Date().toISOString(),
+                created_at: selectedMission.created_at,
               }}
             />
           )}
@@ -1289,3 +709,6 @@ export function EarnHubOverlay({ isOpen, onClose }: EarnHubOverlayProps) {
     </AnimatePresence>
   );
 }
+
+// Re-export types for compatibility
+export type { MissionPlatform, DatabaseMission as PhilippineMission };
