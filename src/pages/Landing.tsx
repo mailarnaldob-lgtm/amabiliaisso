@@ -1,6 +1,5 @@
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { HeroSection } from '@/components/landing/HeroSection';
-import { LiveAlphaStats } from '@/components/landing/LiveAlphaStats';
 import { FourPillars } from '@/components/landing/FourPillars';
 import { CurrencyManifesto } from '@/components/landing/CurrencyManifesto';
 import { TierShowcase } from '@/components/landing/TierShowcase';
@@ -102,7 +101,6 @@ export default function Landing() {
       <div className="relative z-10">
         <LandingHeader />
         <HeroSection />
-        <LiveAlphaStats />
         <FourPillars />
         <CurrencyManifesto />
         <TierShowcase />
