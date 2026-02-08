@@ -1,19 +1,25 @@
-import { useState } from 'react';
+/**
+ * UPGRADE MEMBERSHIP - AMABILIA NETWORK V12.0
+ * 
+ * Premium Unified Payment Experience:
+ * - AMABILIA branded loading transition
+ * - Simplified QR-only payment (no provider choices)
+ * - Required proof upload before submit
+ * - Cinematic glassmorphism UI
+ */
+
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
-import { usePaymentMethodsPolling } from '@/hooks/usePaymentMethodsPolling';
 import { useEliteQualification } from '@/hooks/useEliteQualification';
 import { useExpertQualification, EXPERT_REQUIRED_TASKS } from '@/hooks/useExpertQualification';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { SuccessConfetti } from '@/components/ui/success-confetti';
+import { UnifiedPaymentFlow } from '@/components/payment/UnifiedPaymentFlow';
 import { 
   ArrowLeft,
   ArrowRight,
@@ -21,13 +27,7 @@ import {
   Zap,
   Star,
   CheckCircle,
-  Copy,
-  Info,
-  Loader2,
-  Upload,
-  QrCode,
   Shield,
-  TrendingUp,
   Lock,
   Users,
   Sparkles,
@@ -38,12 +38,10 @@ import {
   Target
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { paymentSchema } from '@/lib/validations';
-import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// SOVEREIGN BRANDING V10.0 - PRO/EXPERT/ELITE hierarchy with qualification rules
+// SOVEREIGN BRANDING V12.0 - PRO/EXPERT/ELITE hierarchy with qualification rules
 const MEMBERSHIP_TIERS = [
   {
     id: 'pro',
@@ -95,13 +93,12 @@ const MEMBERSHIP_TIERS = [
 const STEPS = [
   { id: 1, label: 'Select Tier', icon: Shield },
   { id: 2, label: 'Payment', icon: CreditCard },
-  { id: 3, label: 'Verify', icon: FileCheck },
+  { id: 3, label: 'Complete', icon: FileCheck },
 ];
 
 export default function UpgradeMembership() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { paymentMethods, isLoading: isLoadingMethods } = usePaymentMethodsPolling(30000);
   const { data: eliteQualification, isLoading: isLoadingEliteQualification } = useEliteQualification();
   const { data: expertQualification, isLoading: isLoadingExpertQualification } = useExpertQualification();
   const { toast } = useToast();
@@ -109,118 +106,23 @@ export default function UpgradeMembership() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTier, setSelectedTier] = useState<string>('pro');
-  const [paymentMethod, setPaymentMethod] = useState<string>('gcash');
-  const [referenceNumber, setReferenceNumber] = useState('');
-  const [proofFile, setProofFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [errors, setErrors] = useState<{ reference_number?: string }>({});
-  const [showQR, setShowQR] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const currentTierIndex = MEMBERSHIP_TIERS.findIndex(t => t.id === profile?.membership_tier);
   const availableTiers = MEMBERSHIP_TIERS.filter((_, index) => index > currentTierIndex);
   const selectedTierData = MEMBERSHIP_TIERS.find(t => t.id === selectedTier);
-  const selectedPaymentData = paymentMethods?.find(p => p.id === paymentMethod);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: 'Copied!', description: 'Account number copied to clipboard' });
-  };
+  // Handle successful payment
+  const handlePaymentSuccess = useCallback(() => {
+    setSubmitted(true);
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
+    queryClient.invalidateQueries({ queryKey: ['membership-payments'] });
+  }, [queryClient]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast({ variant: 'destructive', title: 'Invalid File', description: 'Please upload an image file' });
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast({ variant: 'destructive', title: 'File Too Large', description: 'Maximum file size is 5MB' });
-        return;
-      }
-      setProofFile(file);
-    }
-  };
-
-  /**
-   * SOVEREIGN PAYMENT SUBMISSION V10.0
-   * Uses the centralized submit-membership-payment edge function
-   * which enforces rate limiting, validation, and proper logging
-   */
-  const submitPayment = useMutation({
-    mutationFn: async () => {
-      if (!user || !selectedTierData) throw new Error('Invalid data');
-
-      let proofUrl: string | null = null;
-
-      // Upload proof file if provided
-      if (proofFile) {
-        setIsUploading(true);
-        const fileExt = proofFile.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('payment-proofs')
-          .upload(fileName, proofFile);
-
-        if (uploadError) {
-          console.error('[UPGRADE] Upload error:', uploadError);
-          setIsUploading(false);
-          throw new Error('Failed to upload payment proof');
-        }
-        
-        // Get public URL for the uploaded proof
-        const { data: urlData } = supabase.storage
-          .from('payment-proofs')
-          .getPublicUrl(fileName);
-        
-        proofUrl = urlData.publicUrl;
-        setIsUploading(false);
-      }
-
-      // Get session for edge function authentication
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('Authentication required');
-      }
-
-      // Call the centralized edge function for payment submission
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-membership-payment`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({
-            tier: selectedTier,
-            paymentMethod: paymentMethod,
-            proofUrl: proofUrl,
-            referenceNumber: referenceNumber,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Payment submission failed');
-      }
-
-      return result;
-    },
-    onSuccess: () => {
-      setSubmitted(true);
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      queryClient.invalidateQueries({ queryKey: ['membership-payments'] });
-    },
-    onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
-    },
-  });
+  // Handle payment cancel
+  const handlePaymentCancel = useCallback(() => {
+    setCurrentStep(1);
+  }, []);
 
   const handleNext = () => {
     if (currentStep === 1) {
@@ -243,31 +145,7 @@ export default function UpgradeMembership() {
         return;
       }
       setCurrentStep(2);
-    } else if (currentStep === 2) {
-      setCurrentStep(3);
     }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    
-    const result = paymentSchema.safeParse({
-      tier: selectedTier,
-      payment_method: paymentMethod,
-      reference_number: referenceNumber,
-    });
-    
-    if (!result.success) {
-      const fieldErrors: { reference_number?: string } = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0] === 'reference_number') fieldErrors.reference_number = err.message;
-      });
-      setErrors(fieldErrors);
-      return;
-    }
-
-    await submitPayment.mutateAsync();
   };
 
   // Determine confetti variant based on selected tier
@@ -277,7 +155,6 @@ export default function UpgradeMembership() {
   if (submitted) {
     return (
       <>
-        {/* Celebratory Confetti */}
         <SuccessConfetti 
           isActive={submitted} 
           variant={confettiVariant}
@@ -303,14 +180,8 @@ export default function UpgradeMembership() {
               }`}
             >
               <motion.div
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{ 
-                  duration: 1.5, 
-                  repeat: Infinity,
-                  repeatType: 'reverse',
-                }}
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse' }}
               >
                 {selectedTier === 'elite' ? (
                   <Crown className="h-12 w-12 text-[#FFD700]" />
@@ -352,10 +223,6 @@ export default function UpgradeMembership() {
                 <span className={`font-mono font-bold ${
                   selectedTier === 'elite' ? 'text-[#FFD700]' : 'text-primary'
                 }`}>₳{selectedTierData?.price.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm mt-2">
-                <span className="text-muted-foreground">Reference</span>
-                <span className="font-mono text-foreground">{referenceNumber}</span>
               </div>
               <div className="flex items-center justify-between text-sm mt-2">
                 <span className="text-muted-foreground">Status</span>
@@ -448,445 +315,222 @@ export default function UpgradeMembership() {
             })}
           </div>
           
-          <div className="w-16" /> {/* Spacer */}
+          <div className="w-16" />
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <form onSubmit={handleSubmit}>
-          <AnimatePresence mode="wait">
-            {/* STEP 1: Tier Selection */}
-            {currentStep === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="text-center mb-8">
-                  <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">Step 1 of 3</Badge>
-                  <h1 className="text-2xl font-bold text-foreground mb-2">Choose Your Access Level</h1>
-                  <p className="text-muted-foreground">Select the tier that matches your goals</p>
-                </div>
+        <AnimatePresence mode="wait">
+          {/* STEP 1: Tier Selection */}
+          {currentStep === 1 && (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="text-center mb-8">
+                <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">Step 1 of 3</Badge>
+                <h1 className="text-2xl font-bold text-foreground mb-2">Choose Your Access Level</h1>
+                <p className="text-muted-foreground">Select the tier that matches your goals</p>
+              </div>
 
-                <div className="space-y-4">
-                  {availableTiers.map((tier) => {
-                    const TierIcon = tier.icon;
-                    const isSelected = selectedTier === tier.id;
-                    const isEliteLocked = tier.id === 'elite' && !eliteQualification?.isQualified;
-                    const isExpertLocked = tier.id === 'expert' && !expertQualification?.isQualified;
-                    const isLocked = isEliteLocked || isExpertLocked;
-                    
-                    return (
-                      <motion.div
-                        key={tier.id}
-                        whileHover={{ scale: isLocked ? 1 : 1.01 }}
-                        whileTap={{ scale: isLocked ? 1 : 0.99 }}
+              <div className="space-y-4">
+                {availableTiers.map((tier) => {
+                  const TierIcon = tier.icon;
+                  const isSelected = selectedTier === tier.id;
+                  const isEliteLocked = tier.id === 'elite' && !eliteQualification?.isQualified;
+                  const isExpertLocked = tier.id === 'expert' && !expertQualification?.isQualified;
+                  const isLocked = isEliteLocked || isExpertLocked;
+                  
+                  return (
+                    <motion.div
+                      key={tier.id}
+                      whileHover={{ scale: isLocked ? 1 : 1.01 }}
+                      whileTap={{ scale: isLocked ? 1 : 0.99 }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => !isLocked && setSelectedTier(tier.id)}
+                        disabled={isLocked}
+                        className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 ${
+                          isSelected 
+                            ? `${tier.borderColor} ${tier.bgColor}` 
+                            : 'border-border bg-card hover:border-muted-foreground/30'
+                        } ${isLocked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                       >
-                        <button
-                          type="button"
-                          onClick={() => !isLocked && setSelectedTier(tier.id)}
-                          disabled={isLocked}
-                          className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 ${
-                            isSelected 
-                              ? `${tier.borderColor} ${tier.bgColor}` 
-                              : 'border-border bg-card hover:border-muted-foreground/30'
-                          } ${isLocked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-                        >
-                          <div className="flex items-start gap-4">
-                            <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tier.gradient} flex items-center justify-center flex-shrink-0`}>
-                              {isLocked ? (
-                                <Lock className="h-6 w-6 text-white" />
-                              ) : (
-                                <TierIcon className="h-6 w-6 text-white" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1">
-                                <h3 className="font-bold text-lg text-foreground">{tier.name}</h3>
-                                <span className={`text-2xl font-bold font-mono ${tier.textColor}`}>₳{tier.price}</span>
-                              </div>
-                              
-                              {/* EXPERT Task Requirement Badge */}
-                              {tier.id === 'expert' && (
-                                <Badge 
-                                  variant="outline" 
-                                  className={`text-xs mb-2 ${
-                                    expertQualification?.isQualified 
-                                      ? 'border-primary/30 text-primary' 
-                                      : 'border-amber-500/30 text-amber-400'
-                                  }`}
-                                >
-                                  <Target className="h-3 w-3 mr-1" />
-                                  {expertQualification?.isQualified 
-                                    ? '✓ Task Requirement Met' 
-                                    : `Requires ${EXPERT_REQUIRED_TASKS} Completed Tasks`
-                                  }
-                                </Badge>
-                              )}
-                              
-                              {/* ELITE Referral Requirement Badge */}
-                              {tier.requiresReferrals > 0 && (
-                                <Badge 
-                                  variant="outline" 
-                                  className={`text-xs mb-2 ${
-                                    eliteQualification?.isQualified 
-                                      ? 'border-[#FFD700]/30 text-[#FFD700]' 
-                                      : 'border-amber-500/30 text-amber-400'
-                                  }`}
-                                >
-                                  <Users className="h-3 w-3 mr-1" />
-                                  {eliteQualification?.isQualified 
-                                    ? '✓ Referral Requirement Met' 
-                                    : `Requires ${tier.requiresReferrals} EXPERT Referrals`
-                                  }
-                                </Badge>
-                              )}
-                              
-                              {/* Tier Description */}
-                              <p className="text-xs text-muted-foreground mb-2">{tier.description}</p>
-                              
-                              <div className="grid grid-cols-2 gap-1 mt-2">
-                                {tier.features.slice(0, 4).map((f) => (
-                                  <span key={f} className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <CheckCircle className={`h-3 w-3 ${tier.textColor}`} />
-                                    <span className="truncate">{f}</span>
-                                  </span>
-                                ))}
-                              </div>
+                        <div className="flex items-start gap-4">
+                          <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tier.gradient} flex items-center justify-center flex-shrink-0`}>
+                            {isLocked ? (
+                              <Lock className="h-6 w-6 text-white" />
+                            ) : (
+                              <TierIcon className="h-6 w-6 text-white" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <h3 className="font-bold text-lg text-foreground">{tier.name}</h3>
+                              <span className={`text-2xl font-bold font-mono ${tier.textColor}`}>₳{tier.price}</span>
                             </div>
                             
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                              isSelected ? `${tier.borderColor} ${tier.bgColor}` : 'border-muted'
-                            }`}>
-                              {isSelected && <Check className={`h-4 w-4 ${tier.textColor}`} />}
+                            {/* EXPERT Task Requirement Badge */}
+                            {tier.id === 'expert' && (
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs mb-2 ${
+                                  expertQualification?.isQualified 
+                                    ? 'border-primary/30 text-primary' 
+                                    : 'border-amber-500/30 text-amber-400'
+                                }`}
+                              >
+                                <Target className="h-3 w-3 mr-1" />
+                                {expertQualification?.isQualified 
+                                  ? '✓ Task Requirement Met' 
+                                  : `Requires ${EXPERT_REQUIRED_TASKS} Completed Tasks`
+                                }
+                              </Badge>
+                            )}
+                            
+                            {/* ELITE Referral Requirement Badge */}
+                            {tier.requiresReferrals > 0 && (
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs mb-2 ${
+                                  eliteQualification?.isQualified 
+                                    ? 'border-[#FFD700]/30 text-[#FFD700]' 
+                                    : 'border-amber-500/30 text-amber-400'
+                                }`}
+                              >
+                                <Users className="h-3 w-3 mr-1" />
+                                {eliteQualification?.isQualified 
+                                  ? '✓ Referral Requirement Met' 
+                                  : `Requires ${tier.requiresReferrals} EXPERT Referrals`
+                                }
+                              </Badge>
+                            )}
+                            
+                            <p className="text-xs text-muted-foreground mb-2">{tier.description}</p>
+                            
+                            <div className="grid grid-cols-2 gap-1 mt-2">
+                              {tier.features.slice(0, 4).map((f) => (
+                                <span key={f} className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <CheckCircle className={`h-3 w-3 ${tier.textColor}`} />
+                                  <span className="truncate">{f}</span>
+                                </span>
+                              ))}
                             </div>
                           </div>
                           
-                          {/* EXPERT Task Progress */}
-                          {tier.id === 'expert' && !expertQualification?.isQualified && (
-                            <div className="mt-4 pt-4 border-t border-border">
-                              <div className="flex items-center justify-between text-xs mb-1">
-                                <span className="text-primary flex items-center gap-1">
-                                  <Target className="h-3 w-3" />
-                                  Approved Tasks Required
-                                </span>
-                                <span className="text-muted-foreground">
-                                  {expertQualification?.completedTasks || 0}/{EXPERT_REQUIRED_TASKS}
-                                </span>
-                              </div>
-                              <Progress value={expertQualification?.progressPercent || 0} className="h-1.5" />
-                              <p className="text-[10px] text-muted-foreground mt-2">
-                                Complete {expertQualification?.remainingTasks || EXPERT_REQUIRED_TASKS} more approved tasks to unlock EXPERT
-                              </p>
-                              <Link 
-                                to="/alpha/command" 
-                                className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                                onClick={(e) => e.stopPropagation()}
-                              >
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                            isSelected ? `${tier.borderColor} ${tier.bgColor}` : 'border-muted'
+                          }`}>
+                            {isSelected && <Check className={`h-4 w-4 ${tier.textColor}`} />}
+                          </div>
+                        </div>
+                        
+                        {/* EXPERT Task Progress */}
+                        {tier.id === 'expert' && !expertQualification?.isQualified && (
+                          <div className="mt-4 pt-4 border-t border-border">
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className="text-primary flex items-center gap-1">
                                 <Target className="h-3 w-3" />
-                                Go to Mission Center
-                                <ChevronRight className="h-3 w-3" />
-                              </Link>
+                                Approved Tasks Required
+                              </span>
+                              <span className="text-muted-foreground">
+                                {expertQualification?.completedTasks || 0}/{EXPERT_REQUIRED_TASKS}
+                              </span>
                             </div>
-                          )}
-                          
-                          {/* Elite Gatekeeper Progress */}
-                          {tier.id === 'elite' && !eliteQualification?.isQualified && (
-                            <div className="mt-4 pt-4 border-t border-border">
-                              <div className="flex items-center justify-between text-xs mb-1">
-                                <span className="text-[#FFD700] flex items-center gap-1">
-                                  <Lock className="h-3 w-3" />
-                                  EXPERT Referrals Required
-                                </span>
-                                <span className="text-muted-foreground">{eliteQualification?.qualifiedReferrals || 0}/3</span>
-                              </div>
-                              <Progress value={((eliteQualification?.qualifiedReferrals || 0) / 3) * 100} className="h-1.5" />
-                            </div>
-                          )}
-                        </button>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-8">
-                  <Button type="button" onClick={handleNext} className="w-full h-12 text-base" size="lg">
-                    Continue to Payment
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* STEP 2: Payment Method */}
-            {currentStep === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="text-center mb-8">
-                  <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">Step 2 of 3</Badge>
-                  <h1 className="text-2xl font-bold text-foreground mb-2">Send Payment</h1>
-                  <p className="text-muted-foreground">
-                    Transfer <span className={`font-bold font-mono ${selectedTierData?.textColor}`}>₳{selectedTierData?.price.toLocaleString()}</span> for {selectedTierData?.name}
-                  </p>
-                </div>
-
-                {/* Selected Tier Summary */}
-                <Card className="mb-6 border-primary/20 bg-primary/5">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selectedTierData?.gradient} flex items-center justify-center`}>
-                        {selectedTierData && <selectedTierData.icon className="h-6 w-6 text-white" />}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-foreground">{selectedTierData?.name} Access</p>
-                        <p className="text-xs text-muted-foreground">One-time registration fee</p>
-                      </div>
-                      <span className={`text-2xl font-bold font-mono ${selectedTierData?.textColor}`}>
-                        ₳{selectedTierData?.price.toLocaleString()}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Payment Methods */}
-                <Card className="mb-6">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 text-primary" />
-                      Select Payment Method
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {isLoadingMethods ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      paymentMethods?.map((method) => (
-                        <motion.button
-                          key={method.id}
-                          type="button"
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          onClick={() => { setPaymentMethod(method.id); setShowQR(false); }}
-                          className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                            paymentMethod === method.id 
-                              ? 'border-primary bg-primary/5' 
-                              : 'border-border hover:border-muted-foreground/30'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold text-foreground">{method.name}</p>
-                              <p className="text-sm text-muted-foreground">{method.accountName}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <code className="px-3 py-1.5 bg-muted rounded font-mono text-sm">{method.number}</code>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={(e) => { e.stopPropagation(); copyToClipboard(method.number); }}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </motion.button>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* QR Code Section */}
-                {selectedPaymentData?.qrCodeUrl && (
-                  <Card className="mb-6">
-                    <CardContent className="p-6 text-center">
-                      <Button
-                        type="button"
-                        variant={showQR ? "secondary" : "outline"}
-                        onClick={() => setShowQR(!showQR)}
-                        className="mb-4"
-                      >
-                        <QrCode className="h-4 w-4 mr-2" />
-                        {showQR ? 'Hide QR Code' : 'Show QR Code'}
-                      </Button>
-                      
-                      <AnimatePresence>
-                        {showQR && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="p-4 bg-white rounded-xl inline-block">
-                              <img 
-                                src={selectedPaymentData.qrCodeUrl} 
-                                alt="Payment QR Code"
-                                className="w-48 h-48 mx-auto"
-                              />
-                            </div>
-                            <p className="mt-4 text-sm text-muted-foreground">
-                              Scan to pay via {selectedPaymentData.name}
+                            <Progress value={expertQualification?.progressPercent || 0} className="h-1.5" />
+                            <p className="text-[10px] text-muted-foreground mt-2">
+                              Complete {expertQualification?.remainingTasks || EXPERT_REQUIRED_TASKS} more approved tasks to unlock EXPERT
                             </p>
-                          </motion.div>
+                            <Link 
+                              to="/alpha/command" 
+                              className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Target className="h-3 w-3" />
+                              Go to Mission Center
+                              <ChevronRight className="h-3 w-3" />
+                            </Link>
+                          </div>
                         )}
-                      </AnimatePresence>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Info Box */}
-                <Alert className="mb-6 border-muted bg-muted/30">
-                  <Info className="h-4 w-4" />
-                  <AlertDescription className="text-xs">
-                    Send exactly <strong>₳{selectedTierData?.price.toLocaleString()}</strong> to the selected payment method. Keep your transaction receipt for the next step.
-                  </AlertDescription>
-                </Alert>
-
-                <div className="flex gap-3">
-                  <Button type="button" variant="outline" onClick={() => setCurrentStep(1)} className="flex-1 h-12">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button type="button" onClick={handleNext} className="flex-1 h-12">
-                    I've Sent Payment
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* STEP 3: Verification */}
-            {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="text-center mb-8">
-                  <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">Step 3 of 3</Badge>
-                  <h1 className="text-2xl font-bold text-foreground mb-2">Verify Your Payment</h1>
-                  <p className="text-muted-foreground">Enter your transaction details for admin verification</p>
-                </div>
-
-                {/* Payment Summary */}
-                <Card className="mb-6 border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5">
-                  <CardContent className="p-5">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${selectedTierData?.gradient} flex items-center justify-center`}>
-                        {selectedTierData && <selectedTierData.icon className="h-7 w-7 text-white" />}
-                      </div>
-                      <div>
-                        <p className="font-bold text-lg text-foreground">{selectedTierData?.name}</p>
-                        <p className="text-sm text-muted-foreground">via {selectedPaymentData?.name}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                      <span className="text-sm text-muted-foreground">Total Amount</span>
-                      <span className={`text-xl font-bold font-mono ${selectedTierData?.textColor}`}>
-                        ₳{selectedTierData?.price.toLocaleString()}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Reference Number */}
-                <Card className="mb-6">
-                  <CardContent className="p-5 space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="reference" className="text-foreground font-medium">
-                        Transaction Reference Number *
-                      </Label>
-                      <Input
-                        id="reference"
-                        placeholder="e.g., 1234567890123"
-                        value={referenceNumber}
-                        onChange={(e) => setReferenceNumber(e.target.value)}
-                        maxLength={50}
-                        className={`h-12 text-base ${errors.reference_number ? 'border-destructive' : ''}`}
-                        required
-                      />
-                      {errors.reference_number && (
-                        <p className="text-sm text-destructive">{errors.reference_number}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="proof" className="text-foreground font-medium flex items-center gap-2">
-                        <Upload className="h-4 w-4" />
-                        Payment Screenshot (Optional)
-                      </Label>
-                      <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-                        <Input
-                          id="proof"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          className="hidden"
-                        />
-                        <label htmlFor="proof" className="cursor-pointer">
-                          {proofFile ? (
-                            <div className="flex items-center justify-center gap-2 text-primary">
-                              <CheckCircle className="h-5 w-5" />
-                              <span className="font-medium">{proofFile.name}</span>
+                        
+                        {/* Elite Gatekeeper Progress */}
+                        {tier.id === 'elite' && !eliteQualification?.isQualified && (
+                          <div className="mt-4 pt-4 border-t border-border">
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className="text-[#FFD700] flex items-center gap-1">
+                                <Lock className="h-3 w-3" />
+                                EXPERT Referrals Required
+                              </span>
+                              <span className="text-muted-foreground">{eliteQualification?.qualifiedReferrals || 0}/3</span>
                             </div>
-                          ) : (
-                            <>
-                              <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                              <p className="text-sm text-muted-foreground">Click to upload screenshot</p>
-                              <p className="text-xs text-muted-foreground mt-1">Max 5MB • JPG, PNG</p>
-                            </>
-                          )}
-                        </label>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                            <Progress value={((eliteQualification?.qualifiedReferrals || 0) / 3) * 100} className="h-1.5" />
+                          </div>
+                        )}
+                      </button>
+                    </motion.div>
+                  );
+                })}
+              </div>
 
-                <div className="flex gap-3">
-                  <Button type="button" variant="outline" onClick={() => setCurrentStep(2)} className="flex-1 h-12">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={submitPayment.isPending || isUploading || !referenceNumber} 
-                    className="flex-1 h-12"
-                  >
-                    {submitPayment.isPending || isUploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {isUploading ? 'Uploading...' : 'Submitting...'}
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Submit for Approval
-                      </>
-                    )}
-                  </Button>
-                </div>
+              <div className="mt-8">
+                <Button type="button" onClick={handleNext} className="w-full h-12 text-base" size="lg">
+                  Continue to Payment
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
 
-                <p className="text-xs text-muted-foreground text-center mt-4">
-                  Your submission will be reviewed within 24 hours
+          {/* STEP 2: Unified Payment Flow */}
+          {currentStep === 2 && selectedTierData && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="text-center mb-6">
+                <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">Step 2 of 3</Badge>
+                <h1 className="text-2xl font-bold text-foreground mb-2">Complete Payment</h1>
+                <p className="text-muted-foreground">
+                  Upgrade to <span className={`font-bold ${selectedTierData.textColor}`}>{selectedTierData.name}</span>
                 </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </form>
+              </div>
+
+              {/* Selected Tier Summary Card */}
+              <Card className={`mb-6 ${selectedTierData.borderColor} ${selectedTierData.bgColor}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selectedTierData.gradient} flex items-center justify-center`}>
+                      <selectedTierData.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-foreground">{selectedTierData.name} Access</p>
+                      <p className="text-xs text-muted-foreground">One-time registration fee</p>
+                    </div>
+                    <span className={`text-2xl font-bold font-mono ${selectedTierData.textColor}`}>
+                      ₳{selectedTierData.price.toLocaleString()}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Unified Payment Flow Component */}
+              <UnifiedPaymentFlow
+                amount={selectedTierData.price}
+                type="membership"
+                tier={selectedTier}
+                onSuccess={handlePaymentSuccess}
+                onCancel={handlePaymentCancel}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
