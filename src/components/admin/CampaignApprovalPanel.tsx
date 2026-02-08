@@ -48,7 +48,7 @@ export function CampaignApprovalPanel() {
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
 
-  // Fetch pending campaigns
+  // Fetch pending campaigns with 15-second polling
   const { data: pendingCampaigns, isLoading } = useQuery({
     queryKey: ['admin-pending-campaigns'],
     queryFn: async () => {
@@ -78,6 +78,8 @@ export function CampaignApprovalPanel() {
 
       return campaignsWithAdvertisers as PendingCampaign[];
     },
+    refetchInterval: 15000, // 15-second polling per Blueprint V8.0
+    staleTime: 10000,
   });
 
   // Approve campaign mutation using atomic RPC

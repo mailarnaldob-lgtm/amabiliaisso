@@ -42,6 +42,8 @@ export function useAdminTasks() {
       if (error) throw error;
       return data as Task[];
     },
+    refetchInterval: 15000, // 15-second polling per Blueprint V8.0
+    staleTime: 10000,
   });
 }
 

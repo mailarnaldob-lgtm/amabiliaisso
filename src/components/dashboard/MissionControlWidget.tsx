@@ -1,71 +1,58 @@
 /**
- * MISSION CONTROL WIDGET - SOVEREIGN V12.0
+ * MISSION CONTROL WIDGET - SOVEREIGN V12.1
  * Dashboard integration for real-time mission display
  * 
  * Architecture:
- * - Fetches tasks from database (synced with EarnHubOverlay)
- * - 15-second RESTful polling
- * - AnimatedOdometers for reward amounts
- * - Click-to-expand triggers EARN overlay
+ * - Fetches from database `tasks` table (synced with EarnHubOverlay)
+ * - 15-second RESTful polling via useMissionHub
+ * - Top 5 Latest Active Tasks with smart filtering
+ * - Self-adjusting: hides completed tasks, respects tier visibility
  * - Theme: Obsidian Black (#050505) + Alpha Gold (#FFD700)
  */
 
 import { motion } from 'framer-motion';
 import { 
   Target, Zap, ArrowRight, ExternalLink,
-  Youtube, Star, Users, Camera, Music, Briefcase
+  Youtube, Users, Camera, Music, Briefcase
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OdometerNumber } from '@/components/command/OdometerNumber';
-import { useTasks, Task } from '@/hooks/useTasks';
+import { useTopMissions, getPlatformFromCategory } from '@/hooks/useMissionHub';
 
 interface MissionControlWidgetProps {
   onOpenEarnHub?: () => void;
 }
 
-type MissionCategory = 'youtube' | 'facebook' | 'tiktok' | 'instagram' | 'social media' | 'other';
-
 // Platform icon mapping
 const getPlatformIcon = (category: string) => {
-  const cat = category.toLowerCase();
-  if (cat.includes('youtube')) return Youtube;
-  if (cat.includes('facebook')) return Users;
-  if (cat.includes('tiktok')) return Music;
-  if (cat.includes('instagram')) return Camera;
-  if (cat.includes('social')) return Users;
-  return Briefcase;
+  const platform = getPlatformFromCategory(category);
+  switch (platform) {
+    case 'youtube': return Youtube;
+    case 'facebook': return Users;
+    case 'tiktok': return Music;
+    case 'instagram': return Camera;
+    default: return Briefcase;
+  }
 };
 
 // Platform color mapping
 const getPlatformStyle = (category: string) => {
-  const cat = category.toLowerCase();
-  if (cat.includes('youtube')) return { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400' };
-  if (cat.includes('facebook')) return { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400' };
-  if (cat.includes('tiktok')) return { bg: 'bg-pink-500/10', border: 'border-pink-500/20', text: 'text-pink-400' };
-  if (cat.includes('instagram')) return { bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400' };
-  if (cat.includes('social')) return { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-400' };
-  return { bg: 'bg-muted/30', border: 'border-border', text: 'text-muted-foreground' };
+  const platform = getPlatformFromCategory(category);
+  switch (platform) {
+    case 'youtube': return { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400' };
+    case 'facebook': return { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400' };
+    case 'tiktok': return { bg: 'bg-pink-500/10', border: 'border-pink-500/20', text: 'text-pink-400' };
+    case 'instagram': return { bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400' };
+    default: return { bg: 'bg-muted/30', border: 'border-border', text: 'text-muted-foreground' };
+  }
 };
 
 export function MissionControlWidget({ onOpenEarnHub }: MissionControlWidgetProps) {
-  // Fetch tasks from database with 15-second polling
-  const { data: tasks, isLoading } = useTasks();
-
-  // Get top 5 highest-paying active tasks
-  const topMissions = tasks
-    ?.sort((a, b) => b.reward - a.reward)
-    .slice(0, 5) || [];
-  
-  const totalAvailable = tasks?.length || 0;
-  const totalRewardPool = tasks?.reduce((sum, t) => sum + t.reward, 0) || 0;
-
-  // Count by category for quick stats
-  const getCategoryCount = (category: string) => {
-    return tasks?.filter(t => t.category.toLowerCase().includes(category.toLowerCase())).length || 0;
-  };
+  // Fetch Top 5 missions from database with 15-second polling
+  const { topMissions, totalAvailable, totalRewardPool, platformCounts, isLoading } = useTopMissions(5);
 
   if (isLoading) {
     return (
@@ -125,10 +112,10 @@ export function MissionControlWidget({ onOpenEarnHub }: MissionControlWidgetProp
           </div>
         </div>
 
-        {/* Quick Stats Row */}
+        {/* Quick Stats Row - Platform counts from database */}
         <div className="grid grid-cols-4 gap-2 mb-4">
           {(['facebook', 'youtube', 'tiktok', 'instagram'] as const).map((platform) => {
-            const count = getCategoryCount(platform);
+            const count = platformCounts[platform] || 0;
             const style = getPlatformStyle(platform);
             const Icon = getPlatformIcon(platform);
             return (
@@ -146,7 +133,7 @@ export function MissionControlWidget({ onOpenEarnHub }: MissionControlWidgetProp
           })}
         </div>
 
-        {/* Top 5 Missions */}
+        {/* Top 5 Missions from Database */}
         <div className="space-y-2 mb-4">
           {topMissions.length === 0 ? (
             <div className="text-center py-6">
