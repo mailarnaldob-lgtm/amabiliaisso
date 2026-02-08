@@ -1,3 +1,8 @@
+/**
+ * SAVE PILLAR - Sovereign Vault Engine
+ * Wallet management, credits, and vault savings
+ * Routes: /dashboard/save
+ */
 import { useState } from 'react';
 import { AlphaLayout } from '@/components/layouts/AlphaLayout';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,7 +79,7 @@ function getTransactionDisplay(tx: WalletTransaction) {
   };
 }
 
-export default function BankApp() {
+export default function SaveDashboard() {
   const wallets = useAppStore(state => state.wallets);
   const [exchangerOpen, setExchangerOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -99,7 +104,7 @@ export default function BankApp() {
   };
 
   return (
-    <AlphaLayout title="Sovereign Bank" subtitle="Vault & Exchanger">
+    <AlphaLayout title="SAVE Hub" subtitle="Sovereign Vault Engine">
       {/* User State Indicator */}
       <UserStateIndicator state="ACTIVE" fraudScore={15} />
 
@@ -171,18 +176,6 @@ export default function BankApp() {
           leftIcon={<Send className="h-5 w-5" />}
         >
           <span className="text-[10px]">Send</span>
-        </EliteButton>
-      </div>
-
-      {/* Floating Exchanger Button - Golden */}
-      <div className="fixed bottom-28 right-4 z-40">
-        <EliteButton 
-          size="icon" 
-          variant="default" 
-          className="h-14 w-14 rounded-full shadow-lg shadow-[#FFD700]/30 haptic-press bg-gradient-to-br from-[#FFD700] to-[#FFA500] hover:opacity-90" 
-          onClick={() => setExchangerOpen(true)}
-        >
-          <span className="text-2xl font-bold text-black">₳</span>
         </EliteButton>
       </div>
 

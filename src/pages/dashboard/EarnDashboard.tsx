@@ -1,3 +1,8 @@
+/**
+ * EARN PILLAR - Sovereign Labor Engine
+ * Task-based earnings and VPA mission hub
+ * Routes: /dashboard/earn
+ */
 import { useState, useMemo } from 'react';
 import { AlphaLayout } from '@/components/layouts/AlphaLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,7 +33,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 type MissionCategory = string;
 
-export default function MarketApp() {
+export default function EarnDashboard() {
   const [activeCategory, setActiveCategory] = useState<MissionCategory>('all');
   const [activeTab, setActiveTab] = useState('available');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -84,8 +89,8 @@ export default function MarketApp() {
 
   return (
     <AlphaLayout 
-      title="Global Assignments" 
-      subtitle="VPA Missions"
+      title="EARN Hub" 
+      subtitle="Sovereign Labor Engine"
     >
       {/* Daily Progress - Golden-Yellow Theme */}
       <Card className="mb-6 overflow-hidden bg-card border-[#FFD700]/20 backdrop-blur-xl">
@@ -430,7 +435,7 @@ function MissionCard({ task, onStart }: { task: Task; onStart: () => void }) {
             </span>
             <span className="flex items-center gap-1">
               <Star className="h-3 w-3 text-[#FFD700]" />
-              {task.category}
+              {task.required_level}
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -438,7 +443,7 @@ function MissionCard({ task, onStart }: { task: Task; onStart: () => void }) {
             <Button 
               size="sm" 
               onClick={onStart}
-              className="bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:opacity-90 text-black font-bold text-xs active:scale-95 transition-all duration-150"
+              className="bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-bold text-xs px-4 hover:opacity-90 active:scale-95 transition-all"
             >
               Start
             </Button>
