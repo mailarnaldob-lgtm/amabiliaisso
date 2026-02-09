@@ -12,7 +12,7 @@
   * All navigation components MUST import from here to prevent drift.
   */
  
- import { Landmark, Target, TrendingUp, Users, Crown, Megaphone, Wallet, ArrowLeftRight, ArrowRightLeft } from 'lucide-react';
+ import { Landmark, Target, TrendingUp, Users, Crown, Megaphone, Wallet, ArrowLeftRight } from 'lucide-react';
  
 // Core four-pillar taxonomy - V12.0 FINAL
 export const APP_PILLARS = {
@@ -92,13 +92,6 @@ export const ALPHA_HUB_ITEMS = [
     description: 'Referral Network',
     href: '/dashboard/mlm',
     color: 'from-purple-500 to-pink-600',
-  },
-  {
-    icon: ArrowRightLeft,
-    label: 'Exchanger',
-    description: 'Legacy Exchange',
-    href: '/dashboard/exchanger',
-    color: 'from-[#FFD700] to-[#FFA500]',
   },
   {
     icon: Megaphone,
