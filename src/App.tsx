@@ -28,7 +28,7 @@ const CommandCenterApp = lazy(() => import("./pages/alpha/CommandCenterApp"));
 const FinanceApp = lazy(() => import("./pages/alpha/FinanceApp"));
 const SettingsApp = lazy(() => import("./pages/alpha/SettingsApp"));
 const AdsApp = lazy(() => import("./pages/alpha/AdsApp"));
-const ExchangerApp = lazy(() => import("./pages/alpha/ExchangerApp"));
+// ExchangerApp is now loaded only via TradeDashboard
 
 // Four Pillar Pages - V12.0
 const EarnDashboard = lazy(() => import("./pages/dashboard/EarnDashboard"));
@@ -118,8 +118,8 @@ const App = () => (
                 {/* Advanced App: ADS - Ad Wizard (PRO+) */}
                 <Route path="/dashboard/ads" element={<ProtectedRoute><AdsApp /></ProtectedRoute>} />
                 
-                {/* Legacy EXCHANGER - Now redirects to TRADE */}
-                <Route path="/dashboard/exchanger" element={<ProtectedRoute><ExchangerApp /></ProtectedRoute>} />
+                {/* Legacy EXCHANGER - Redirects to TRADE */}
+                <Route path="/dashboard/exchanger" element={<Navigate to="/dashboard/trade" replace />} />
                 
                 {/* Settings */}
                 <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsApp /></ProtectedRoute>} />
