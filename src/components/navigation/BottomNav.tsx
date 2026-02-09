@@ -1,16 +1,20 @@
 import { Link, useLocation } from 'react-router-dom';
+import { User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { BOTTOM_NAV_ITEMS } from '@/lib/navSections';
 
 /**
- * BottomNav - V12.1
- * Four-pillar navigation only (EARN, SAVE, TRADE, MLM)
- * No Profile button - access via FAB or Bloom Menu
+ * BottomNav - V12.0
+ * Four-pillar navigation using standard routing (no overlays)
+ * All pillars now navigate to dedicated dashboard pages
  * Source: src/lib/navSections.ts
  */
 
-const navItems = BOTTOM_NAV_ITEMS.map(item => ({ id: item.id, icon: item.icon, label: item.name, path: item.path }));
+const navItems = [
+  ...BOTTOM_NAV_ITEMS.map(item => ({ id: item.id, icon: item.icon, label: item.name, path: item.path })),
+  { id: 'profile', icon: User, label: 'Me', path: '/dashboard/profile' },
+];
 
 export function BottomNav() {
   const location = useLocation();
