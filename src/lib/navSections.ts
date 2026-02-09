@@ -12,33 +12,33 @@
   * All navigation components MUST import from here to prevent drift.
   */
  
- import { Landmark, Target, TrendingUp, Users, Crown, Megaphone, Wallet, ArrowLeftRight } from 'lucide-react';
+ import { Landmark, Target, TrendingUp, Users, Crown, Megaphone, Wallet, ArrowUpDown, Send, ArrowRightLeft, ArrowLeftRight } from 'lucide-react';
  
-// Core four-pillar taxonomy - V12.0 FINAL
+// Core four-pillar taxonomy
 export const APP_PILLARS = {
   EARN: {
     id: 'earn',
     name: 'EARN',
     description: 'Task Earnings',
-    path: '/dashboard/earn',
+    path: '/dashboard/bank',
     icon: Landmark,
     color: 'from-amber-500 to-orange-600',
-    isOverlay: false, // Now navigates to dedicated page
+    isOverlay: true, // Opens as full-screen overlay instead of navigation
   },
   SAVE: {
     id: 'save',
     name: 'SAVE',
     description: 'Vault Savings',
-    path: '/dashboard/save',
+    path: '/dashboard/market',
     icon: Target,
     color: 'from-emerald-500 to-teal-600',
-    isOverlay: false, // Now navigates to dedicated page
+    isOverlay: true, // Opens as full-screen Cinematic Vault overlay
   },
   TRADE: {
     id: 'trade',
     name: 'TRADE',
     description: 'Buy & Sell ₳',
-    path: '/dashboard/trade',
+    path: '/dashboard/exchanger',
     icon: ArrowLeftRight,
     color: 'from-[#FFD700] to-[#FFA500]',
     isOverlay: false,
@@ -48,172 +48,182 @@ export const APP_PILLARS = {
     id: 'mlm',
     name: 'MLM',
     description: 'Referral Network',
-    path: '/dashboard/mlm',
+    path: '/dashboard/growth',
     icon: Users,
     color: 'from-purple-500 to-pink-600',
-    isOverlay: false, // Now navigates to dedicated page
+    isOverlay: true, // Opens as full-screen overlay
   },
 } as const;
  
-// Bottom navigation items (for AppSwitcher, BottomNav, SovereignBottomNav)
-export const BOTTOM_NAV_ITEMS = [
-  APP_PILLARS.EARN,
-  APP_PILLARS.SAVE,
-  APP_PILLARS.TRADE,
-  APP_PILLARS.MLM,
-];
+ // Bottom navigation items (for AppSwitcher, BottomNav, SovereignBottomNav)
+ export const BOTTOM_NAV_ITEMS = [
+   APP_PILLARS.EARN,
+   APP_PILLARS.SAVE,
+   APP_PILLARS.TRADE,
+   APP_PILLARS.MLM,
+ ];
  
-// Floating Alpha Hub items (AlphaCoinHub)
-export const ALPHA_HUB_ITEMS = [
-  {
-    icon: Wallet,
-    label: 'EARN Hub',
-    description: 'Task Earnings',
-    href: '/dashboard/earn',
-    color: 'from-[#FFD700] to-[#FFA500]',
-  },
-  {
-    icon: Target,
-    label: 'SAVE Hub',
-    description: 'Vault Savings',
-    href: '/dashboard/save',
-    color: 'from-emerald-500 to-teal-600',
-  },
-  {
-    icon: ArrowLeftRight,
-    label: 'TRADE Hub',
-    description: 'Buy & Sell ₳',
-    href: '/dashboard/trade',
-    color: 'from-[#FFD700] to-[#FFA500]',
-  },
-  {
-    icon: Users,
-    label: 'MLM Hub',
-    description: 'Referral Network',
-    href: '/dashboard/mlm',
-    color: 'from-purple-500 to-pink-600',
-  },
-  {
-    icon: Megaphone,
-    label: 'Ad Wizard',
-    description: 'Traffic Engine',
-    href: '/dashboard/ads',
-    color: 'from-orange-400 to-red-500',
-  },
-];
+ // Floating Alpha Hub items (AlphaCoinHub)
+ export const ALPHA_HUB_ITEMS = [
+   {
+     icon: Wallet,
+     label: 'EARN Hub',
+     description: 'Task Earnings',
+     href: '/dashboard/bank',
+     color: 'from-[#FFD700] to-[#FFA500]',
+   },
+   {
+     icon: ArrowRightLeft,
+     label: 'Exchanger',
+     description: 'Buy/Sell ₳ Credits',
+     href: '/dashboard/exchanger',
+     color: 'from-[#FFD700] to-[#FFA500]',
+   },
+   {
+     icon: Send,
+     label: 'Money Transfer',
+     description: '3-step banking flow',
+     href: '/dashboard/bank',
+     color: 'from-blue-400 to-blue-600',
+   },
+   {
+     icon: Target,
+     label: 'SAVE Hub',
+     description: 'Vault Savings',
+     href: '/dashboard/market',
+     color: 'from-purple-400 to-purple-600',
+   },
+    {
+      icon: ArrowLeftRight,
+      label: 'TRADE Hub',
+      description: 'Buy & Sell ₳',
+      href: '/dashboard/exchanger',
+      color: 'from-[#FFD700] to-[#FFA500]',
+      comingSoon: false,
+    },
+   {
+     icon: Megaphone,
+     label: 'MLM Hub',
+     description: 'Referral Network',
+     href: '/dashboard/growth',
+     color: 'from-orange-400 to-red-500',
+   },
+ ];
  
-// Bloom menu primary items
-export const BLOOM_PRIMARY_ITEMS = [
-  {
-    icon: Target,
-    label: 'Mission Control',
-    sublabel: 'Mission Control Center',
-    path: '/dashboard',
-    color: 'from-[#FFD700] to-[#FFA500]',
-  },
-  {
-    icon: Landmark,
-    label: 'ABC Vault',
-    sublabel: 'Alpha Bankers Cooperative',
-    path: '/dashboard/finance',
-    color: 'from-blue-500 to-blue-600',
-  },
-  {
-    icon: Megaphone,
-    label: 'Traffic Engine',
-    sublabel: 'Traffic Intelligence Engine',
-    path: '/dashboard/ads',
-    color: 'from-emerald-500 to-emerald-600',
-    badge: 'PRO+',
-  },
-  {
-    icon: Users,
-    label: 'Profile',
-    sublabel: 'Account & Identity',
-    path: '/dashboard/profile',
-    color: 'from-purple-500 to-purple-600',
-  },
-];
-
-// Bloom menu secondary items (quick access) - Four Pillars
-export const BLOOM_SECONDARY_ITEMS = [
-  { icon: TrendingUp, label: 'EARN', sublabel: 'Task Earnings', path: '/dashboard/earn', color: 'from-amber-500 to-orange-600' },
-  { icon: Target, label: 'SAVE', sublabel: 'Vault Savings', path: '/dashboard/save', color: 'from-emerald-500 to-teal-600' },
-  { icon: ArrowLeftRight, label: 'TRADE', sublabel: 'Buy & Sell ₳', path: '/dashboard/trade', color: 'from-[#FFD700] to-[#FFA500]' },
-  { icon: Crown, label: 'MLM', sublabel: 'Referral Network', path: '/dashboard/mlm', color: 'from-purple-500 to-pink-600' },
-];
+ // Bloom menu primary items
+ export const BLOOM_PRIMARY_ITEMS = [
+   {
+     icon: Target,
+     label: 'Mission Control',
+     sublabel: 'Mission Control Center',
+     path: '/dashboard',
+     color: 'from-[#FFD700] to-[#FFA500]',
+   },
+   {
+     icon: ArrowRightLeft,
+     label: 'Exchanger',
+     sublabel: 'Buy/Sell ₳ Credits',
+     path: '/dashboard/exchanger',
+     color: 'from-[#FFD700] to-[#B8860B]',
+   },
+   {
+     icon: Landmark,
+     label: 'ABC Vault',
+     sublabel: 'Alpha Bankers Cooperative',
+     path: '/dashboard/finance',
+     color: 'from-blue-500 to-blue-600',
+   },
+   {
+     icon: Megaphone,
+     label: 'Traffic Engine',
+     sublabel: 'Traffic Intelligence Engine',
+     path: '/dashboard/ads',
+     color: 'from-emerald-500 to-emerald-600',
+     badge: 'PRO+',
+   },
+   {
+     icon: Users,
+     label: 'Profile',
+     sublabel: 'Account & Identity',
+     path: '/dashboard/profile',
+     color: 'from-purple-500 to-purple-600',
+   },
+ ];
  
-// Dashboard hero navigation cards - Four Pillars
-export const DASHBOARD_HERO_CARDS = [
-  {
-    icon: Landmark,
-    label: 'EARN',
-    fullLabel: 'EARN TASK REWARDS',
-    description: 'VPA Missions',
-    path: '/dashboard/earn',
-    gradient: 'from-amber-500 to-orange-600',
-    shadowColor: 'shadow-amber-500/30',
-  },
-  {
-    icon: Target,
-    label: 'SAVE',
-    fullLabel: 'VAULT SAVINGS',
-    description: 'Secure Holdings',
-    path: '/dashboard/save',
-    gradient: 'from-emerald-500 to-teal-600',
-    shadowColor: 'shadow-emerald-500/30',
-  },
-  {
-    icon: ArrowLeftRight,
-    label: 'TRADE',
-    fullLabel: 'ALPHA EXCHANGER',
-    description: 'Buy & Sell ₳',
-    path: '/dashboard/trade',
-    gradient: 'from-[#FFD700] to-[#FFA500]',
-    shadowColor: 'shadow-[#FFD700]/30',
-  },
-  {
-    icon: Users,
-    label: 'MLM',
-    fullLabel: 'ROYALTY NETWORK',
-    description: 'Referral Network',
-    path: '/dashboard/mlm',
-    gradient: 'from-purple-500 to-pink-600',
-    shadowColor: 'shadow-purple-500/30',
-  },
-];
+ // Bloom menu secondary items (quick access)
+ export const BLOOM_SECONDARY_ITEMS = [
+  { icon: TrendingUp, label: 'EARN', sublabel: 'Task Earnings', path: '/dashboard/bank', color: 'from-amber-500 to-orange-600' },
+  { icon: Target, label: 'SAVE', sublabel: 'Vault Savings', path: '/dashboard/market', color: 'from-emerald-500 to-teal-600' },
+  { icon: ArrowLeftRight, label: 'TRADE', sublabel: 'Buy & Sell ₳', path: '/dashboard/exchanger', color: 'from-[#FFD700] to-[#FFA500]' },
+  { icon: Crown, label: 'MLM', sublabel: 'Referral Network', path: '/dashboard/growth', color: 'from-purple-500 to-pink-600' },
+ ];
  
-// Sidebar navigation sections - Four Pillars V12.0
-export const SIDEBAR_NAV_SECTIONS = [
-  {
-    title: 'Main',
-    items: [
-      { icon: Target, label: 'Command Center', path: '/dashboard', description: 'Your primary dashboard' },
-    ],
-  },
-  {
-    title: 'Four Pillars',
-    items: [
-      { icon: Landmark, label: 'EARN', path: '/dashboard/earn', description: 'Task Earnings' },
-      { icon: Target, label: 'SAVE', path: '/dashboard/save', description: 'Vault Savings' },
-      { icon: ArrowLeftRight, label: 'TRADE', path: '/dashboard/trade', description: 'Buy & Sell ₳' },
-      { icon: Users, label: 'MLM', path: '/dashboard/mlm', description: 'Referral Network' },
-    ],
-  },
-  {
-    title: 'Advanced',
-    items: [
-      { icon: Landmark, label: 'ABC Vault', path: '/dashboard/finance', description: 'P2P Lending' },
-      { icon: Crown, label: 'Ad Wizard', path: '/dashboard/ads', description: 'Traffic Engine', badge: 'PRO+' },
-    ],
-  },
-  {
-    title: 'Account',
-    items: [
-      { icon: Users, label: 'Partner Network', path: '/dashboard/referrals', description: 'Manage your referrals' },
-    ],
-  },
-];
+ // Dashboard hero navigation cards
+ export const DASHBOARD_HERO_CARDS = [
+   {
+     icon: Target,
+     label: 'EARN',
+     fullLabel: 'EARN TASK REWARDS',
+     description: 'VPA Missions',
+     path: '/dashboard/market',
+     gradient: 'from-emerald-500 to-teal-600',
+     shadowColor: 'shadow-emerald-500/30',
+   },
+    {
+      icon: ArrowLeftRight,
+      label: 'TRADE',
+      fullLabel: 'ALPHA EXCHANGER',
+      description: 'Buy & Sell ₳',
+      path: '/dashboard/exchanger',
+      gradient: 'from-[#FFD700] to-[#FFA500]',
+      shadowColor: 'shadow-[#FFD700]/30',
+    },
+   {
+     icon: Users,
+     label: 'MLM',
+     fullLabel: 'ROYALTY NETWORK',
+     description: 'Referral Network',
+     path: '/dashboard/growth',
+     gradient: 'from-purple-500 to-pink-600',
+     shadowColor: 'shadow-purple-500/30',
+   },
+   {
+     icon: TrendingUp,
+     label: 'SAVE',
+     fullLabel: 'VAULT SAVINGS',
+     description: 'Secure Holdings',
+     path: '/dashboard/bank',
+     gradient: 'from-blue-500 to-indigo-600',
+     shadowColor: 'shadow-blue-500/30',
+   },
+ ];
+ 
+ // Sidebar navigation sections
+ export const SIDEBAR_NAV_SECTIONS = [
+   {
+     title: 'Main',
+     items: [
+       { icon: Target, label: 'Command Center', path: '/dashboard', description: 'Your primary dashboard' },
+       { icon: ArrowRightLeft, label: 'Exchanger', path: '/dashboard/exchanger', description: 'Buy/Sell ₳ Credits' },
+     ],
+   },
+   {
+     title: 'Apps',
+     items: [
+        { icon: TrendingUp, label: 'EARN', path: '/dashboard/bank', description: 'Task Earnings' },
+        { icon: Target, label: 'SAVE', path: '/dashboard/market', description: 'Vault Savings' },
+        { icon: ArrowLeftRight, label: 'TRADE', path: '/dashboard/exchanger', description: 'Buy & Sell ₳' },
+        { icon: Users, label: 'MLM', path: '/dashboard/growth', description: 'Referral Network' },
+       { icon: Crown, label: 'Ad Wizard', path: '/dashboard/ads', description: 'Create ad campaigns', badge: 'PRO+' },
+     ],
+   },
+   {
+     title: 'Account',
+     items: [
+       { icon: Users, label: 'Partner Network', path: '/dashboard/referrals', description: 'Manage your referrals' },
+     ],
+   },
+ ];
 
 // ============================================
 // DESIGN SYSTEM: ALPHA GOLD ACCENT COLORS

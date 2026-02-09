@@ -24,17 +24,14 @@ const TradePillar = lazy(() => import("./pages/pillars/TradePillar"));
 const MLMPillar = lazy(() => import("./pages/pillars/MLMPillar"));
 
 // ₳LPHA SMART FINANCE - Command Center Architecture (now under /dashboard)
-const CommandCenterApp = lazy(() => import("./pages/alpha/CommandCenterApp"));
+const BankApp = lazy(() => import("./pages/alpha/BankApp"));
+const MarketApp = lazy(() => import("./pages/alpha/MarketApp"));
 const FinanceApp = lazy(() => import("./pages/alpha/FinanceApp"));
+const GrowthApp = lazy(() => import("./pages/alpha/GrowthApp"));
 const SettingsApp = lazy(() => import("./pages/alpha/SettingsApp"));
 const AdsApp = lazy(() => import("./pages/alpha/AdsApp"));
-// ExchangerApp is now loaded only via TradeDashboard
-
-// Four Pillar Pages - V12.0
-const EarnDashboard = lazy(() => import("./pages/dashboard/EarnDashboard"));
-const SaveDashboard = lazy(() => import("./pages/dashboard/SaveDashboard"));
-const TradeDashboard = lazy(() => import("./pages/dashboard/TradeDashboard"));
-const MLMDashboard = lazy(() => import("./pages/dashboard/MLMDashboard"));
+const CommandCenterApp = lazy(() => import("./pages/alpha/CommandCenterApp"));
+const ExchangerApp = lazy(() => import("./pages/alpha/ExchangerApp"));
 
 // Member dashboard sub-pages - Lazy loaded
 const UpgradeMembership = lazy(() => import("./pages/dashboard/UpgradeMembership"));
@@ -93,33 +90,30 @@ const App = () => (
                 <Route path="/pillars/mlm" element={<MLMPillar />} />
                 
                 {/* ═══════════════════════════════════════════════════════════════
-                    ₳LPHA SMART FINANCE - UNIFIED DASHBOARD V12.0
-                    Four-Pillar Architecture: EARN, SAVE, TRADE, MLM
+                    ₳LPHA SMART FINANCE - UNIFIED DASHBOARD
+                    Command Center is the primary dashboard
                     ═══════════════════════════════════════════════════════════════ */}
                 
                 {/* Dashboard Home - Command Center (Primary Hub) */}
                 <Route path="/dashboard" element={<ProtectedRoute><CommandCenterApp /></ProtectedRoute>} />
                 
-                {/* PILLAR #1: EARN - Task Earnings */}
-                <Route path="/dashboard/earn" element={<ProtectedRoute><EarnDashboard /></ProtectedRoute>} />
+                {/* App #1: BANK - Wallet & Credits */}
+                <Route path="/dashboard/bank" element={<ProtectedRoute><BankApp /></ProtectedRoute>} />
                 
-                {/* PILLAR #2: SAVE - Vault Savings */}
-                <Route path="/dashboard/save" element={<ProtectedRoute><SaveDashboard /></ProtectedRoute>} />
+                {/* App #2: MARKET - VPA Missions */}
+                <Route path="/dashboard/market" element={<ProtectedRoute><MarketApp /></ProtectedRoute>} />
                 
-                {/* PILLAR #3: TRADE - Buy & Sell ₳ */}
-                <Route path="/dashboard/trade" element={<ProtectedRoute><TradeDashboard /></ProtectedRoute>} />
-                
-                {/* PILLAR #4: MLM - Referral Network */}
-                <Route path="/dashboard/mlm" element={<ProtectedRoute><MLMDashboard /></ProtectedRoute>} />
-                
-                {/* Advanced App: FINANCE - P2P Lending (ABC Vault) */}
+                {/* App #3: FINANCE - P2P Lending */}
                 <Route path="/dashboard/finance" element={<ProtectedRoute><FinanceApp /></ProtectedRoute>} />
                 
-                {/* Advanced App: ADS - Ad Wizard (PRO+) */}
+                {/* App #4: GROWTH - Royalties & Network */}
+                <Route path="/dashboard/growth" element={<ProtectedRoute><GrowthApp /></ProtectedRoute>} />
+                
+                {/* App #5: ADS - Ad Wizard (PRO+) */}
                 <Route path="/dashboard/ads" element={<ProtectedRoute><AdsApp /></ProtectedRoute>} />
                 
-                {/* Legacy EXCHANGER - Redirects to TRADE */}
-                <Route path="/dashboard/exchanger" element={<Navigate to="/dashboard/trade" replace />} />
+                {/* App #6: EXCHANGER - Alpha Currency Exchange */}
+                <Route path="/dashboard/exchanger" element={<ProtectedRoute><ExchangerApp /></ProtectedRoute>} />
                 
                 {/* Settings */}
                 <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsApp /></ProtectedRoute>} />
@@ -134,25 +128,22 @@ const App = () => (
                     LEGACY REDIRECTS (Backwards Compatibility)
                     ═══════════════════════════════════════════════════════════════ */}
                 
-                {/* Redirect old /alpha/* routes to new pillars */}
-                <Route path="/alpha" element={<Navigate to="/dashboard/save" replace />} />
-                <Route path="/alpha/bank" element={<Navigate to="/dashboard/save" replace />} />
-                <Route path="/alpha/market" element={<Navigate to="/dashboard/earn" replace />} />
+                {/* Redirect old /alpha/* routes to /dashboard/* */}
+                <Route path="/alpha" element={<Navigate to="/dashboard/bank" replace />} />
+                <Route path="/alpha/bank" element={<Navigate to="/dashboard/bank" replace />} />
+                <Route path="/alpha/market" element={<Navigate to="/dashboard/market" replace />} />
                 <Route path="/alpha/finance" element={<Navigate to="/dashboard/finance" replace />} />
-                <Route path="/alpha/growth" element={<Navigate to="/dashboard/mlm" replace />} />
+                <Route path="/alpha/growth" element={<Navigate to="/dashboard/growth" replace />} />
                 <Route path="/alpha/settings" element={<Navigate to="/dashboard/settings" replace />} />
                 
-                {/* Redirect old dashboard routes to new pillars */}
-                <Route path="/dashboard/bank" element={<Navigate to="/dashboard/save" replace />} />
-                <Route path="/dashboard/market" element={<Navigate to="/dashboard/earn" replace />} />
-                <Route path="/dashboard/growth" element={<Navigate to="/dashboard/mlm" replace />} />
+                {/* Redirect old /dashboard/command to /dashboard */}
                 <Route path="/dashboard/command" element={<Navigate to="/dashboard" replace />} />
                 
                 {/* Redirect old /app/* routes to /dashboard/* */}
                 <Route path="/app" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/app/tasks" element={<Navigate to="/dashboard/earn" replace />} />
-                <Route path="/app/marketplace" element={<Navigate to="/dashboard/save" replace />} />
-                <Route path="/app/swap" element={<Navigate to="/dashboard/trade" replace />} />
+                <Route path="/app/tasks" element={<Navigate to="/dashboard/market" replace />} />
+                <Route path="/app/marketplace" element={<Navigate to="/dashboard/bank" replace />} />
+                <Route path="/app/swap" element={<Navigate to="/dashboard/bank" replace />} />
                 <Route path="/app/profile" element={<Navigate to="/dashboard/profile" replace />} />
                 <Route path="/app/settings" element={<Navigate to="/dashboard/settings" replace />} />
                 

@@ -1,8 +1,3 @@
-/**
- * MLM PILLAR - Sovereign Network Engine
- * Referral network, royalties, and genealogy
- * Routes: /dashboard/mlm
- */
 import { AlphaLayout } from '@/components/layouts/AlphaLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,7 +48,7 @@ const directReferrals = [
   { id: 4, name: 'Alpha_Member_004', tier: 'Pro', status: 'pending', missions: 0, earned: 0 },
 ];
 
-export default function MLMDashboard() {
+export default function GrowthApp() {
   const { referralCode, armyLevel } = useAppStore();
   const levelInfo = ARMY_LEVELS[armyLevel];
   const { toast } = useToast();
@@ -77,8 +72,8 @@ export default function MLMDashboard() {
 
   return (
     <AlphaLayout 
-      title="MLM Hub" 
-      subtitle="Sovereign Network Engine"
+      title="Partner Network" 
+      subtitle="Royalties & Growth"
     >
       {/* Referral Code Card - Golden-Yellow Theme */}
       <Card className="mb-6 overflow-hidden bg-card border-[#FFD700]/20 backdrop-blur-xl">
